@@ -1,0 +1,678 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>毫米毛毛蟲</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=LXGW+WenKai+TC:wght@700&family=Noto+Sans+TC:wght@500;700;900&display=swap">
+<style>
+/* Layout: one quiet work card per screen; the yellow school ruler is the hero, everything else stays calm for focus */
+:root{
+  --bg:#E6F0F5; --card:#FFFFFF; --ink:#1D3341; --muted:#587080; --line:#C7D8E1;
+  --accent:#1F6FA3; --on-accent:#FFFFFF;
+  --ruler:#F7D96A; --ruler-edge:#C3A12D; --tick:#3A311C;
+  --good:#1F8F55; --good-soft:#DCF2E5;
+  --try:#CF6436; --try-soft:#FCE8DD;
+  --hint:#D98E12; --hint-soft:#FFF2D2;
+  --band1:rgba(31,111,163,.20); --band2:rgba(31,143,85,.22);
+  --mm1:rgba(217,142,18,.45); --mm2:rgba(217,142,18,.18);
+  --rib-blue:#3B8BD0; --rib-orange:#EE8636; --rib-rose:#C95A8C;
+  --pencil:#5A8ED6; --pencil-hi:#8DB3E6; --wood:#E9C99A; --eraser:#F2A3B6;
+  --worm:#57AE65; --worm2:#86CA8F; --star:#F2B705;
+  --f-display:"LXGW WenKai TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-num:"Baloo 2","Noto Sans TC","PingFang TC",system-ui,sans-serif;
+  color-scheme: light;
+}
+html,body{background:var(--bg);color:var(--ink)}
+body{font-family:var(--f-body);font-size:18px;line-height:1.5}
+*{box-sizing:border-box}
+button{font:inherit;color:inherit}
+button:focus-visible,input:focus-visible+.sw{outline:4px solid var(--accent);outline-offset:3px}
+#app{max-width:940px;margin:0 auto;padding-inline:16px;padding-block:18px 48px}
+.num{font-family:var(--f-num);font-weight:800;color:var(--accent);font-size:1.12em;letter-spacing:.01em}
+
+/* ---------- shared bits ---------- */
+.btn{border:0;border-radius:16px;padding:12px 22px;font-weight:700;font-size:20px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;min-height:56px}
+.btn-primary{background:var(--accent);color:var(--on-accent)}
+.btn-primary:hover{filter:brightness(1.08)}
+.btn-ghost{background:transparent;border:2px solid var(--line);color:var(--ink)}
+.btn-ghost:hover{border-color:var(--accent)}
+.btn-hint{background:var(--hint-soft);border:2px solid var(--hint);color:var(--ink)}
+.btn svg{width:24px;height:24px;flex:none}
+.icon-btn{width:60px;height:60px;border-radius:50%;border:2px solid var(--line);background:var(--card);cursor:pointer;display:grid;place-items:center;flex:none}
+.icon-btn:hover{border-color:var(--accent)}
+.icon-btn svg{width:30px;height:30px;stroke:var(--accent);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.star{width:26px;height:26px;fill:var(--line);flex:none}
+.star.on{fill:var(--star)}
+.stars{display:flex;gap:4px;align-items:center}
+
+/* ---------- home ---------- */
+.home-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.total{display:flex;align-items:center;gap:8px;font-weight:700;background:var(--card);border-radius:999px;padding:6px 16px 6px 10px;font-size:18px}
+.total .num{color:var(--ink)}
+.hero{display:flex;align-items:center;gap:8px 24px;flex-wrap:wrap;margin-block:20px 24px}
+.hero svg{width:min(240px,60vw);height:auto}
+.hero h1{font-family:var(--f-display);font-size:clamp(42px,9vw,68px);line-height:1.1;margin:0;letter-spacing:.04em}
+.hero p{margin:6px 0 0;font-size:clamp(18px,3.6vw,22px);color:var(--muted)}
+.hero p .num{color:var(--ink)}
+.levels{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.lvcard{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;text-align:left;background:var(--card);border:3px solid transparent;border-radius:22px;padding:20px;cursor:pointer;box-shadow:0 3px 0 var(--line)}
+.lvcard:hover{border-color:var(--accent)}
+.lvno{grid-row:span 3;width:56px;height:56px;border-radius:50%;background:var(--ruler);border:3px solid var(--ruler-edge);display:grid;place-items:center;font-family:var(--f-num);font-weight:800;font-size:28px;color:var(--tick)}
+.lvname{font-family:var(--f-display);font-size:26px;line-height:1.25}
+.lvex{color:var(--muted);font-size:17px}
+.lvcard .stars{margin-top:6px}
+.lvcard .star{width:22px;height:22px}
+.home-note{margin-top:22px;color:var(--muted);font-size:16px}
+
+/* ---------- play ---------- */
+.playbar{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;margin-bottom:14px}
+.lvl-title{font-family:var(--f-display);font-size:24px;flex:1;min-width:140px}
+.dots{display:flex;gap:6px}
+.dot{width:30px;height:30px;border-radius:50%;background:var(--card);border:3px solid var(--line);display:grid;place-items:center}
+.dot.cur{border-color:var(--accent)}
+.dot svg{width:22px;height:22px;fill:var(--star)}
+.cheat{display:flex;align-items:center;gap:8px;background:var(--ruler);border:2px solid var(--ruler-edge);color:var(--tick);border-radius:12px;padding:4px 12px;font-weight:700;font-size:17px;white-space:nowrap}
+.cheat .num{color:var(--tick)}
+.qcard{background:var(--card);border-radius:26px;padding:clamp(16px,3.4vw,32px);display:grid;gap:18px;box-shadow:0 3px 0 var(--line)}
+.prompt-row{display:flex;gap:14px;align-items:center}
+#prompt{font-size:clamp(26px,5.4vw,40px);font-weight:900;margin:0;flex:1;min-width:0;line-height:1.35;text-wrap:balance}
+.note{border-radius:18px;padding:14px 18px;font-size:clamp(19px,3.6vw,24px);line-height:1.65}
+.note strong{font-size:1.08em}
+.note.hint{background:var(--hint-soft);border:2px dashed var(--hint)}
+.note.try{background:var(--try-soft);border:2px solid var(--try)}
+.note.good{background:var(--good-soft);border:2px solid var(--good)}
+.rulerbox{min-width:0}
+.ruler-svg{display:block;width:100%;height:auto;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.tapctl{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.nudge{min-width:120px;justify-content:center}
+.choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+.choice{min-height:86px;font-size:clamp(24px,4.8vw,32px);font-weight:700;border:3px solid var(--line);border-radius:20px;background:var(--card);cursor:pointer;padding:8px 12px;display:flex;align-items:center;justify-content:center;gap:10px;line-height:1.3}
+.choice:hover:not(:disabled){border-color:var(--accent);background:#F3F9FC}
+.choice.good{background:var(--good);border-color:var(--good);color:var(--on-accent)}
+.choice.good .num{color:var(--on-accent)}
+.choice.wrong{opacity:.4;border-style:dashed}
+.choice:disabled{cursor:default}
+.sw{display:inline-block;width:34px;height:16px;border-radius:4px;flex:none}
+.sw.blue{background:var(--rib-blue)} .sw.orange{background:var(--rib-orange)}
+.cmpbox{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.cmp{display:flex;align-items:center;gap:12px;border-radius:16px;padding:14px 18px;font-size:clamp(22px,4.4vw,30px);font-weight:700;background:var(--bg)}
+.cmp .sw{width:46px;height:20px}
+.actions{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.actions .spacer{flex:1}
+#nextBtn{font-size:24px;padding-inline:30px}
+
+/* match */
+.match{display:grid;grid-template-columns:1fr 1fr;gap:14px 28px}
+.mhead{font-size:16px;color:var(--muted);font-weight:700}
+.mcol{display:grid;gap:12px;align-content:start}
+.mcard{min-height:76px;border:3px solid var(--line);border-radius:18px;background:var(--card);font-size:clamp(20px,4.2vw,28px);font-weight:700;padding:8px 10px;cursor:pointer;line-height:1.3}
+.m-left{touch-action:none;background:#F3F9FC}
+.m-left.sel{border-color:var(--accent);box-shadow:0 0 0 4px var(--band1)}
+.m-left.done{opacity:.35;cursor:default;border-style:dashed}
+.m-right.done{background:var(--good-soft);border-color:var(--good);cursor:default}
+.m-right small{display:block;font-size:.7em;color:var(--good)}
+.m-right.over{border-color:var(--accent);background:#F3F9FC}
+.ghost{position:fixed;pointer-events:none;z-index:50;opacity:.92;transform:translate(-50%,-50%) scale(1.04);box-shadow:0 8px 20px rgba(29,51,65,.25)}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+
+/* done */
+.done-card{background:var(--card);border-radius:26px;padding:clamp(24px,5vw,44px);text-align:center;display:grid;gap:18px;justify-items:center;box-shadow:0 3px 0 var(--line)}
+.done-card h2{font-family:var(--f-display);font-size:clamp(34px,7vw,52px);margin:0;line-height:1.2}
+.done-card p{margin:0;font-size:22px}
+.big-stars .star{width:clamp(44px,10vw,64px);height:clamp(44px,10vw,64px)}
+.big-stars .star.on{animation:pop .5s backwards}
+@keyframes pop{0%{transform:scale(0)}70%{transform:scale(1.25)}100%{transform:scale(1)}}
+.done-actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+
+/* settings */
+.modal{position:fixed;inset:0;background:rgba(29,51,65,.45);display:grid;place-items:center;padding:16px;z-index:40}
+.panel{background:var(--card);border-radius:24px;padding:24px;width:min(520px,100%);max-height:90vh;overflow:auto;display:grid;gap:14px}
+.panel h2{margin:0;font-size:26px}
+.panel p{margin:0;color:var(--muted);font-size:16px}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.toggle span{font-weight:700}
+.toggle small{display:block;font-weight:500;color:var(--muted);font-size:15px}
+.toggle input{position:absolute;opacity:0;width:1px;height:1px}
+.toggle .sw{width:58px;height:34px;border-radius:999px;background:var(--line);position:relative;transition:background .2s}
+.toggle .sw::after{content:"";position:absolute;top:4px;left:4px;width:26px;height:26px;border-radius:50%;background:var(--card);transition:transform .2s}
+.toggle input:checked+.sw{background:var(--good)}
+.toggle input:checked+.sw::after{transform:translateX(24px)}
+.panel-actions{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:6px}
+.btn-danger{background:var(--try-soft);border:2px solid var(--try);color:var(--ink)}
+
+/* ruler svg */
+.r-body{fill:var(--ruler);stroke:var(--ruler-edge);stroke-width:3}
+.band.b1{fill:var(--band1)} .band.b2{fill:var(--band2)}
+.mmcell.m1{fill:var(--mm1)} .mmcell.m2{fill:var(--mm2)}
+.tick{stroke:var(--tick);stroke-width:2}
+.tick.cm{stroke-width:3.5}
+.tick.half{stroke-width:2.5}
+.rnum{font-family:var(--f-num);font-weight:800;font-size:30px;fill:var(--tick);text-anchor:middle}
+.blabel{font-family:var(--f-num);font-weight:800;font-size:26px;fill:var(--accent);text-anchor:middle}
+.mmlabel{font-family:var(--f-num);font-weight:800;fill:#8A5A00;text-anchor:middle}
+.guide{stroke:var(--muted);stroke-width:2;stroke-dasharray:5 5}
+.o-pencil{fill:var(--pencil)} .o-pencil-hi{fill:var(--pencil-hi)} .o-wood{fill:var(--wood)} .o-lead{fill:var(--tick)} .o-eraser{fill:var(--eraser)}
+.o-ribbon{fill:var(--rib-rose)} .o-ribbon.blue{fill:var(--rib-blue)} .o-ribbon.orange{fill:var(--rib-orange)}
+.o-worm{fill:var(--worm)} .o-worm2{fill:var(--worm2)} .o-eye{fill:var(--ink)}
+.mark{stroke-width:5}
+.mark.good{stroke:var(--good)} .mark.blue{stroke:var(--rib-blue)} .mark.orange{stroke:var(--rib-orange)}
+.mlabel rect{fill:var(--good)} .mlabel text{fill:var(--on-accent);font-family:var(--f-body);font-weight:700;font-size:26px;text-anchor:middle}
+.marker polygon{fill:var(--accent)} .marker line{stroke:var(--accent);stroke-width:4;opacity:.8}
+.marker.try polygon{fill:var(--try)} .marker.try line{stroke:var(--try)}
+.marker.good polygon{fill:var(--good)} .marker.good line{stroke:var(--good)}
+.tapzone{fill:transparent;cursor:pointer}
+.mascot .w1{fill:var(--worm)} .mascot .w2{fill:var(--worm2)} .mascot .ey{fill:var(--ink)} .mascot .wh{fill:var(--card)} .mascot .ln{stroke:var(--ink);stroke-width:3;fill:none;stroke-linecap:round} .mascot .ck{fill:var(--eraser)} .mascot .rl{fill:var(--ruler);stroke:var(--ruler-edge);stroke-width:2} .mascot .tk{stroke:var(--tick);stroke-width:1.5}
+
+@media (max-width:560px){
+  .match{gap:12px}
+  .cheat{font-size:15px}
+  .lvl-title{font-size:21px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+
+<div id="app">
+  <!-- HOME -->
+  <section id="home">
+    <div class="home-top">
+      <div class="total" aria-live="polite"><svg class="star on" viewBox="0 0 24 24"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3 6.1 20.6l1.3-6.6L2.5 9.4l6.6-.8z"/></svg>累積星星 <span class="num" id="totalStars">0</span></div>
+      <button class="btn btn-ghost" id="openSettings" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>老師設定</button>
+    </div>
+    <div class="hero">
+      <svg class="mascot" viewBox="0 0 240 110" aria-hidden="true">
+        <rect class="rl" x="6" y="84" width="228" height="22" rx="4"/>
+        <g class="tk"><line x1="16" y1="84" x2="16" y2="98"/><line x1="36" y1="84" x2="36" y2="92"/><line x1="56" y1="84" x2="56" y2="98"/><line x1="76" y1="84" x2="76" y2="92"/><line x1="96" y1="84" x2="96" y2="98"/><line x1="116" y1="84" x2="116" y2="92"/><line x1="136" y1="84" x2="136" y2="98"/><line x1="156" y1="84" x2="156" y2="92"/><line x1="176" y1="84" x2="176" y2="98"/><line x1="196" y1="84" x2="196" y2="92"/><line x1="216" y1="84" x2="216" y2="98"/></g>
+        <circle class="w2" cx="34" cy="62" r="20"/><circle class="w1" cx="66" cy="60" r="21"/><circle class="w2" cx="99" cy="62" r="20"/><circle class="w1" cx="131" cy="60" r="21"/>
+        <circle class="w1" cx="172" cy="46" r="32"/>
+        <path class="ln" d="M160 18 Q154 4 146 6"/><path class="ln" d="M182 16 Q188 2 197 5"/>
+        <circle class="wh" cx="162" cy="40" r="9"/><circle class="wh" cx="186" cy="40" r="9"/>
+        <circle class="ey" cx="164" cy="41" r="4.5"/><circle class="ey" cx="188" cy="41" r="4.5"/>
+        <circle class="ck" cx="154" cy="56" r="5"/><circle class="ck" cx="194" cy="56" r="5"/>
+        <path class="ln" d="M166 58 Q174 66 182 58"/>
+      </svg>
+      <div>
+        <h1>毫米毛毛蟲</h1>
+        <p>量一量、換一換：<span class="num">1</span> 公分 ＝ <span class="num">10</span> 毫米</p>
+      </div>
+    </div>
+    <div class="levels" id="levels"></div>
+    <p class="home-note">建議從第 1 關開始，每關 5 題。答對就能得到星星，答錯可以一直再試。</p>
+  </section>
+
+  <!-- PLAY -->
+  <section id="play" hidden>
+    <div class="playbar">
+      <button class="btn btn-ghost" id="toHome" type="button">‹ 回地圖</button>
+      <div class="lvl-title" id="lvlTitle"></div>
+      <div class="cheat" aria-label="小抄：1 公分等於 10 毫米"><span class="num">1</span> 公分 ＝ <span class="num">10</span> 毫米</div>
+      <div class="dots" id="dots" aria-label="題目進度"></div>
+    </div>
+    <article class="qcard">
+      <div class="prompt-row">
+        <h2 id="prompt"></h2>
+        <button class="icon-btn" id="speakBtn" type="button" aria-label="再唸一次題目"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg></button>
+      </div>
+      <div class="cmpbox" id="cmpBox" hidden></div>
+      <div class="note" id="note" hidden aria-live="polite"></div>
+      <div class="rulerbox" id="rulerBox" hidden></div>
+      <div class="tapctl" id="tapCtl" hidden>
+        <button class="btn btn-ghost nudge" id="nudgeL" type="button">◀ 左 1 小格</button>
+        <button class="btn btn-primary" id="confirmTap" type="button">確定</button>
+        <button class="btn btn-ghost nudge" id="nudgeR" type="button">右 1 小格 ▶</button>
+      </div>
+      <div id="matchBox" hidden></div>
+      <div class="choices" id="choices"></div>
+      <div class="actions">
+        <button class="btn btn-hint" id="hintBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/></svg><span id="hintLabel">提示</span></button>
+        <span class="spacer"></span>
+        <button class="btn btn-primary" id="nextBtn" type="button" hidden>下一題 ›</button>
+      </div>
+    </article>
+  </section>
+
+  <!-- DONE -->
+  <section id="done" hidden>
+    <div class="done-card">
+      <h2 id="doneTitle">過關了！</h2>
+      <div class="stars big-stars" id="doneStars"></div>
+      <p id="doneMsg"></p>
+      <div class="done-actions">
+        <button class="btn btn-ghost" id="againBtn" type="button">再玩一次</button>
+        <button class="btn btn-ghost" id="mapBtn" type="button">回地圖</button>
+        <button class="btn btn-primary" id="nextLvBtn" type="button">下一關 ›</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- SETTINGS -->
+<div class="modal" id="settings" hidden>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="setTitle">
+    <h2 id="setTitle">老師設定</h2>
+    <p>依照孩子的需要開或關，設定會記在這台裝置上。</p>
+    <label class="toggle" for="s-speech"><span>語音唸題<small>按喇叭可以聽題目和選項</small></span><input type="checkbox" id="s-speech"><i class="sw"></i></label>
+    <label class="toggle" for="s-auto"><span>出題時自動唸<small>每一題出現就先唸一次</small></span><input type="checkbox" id="s-auto"><i class="sw"></i></label>
+    <label class="toggle" for="s-hint"><span>提示鈕<small>尺上分色、10 小格一組，引導想法</small></span><input type="checkbox" id="s-hint"><i class="sw"></i></label>
+    <label class="toggle" for="s-wrongvis"><span>答錯後的視覺提示<small>在尺上用綠色標出正確位置，並寫出算法</small></span><input type="checkbox" id="s-wrongvis"><i class="sw"></i></label>
+    <label class="toggle" for="s-sound"><span>答對音效<small>答對時播放「叮咚」</small></span><input type="checkbox" id="s-sound"><i class="sw"></i></label>
+    <div class="panel-actions">
+      <button class="btn btn-danger" id="resetBtn" type="button">清除星星紀錄</button>
+      <button class="btn btn-primary" id="closeSettings" type="button">完成</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+const $=s=>document.querySelector(s);
+const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const pickN=(lo,hi,k)=>{const a=[];for(let i=lo;i<=hi;i++)a.push(i);const s=shuffle(a);const o=[];for(let i=0;i<k;i++)o.push(s[i%s.length]);return o;};
+const N=v=>`<span class="num">${v}</span>`;
+function cmmm(mm){const a=Math.floor(mm/10),b=mm%10;if(a===0)return `${N(b)} 毫米`;if(b===0)return `${N(a)} 公分`;return `${N(a)} 公分 ${N(b)} 毫米`;}
+function cmmmT(mm){const a=Math.floor(mm/10),b=mm%10;if(a===0)return `${b} 毫米`;if(b===0)return `${a} 公分`;return `${a} 公分 ${b} 毫米`;}
+const STAR='<path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3 6.1 20.6l1.3-6.6L2.5 9.4l6.6-.8z"/>';
+const starSVG=(on,delay)=>`<svg class="star${on?' on':''}" viewBox="0 0 24 24"${delay!=null?` style="animation-delay:${delay}s"`:''}>${STAR}</svg>`;
+const say=html=>html.replace(/<br\s*\/?>/g,'。').replace(/<[^>]+>/g,'').replace(/＝/g,'等於').replace(/＋/g,'加').replace(/＞/g,'大於').replace(/＜/g,'小於').replace(/？/g,'多少').replace(/\s+/g,'');
+
+/* ---------- storage ---------- */
+const KEY='mm-caterpillar-v1';
+let settings={speech:true,auto:true,hint:true,wrongVis:true,sound:true};
+let progress={done:{},total:0};
+try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s){Object.assign(settings,s.settings||{});Object.assign(progress,s.progress||{});}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({settings,progress}));}catch(e){}}
+
+/* ---------- speech & sound ---------- */
+let voices=[];
+function loadVoices(){try{voices=speechSynthesis.getVoices();}catch(e){}}
+if('speechSynthesis' in window){loadVoices();speechSynthesis.onvoiceschanged=loadVoices;}
+function speak(text){
+  if(!settings.speech||!('speechSynthesis' in window)||!text)return;
+  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='zh-TW';u.rate=0.82;
+    const v=voices.find(v=>/zh[-_]TW/i.test(v.lang))||voices.find(v=>/zh[-_](HK|Hant)/i.test(v.lang))||voices.find(v=>/^zh/i.test(v.lang));
+    if(v)u.voice=v;speechSynthesis.speak(u);}catch(e){}
+}
+function stopSpeak(){try{speechSynthesis.cancel();}catch(e){}}
+let actx=null;
+function chime(){
+  if(!settings.sound)return;
+  try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();const t=actx.currentTime;
+    [660,880].forEach((f,i)=>{const o=actx.createOscillator(),g=actx.createGain();o.type='sine';o.frequency.value=f;
+      const s=t+i*0.13;g.gain.setValueAtTime(0.0001,s);g.gain.exponentialRampToValueAtTime(0.18,s+0.02);g.gain.exponentialRampToValueAtTime(0.0001,s+0.35);
+      o.connect(g).connect(actx.destination);o.start(s);o.stop(s+0.4);});}catch(e){}
+}
+
+/* ---------- ruler drawing ---------- */
+function objSVG(ob,X,top){
+  const single=ob.lane==null,h=single?36:24,cy=single?58:(ob.lane===0?30:70);
+  const x0=X(0),x1=X(ob.mm),len=x1-x0,y=cy-h/2;let s='';
+  if(ob.kind==='pencil'){
+    const tip=Math.min(46,len*0.28),er=Math.min(22,len*0.14);
+    s+=`<rect class="o-eraser" x="${x0}" y="${y}" width="${er}" height="${h}" rx="4"/>`;
+    s+=`<rect class="o-pencil" x="${x0+er}" y="${y}" width="${len-er-tip}" height="${h}"/>`;
+    s+=`<rect class="o-pencil-hi" x="${x0+er}" y="${y+h*0.18}" width="${len-er-tip}" height="${h*0.2}"/>`;
+    s+=`<polygon class="o-wood" points="${x1-tip},${y} ${x1},${cy} ${x1-tip},${y+h}"/>`;
+    s+=`<polygon class="o-lead" points="${x1-tip*0.35},${cy-h*0.175} ${x1},${cy} ${x1-tip*0.35},${cy+h*0.175}"/>`;
+  }else if(ob.kind==='worm'){
+    const cnt=Math.max(3,Math.round(len/(h*0.95))),r=len/(2*cnt);
+    for(let i=0;i<cnt;i++)s+=`<circle class="${i===cnt-1||i%2===0?'o-worm':'o-worm2'}" cx="${x0+r+2*r*i}" cy="${cy}" r="${r}"/>`;
+    s+=`<circle class="o-eye" cx="${x1-r*0.6}" cy="${cy-r*0.3}" r="${Math.max(2.5,r*0.17)}"/>`;
+  }else{
+    s+=`<rect class="o-ribbon ${ob.color||''}" x="${x0}" y="${y}" width="${len}" height="${h}" rx="4"/>`;
+  }
+  s+=`<line class="guide" x1="${x1}" x2="${x1}" y1="${cy+h/2}" y2="${top}"/>`;
+  return s;
+}
+function rulerSVG(c){
+  const maxMm=c.maxCm*10,U=900/maxMm,P=44,W=900+P*2,top=100,H=130,bot=top+H;
+  const marks=c.marks||[],hasLabel=marks.some(m=>m.label),VH=bot+(hasLabel?66:14);
+  const X=v=>P+v*U,o=[];
+  o.push(`<svg class="ruler-svg" viewBox="0 0 ${W} ${VH}" data-p="${P}" data-u="${U}" data-max="${maxMm}" role="img" aria-label="直尺，從 0 到 ${c.maxCm} 公分">`);
+  o.push(`<rect class="r-body" x="${P-26}" y="${top}" width="${900+52}" height="${H}" rx="12"/>`);
+  if(c.bands==='cm'){
+    const n=Math.floor((c.bandTo??maxMm)/10);
+    for(let i=0;i<n;i++){
+      o.push(`<rect class="band b${i%2+1}" x="${X(i*10)}" y="${top}" width="${10*U}" height="${H}"/>`);
+      if(c.bandLabel)o.push(`<text class="blabel" x="${X(i*10+5)}" y="${top+82}">${c.bandLabel==='cum'?(i+1)*10:10}</text>`);
+    }
+  }
+  const sh=c.mmCount||c.mmShade;
+  if(sh){
+    const fs=Math.min(26,U*1.05);
+    for(let v=sh.from;v<sh.to;v++){
+      o.push(`<rect class="mmcell m${(v-sh.from)%2+1}" x="${X(v)}" y="${top}" width="${U}" height="92"/>`);
+      if(c.mmCount)o.push(`<text class="mmlabel" x="${X(v+0.5)}" y="${top+82}" font-size="${fs}">${v-sh.from+1}</text>`);
+    }
+  }
+  for(let v=0;v<=maxMm;v++){
+    const cm=v%10===0,half=v%5===0,h=cm?46:half?32:20;
+    o.push(`<line class="tick${cm?' cm':half?' half':''}" x1="${X(v)}" x2="${X(v)}" y1="${top}" y2="${top+h}"/>`);
+    if(cm)o.push(`<text class="rnum" x="${X(v)}" y="${bot-12}">${v/10}</text>`);
+  }
+  (c.objects||[]).forEach(ob=>o.push(objSVG(ob,X,top)));
+  marks.forEach(m=>{
+    const x=X(m.mm);
+    o.push(`<line class="mark ${m.cls}" x1="${x}" x2="${x}" y1="${top-8}" y2="${bot}"/>`);
+    if(m.label){const w=Math.max(100,m.label.replace(/\s/g,'').length*24+40);const lx=Math.min(Math.max(x,w/2+4),W-w/2-4);
+      o.push(`<g class="mlabel ${m.cls}"><rect x="${lx-w/2}" y="${bot+12}" width="${w}" height="46" rx="23"/><text x="${lx}" y="${bot+44}">${m.label}</text></g>`);}
+  });
+  if(c.marker){const x=X(c.marker.mm);
+    o.push(`<g class="marker ${c.marker.cls||''}"><line x1="${x}" x2="${x}" y1="${top-4}" y2="${top+70}"/><polygon points="${x-17},${top-48} ${x+17},${top-48} ${x},${top-6}"/></g>`);}
+  if(c.tap)o.push(`<rect class="tapzone" x="0" y="0" width="${W}" height="${VH}"/>`);
+  o.push('</svg>');
+  return o.join('');
+}
+
+/* ---------- question makers ---------- */
+const THINGS={pencil:{m:'枝',n:'鉛筆'},ribbon:{m:'條',n:'緞帶'},worm:{m:'條',n:'毛毛蟲'}};
+function choicesOf(list){return shuffle(list.map(x=>({h:x[0],ok:!!x[1]})));}
+
+function qReadCm(c,kind){
+  const t=THINGS[kind],mm=c*10,objects=[{mm,kind}];
+  return {type:'choice',prompt:`這${t.m}${t.n}有多長？`,speak:`這${t.m}${t.n}有多長？`,ruler:{maxCm:10,objects},
+    choices:choicesOf([[`${N(c)} 公分`,1],[`${N(c)} 毫米`],[`${N(c===9?8:c+1)} 公分`]]),
+    hint:{text:`從 <b>0</b> 開始量。看${t.n}的尾巴對到哪一個<b>大數字</b>，就是幾公分。`,ruler:{maxCm:10,objects,bands:'cm'}},
+    answer:{text:`${t.n}的尾巴對到大數字 ${N(c)}，所以是 ${N(c)} 公分。`,ruler:{maxCm:10,objects,bands:'cm',bandTo:mm,marks:[{mm,cls:'good',label:`${c} 公分`}]}}};
+}
+function qReadMm(m){
+  const objects=[{mm:m,kind:'worm'}];
+  return {type:'choice',prompt:'這條小毛毛蟲有多長？',speak:'這條小毛毛蟲有多長？',ruler:{maxCm:2,objects},
+    choices:choicesOf([[`${N(m)} 毫米`,1],[`${N(m)} 公分`],[`${N(m===9?8:m+1)} 毫米`]]),
+    hint:{text:'一小格是 <b>1 毫米</b>。從 0 開始，一小格一小格數到毛毛蟲的尾巴。',ruler:{maxCm:2,objects,mmShade:{from:0,to:20}}},
+    answer:{text:`一共 ${N(m)} 小格，就是 ${N(m)} 毫米。`,ruler:{maxCm:2,objects,mmCount:{from:0,to:m},marks:[{mm:m,cls:'good',label:`${m} 毫米`}]}}};
+}
+function qTapCm(c){
+  return {type:'tap',prompt:`請在尺上點出 ${N(c)} 公分`,speak:`請在尺上，點出${c}公分的位置，再按確定。`,ruler:{maxCm:10},target:c*10,
+    hint:{text:`公分看尺上的<b>大數字</b>。找到 ${N(c)}，點它上面的長線。`,ruler:{maxCm:10,bands:'cm'}},
+    answer:{text:`${N(c)} 公分就在大數字 ${N(c)} 的長線上。`,ruler:{maxCm:10,bands:'cm',bandTo:c*10,marks:[{mm:c*10,cls:'good',label:`${c} 公分`}]}}};
+}
+function qTapMm(m){
+  return {type:'tap',prompt:`請在尺上點出 ${N(m)} 毫米`,speak:`請在尺上，點出${m}毫米的位置，再按確定。`,ruler:{maxCm:2},target:m,
+    hint:{text:'一小格是 <b>1 毫米</b>。從 0 開始往右，一小格一小格數。',ruler:{maxCm:2,mmShade:{from:0,to:20}}},
+    answer:{text:`從 0 開始數 ${N(m)} 小格，就是 ${N(m)} 毫米。`,ruler:{maxCm:2,mmCount:{from:0,to:m},marks:[{mm:m,cls:'good',label:`${m} 毫米`}]}}};
+}
+const tens=c=>Array(c).fill('10').join(' ＋ ');
+function qCm2Mm(c){
+  return {type:'choice',prompt:`${N(c)} 公分 ＝ ？毫米`,speak:`${c}公分，等於幾毫米？`,ruler:null,
+    choices:choicesOf([[`${N(c*10)} 毫米`,1],[`${N(c)} 毫米`],[`${N(c*100)} 毫米`]]),
+    hint:{text:`1 公分 ＝ 10 毫米。<br>${N(c)} 公分就是 ${N(c)} 個 10 毫米：${tens(c)} ＝ ？`,ruler:{maxCm:10,bands:'cm',bandTo:c*10,bandLabel:'each'}},
+    answer:{text:`${N(c)} 個 10 毫米 ＝ ${N(c*10)} 毫米。`,ruler:{maxCm:10,bands:'cm',bandTo:c*10,bandLabel:'cum',marks:[{mm:c*10,cls:'good',label:`${c*10} 毫米`}]}}};
+}
+function qMm2Cm(c){
+  return {type:'choice',prompt:`${N(c*10)} 毫米 ＝ ？公分`,speak:`${c*10}毫米，等於幾公分？`,ruler:null,
+    choices:choicesOf([[`${N(c)} 公分`,1],[`${N(c*10)} 公分`],[`${N(c===9?8:c+1)} 公分`]]),
+    hint:{text:`每 10 毫米是 1 公分。<br>10、20、30……數數看，${N(c*10)} 裡面有幾個 10？`,ruler:{maxCm:10,bands:'cm',bandTo:c*10,bandLabel:'each'}},
+    answer:{text:`${N(c*10)} 毫米裡有 ${N(c)} 個 10 毫米，就是 ${N(c)} 公分。`,ruler:{maxCm:10,bands:'cm',bandTo:c*10,bandLabel:'cum',marks:[{mm:c*10,cls:'good',label:`${c} 公分`}]}}};
+}
+function qTapMm10(c){
+  return {type:'tap',prompt:`請在尺上點出 ${N(c*10)} 毫米`,speak:`請在尺上，點出${c*10}毫米的位置，再按確定。`,ruler:{maxCm:10},target:c*10,
+    hint:{text:'每一大格（1 公分）是 10 毫米。<br>10、20、30……一大格一大格往右數。',ruler:{maxCm:10,bands:'cm',bandLabel:'each'}},
+    answer:{text:`${N(c)} 個 10 毫米是 ${N(c*10)} 毫米，在大數字 ${N(c)} 的地方。`,ruler:{maxCm:10,bands:'cm',bandTo:c*10,bandLabel:'cum',marks:[{mm:c*10,cls:'good',label:`${c*10} 毫米`}]}}};
+}
+function qCmmm2Mm(a,b){
+  const mm=a*10+b;
+  return {type:'choice',prompt:`${cmmm(mm)} ＝ ？毫米`,speak:`${a}公分${b}毫米，等於幾毫米？`,ruler:null,
+    choices:choicesOf([[`${N(mm)} 毫米`,1],[`${N(a+b)} 毫米`],[`${N(a*100+b)} 毫米`]]),
+    hint:{text:`先換公分：${N(a)} 公分 ＝ ${N(a*10)} 毫米。<br>再加上 ${N(b)} 毫米：${N(a*10)} ＋ ${N(b)} ＝ ？`,ruler:{maxCm:10,bands:'cm',bandTo:a*10,bandLabel:'cum',mmShade:{from:a*10,to:mm}}},
+    answer:{text:`${N(a*10)} ＋ ${N(b)} ＝ ${N(mm)}，所以是 ${N(mm)} 毫米。`,ruler:{maxCm:10,bands:'cm',bandTo:a*10,bandLabel:'cum',mmCount:{from:a*10,to:mm},marks:[{mm,cls:'good',label:`${mm} 毫米`}]}}};
+}
+function qMm2Cmmm(a,b){
+  const mm=a*10+b;
+  return {type:'choice',prompt:`${N(mm)} 毫米 ＝ ？`,speak:`${mm}毫米，等於幾公分幾毫米？`,ruler:null,
+    choices:choicesOf([[cmmm(mm),1],[cmmm(b*10+a)],[`${N(mm)} 公分`]]),
+    hint:{text:`${N(mm)} 可以分成 ${N(a*10)} 和 ${N(b)}。<br>${N(a*10)} 毫米是幾公分呢？`,ruler:{maxCm:10,bands:'cm',bandTo:a*10,bandLabel:'each',mmShade:{from:a*10,to:mm}}},
+    answer:{text:`${N(a*10)} 毫米 ＝ ${N(a)} 公分，再多 ${N(b)} 毫米，就是 ${cmmm(mm)}。`,ruler:{maxCm:10,bands:'cm',bandTo:a*10,bandLabel:'cum',mmCount:{from:a*10,to:mm},marks:[{mm,cls:'good',label:cmmmT(mm)}]}}};
+}
+function qReadCmMm(a,b){
+  const mm=a*10+b,objects=[{mm,kind:'ribbon'}];
+  return {type:'choice',prompt:'這條緞帶有多長？',speak:'這條緞帶有多長？',ruler:{maxCm:10,objects},
+    choices:choicesOf([[cmmm(mm),1],[cmmm((a+1)*10+b)],[cmmm(b*10+a)]]),
+    hint:{text:'先看尾巴<b>前面</b>的大數字是幾（公分），<br>再數後面多出幾小格（毫米）。',ruler:{maxCm:10,objects,bands:'cm'}},
+    answer:{text:`尾巴過了大數字 ${N(a)}，再多 ${N(b)} 小格，是 ${cmmm(mm)}。`,ruler:{maxCm:10,objects,bands:'cm',bandTo:a*10,mmCount:{from:a*10,to:mm},marks:[{mm,cls:'good',label:cmmmT(mm)}]}}};
+}
+function qTapCmMm(a,b){
+  const mm=a*10+b;
+  return {type:'tap',prompt:`請在尺上點出 ${cmmm(mm)}`,speak:`請在尺上，點出${a}公分${b}毫米的位置，再按確定。`,ruler:{maxCm:10},target:mm,
+    hint:{text:`先找到大數字 ${N(a)}，再往右數 ${N(b)} 小格。`,ruler:{maxCm:10,bands:'cm'}},
+    answer:{text:`大數字 ${N(a)} 再往右 ${N(b)} 小格，就是 ${cmmm(mm)}。`,ruler:{maxCm:10,bands:'cm',bandTo:a*10,mmCount:{from:a*10,to:mm},marks:[{mm,cls:'good',label:cmmmT(mm)}]}}};
+}
+function matchAnswer(v){
+  const a=Math.floor(v/10),b=v%10;
+  const text=b===0?`${cmmm(v)} ＝ ${N(v)} 毫米，要找 ${N(v)} 毫米。`:`${cmmm(v)} ＝ ${N(a*10)} ＋ ${N(b)} ＝ ${N(v)} 毫米，要找 ${N(v)} 毫米。`;
+  return {text,ruler:{maxCm:10,bands:'cm',bandTo:a*10,bandLabel:'cum',mmCount:b?{from:a*10,to:v}:null,marks:[{mm:v,cls:'good',label:`${v} 毫米`}]}};
+}
+function qMatch(){
+  const vals=[R(2,8)*10];
+  let v2;do{v2=R(12,89);}while(v2%10===0||Math.floor(v2/10)===v2%10);
+  vals.push(v2);
+  const rev=(v2%10)*10+Math.floor(v2/10);
+  let v3=rev;
+  if(rev%10===0||vals.includes(rev)){do{v3=R(12,89);}while(v3%10===0||vals.includes(v3));}
+  vals.push(v3);
+  return {type:'match',prompt:'把一樣長的配成一對',speak:'把一樣長的配成一對。先按左邊的卡片，再按右邊的答案。也可以直接拖過去。',ruler:null,
+    left:shuffle(vals).map(v=>({v,h:cmmm(v),done:false})),right:shuffle(vals).map(v=>({v,h:`${N(v)} 毫米`,done:false})),sel:null,
+    hint:{text:`1 公分 ＝ 10 毫米。先把左邊換成毫米。<br>例如：${cmmm(24)} ＝ ${N(20)} ＋ ${N(4)} ＝ ${N(24)} 毫米`,ruler:{maxCm:10,bands:'cm',bandLabel:'cum'}},
+    answer:{text:'',ruler:null}};
+}
+function qCompare(kind){
+  let x,y,aMm=false,bMm=true;
+  if(kind==='cm'){const a=R(3,9);x=a*10;y=x+(Math.random()<0.5?-1:1)*R(1,5);if(y>99)y=x-R(1,5);}
+  else if(kind==='eq'){x=R(2,9)*10;y=x;}
+  else if(kind==='cmmm'){do{x=R(21,88);}while(x%10===0);do{y=x+(Math.random()<0.5?-1:1)*R(1,6);}while(y%10===0||y===x);}
+  else{const a=R(2,8),b=R(1,9);x=a*10+b;y=(Math.random()<0.5?a:a+1)*10;bMm=false;}
+  let la=cmmm(x),lb=bMm?`${N(y)} 毫米`:cmmm(y);
+  if(Math.random()<0.5){[x,y]=[y,x];[la,lb]=[lb,la];[aMm,bMm]=[bMm,aMm];}
+  const ans=x>y?0:x<y?1:2;
+  const objects=[{mm:x,kind:'ribbon',color:'blue',lane:0},{mm:y,kind:'ribbon',color:'orange',lane:1}];
+  const conv=(lab,v,isMm)=>isMm?`${N(v)} 毫米`:`${lab} ＝ ${N(v)} 毫米`;
+  const sym=['＞','＜','＝'][ans],res=['藍色比較長','橘色比較長','兩條一樣長'][ans];
+  return {type:'choice',fixed:true,prompt:'哪一條緞帶比較長？',speak:`藍色緞帶${say(la)}，橘色緞帶${say(lb)}。哪一條比較長？`,
+    compare:{a:la,b:lb},ruler:null,
+    choices:[{h:'<i class="sw blue"></i>藍色比較長',ok:ans===0},{h:'<i class="sw orange"></i>橘色比較長',ok:ans===1},{h:'一樣長',ok:ans===2}],
+    hint:{text:'都換成<b>毫米</b>再比一比。<br>也可以看看尺上的兩條緞帶。',ruler:{maxCm:10,objects,bands:'cm'}},
+    answer:{text:`藍色 ${conv(la,x,aMm)}；橘色 ${conv(lb,y,bMm)}。<br>${N(x)} ${sym} ${N(y)}，${res}。`,ruler:{maxCm:10,objects,bands:'cm',marks:[{mm:x,cls:'blue'},{mm:y,cls:'orange'}]}}};
+}
+
+const LEVELS=[
+  {id:1,name:'看尺讀長度',ex:'例：鉛筆有多長？',make(){const c=pickN(3,9,2),m=pickN(3,9,2);return [qReadCm(c[0],'pencil'),qReadMm(m[0]),qTapCm(R(2,9)),qReadCm(c[1],'ribbon'),qTapMm(m[1])];}},
+  {id:2,name:'公分換毫米',ex:'例：3 公分 ＝ 30 毫米',make(){const c=pickN(2,9,5);return [qCm2Mm(c[0]),qMm2Cm(c[1]),qTapMm10(c[2]),qCm2Mm(c[3]),qMm2Cm(c[4])];}},
+  {id:3,name:'公分和毫米一起',ex:'例：3 公分 5 毫米 ＝ 35 毫米',make(){
+    const ab=()=>{let a,b;do{a=R(1,8);b=R(1,9);}while(a===b);return [a,b];};
+    const p=ab(),q=ab(),r=ab(),s=ab();
+    return [qCmmm2Mm(p[0],p[1]),qReadCmMm(Math.max(2,q[0]),q[1]===Math.max(2,q[0])?(q[1]%9)+1:q[1]),qMatch(),qMm2Cmmm(r[0],r[1]),qTapCmMm(s[0],s[1])];}},
+  {id:4,name:'比比看誰比較長',ex:'例：4 公分 和 38 毫米',make(){return shuffle(['cm','cm','eq','cmmm','cmcm']).map(qCompare);}}
+];
+
+/* ---------- game state ---------- */
+let G=null;
+const cur=()=>G.qs[G.i];
+function show(id){['home','play','done'].forEach(s=>{$('#'+s).hidden=s!==id;});window.scrollTo(0,0);}
+
+function renderHome(){
+  $('#totalStars').textContent=progress.total;
+  $('#levels').innerHTML=LEVELS.map(L=>`<button class="lvcard" type="button" data-lv="${L.id}">
+    <span class="lvno">${L.id}</span><span class="lvname">第 ${L.id} 關　${L.name}</span>
+    <span class="lvex">${L.ex}</span>
+    <span class="stars" aria-label="${progress.done[L.id]?'已完成':'還沒完成'}">${[0,1,2,3,4].map(()=>starSVG(!!progress.done[L.id])).join('')}</span></button>`).join('');
+}
+function startLevel(id){
+  const L=LEVELS.find(l=>l.id===id);
+  G={level:id,qs:L.make(),i:0};
+  G.qs.forEach(q=>{q.solved=false;q.hintShown=false;q.answerShown=false;q.note=null;q.marker=null;q.markerWrong=false;});
+  $('#lvlTitle').textContent=`第 ${id} 關　${L.name}`;
+  show('play');renderQ();autoSpeak();
+}
+function speakQ(){
+  const q=cur();let t=q.speak;
+  if(q.type==='choice')t+='。答案有：'+q.choices.map(c=>say(c.h)).join('、');
+  speak(t);
+}
+function autoSpeak(){if(settings.auto)setTimeout(speakQ,250);}
+
+function renderQ(){
+  const q=cur();
+  $('#prompt').innerHTML=q.prompt;
+  const cb=$('#cmpBox');cb.hidden=!q.compare;
+  if(q.compare)cb.innerHTML=`<div class="cmp"><i class="sw blue"></i><span>藍色　${q.compare.a}</span></div><div class="cmp"><i class="sw orange"></i><span>橘色　${q.compare.b}</span></div>`;
+  const note=q.note||(q.hintShown?{cls:'hint',html:q.hint.text}:null);
+  const nb=$('#note');nb.hidden=!note;if(note){nb.className='note '+note.cls;nb.innerHTML=note.html;}
+  let rc=q.answerShown&&q.answer.ruler?q.answer.ruler:q.hintShown?q.hint.ruler:q.ruler;
+  const rb=$('#rulerBox');
+  if(rc){
+    rc=Object.assign({},rc);
+    if(q.type==='tap'){rc.tap=!q.solved;if(q.marker!=null)rc.marker={mm:q.marker,cls:q.solved?'good':q.markerWrong?'try':''};}
+    rb.innerHTML=rulerSVG(rc);rb.hidden=false;
+  }else{rb.hidden=true;rb.innerHTML='';}
+  $('#tapCtl').hidden=q.type!=='tap'||q.solved;
+  $('#confirmTap').disabled=q.marker==null;
+  $('#choices').innerHTML=q.type==='choice'?q.choices.map((c,i)=>`<button class="choice ${c.state||''}" type="button" data-i="${i}" ${c.state||q.solved?'disabled':''}>${c.h}</button>`).join(''):'';
+  $('#choices').hidden=q.type!=='choice';
+  renderMatch();
+  $('#hintBtn').hidden=!settings.hint||q.solved;
+  $('#hintLabel').textContent=q.hintShown?'收起提示':'提示';
+  const nx=$('#nextBtn');nx.hidden=!q.solved;nx.textContent=G.i===G.qs.length-1?'完成這一關 ›':'下一題 ›';
+  $('#dots').innerHTML=G.qs.map((qq,i)=>`<span class="dot${i===G.i?' cur':''}">${qq.solved?`<svg viewBox="0 0 24 24">${STAR}</svg>`:''}</span>`).join('');
+}
+function renderMatch(){
+  const q=cur(),mb=$('#matchBox');
+  mb.hidden=q.type!=='match';
+  if(q.type!=='match'){mb.innerHTML='';return;}
+  mb.innerHTML=`<div class="match"><div class="mcol"><div class="mhead">拿起卡片</div>${q.left.map((c,i)=>`<button class="mcard m-left${c.done?' done':''}${q.sel===i?' sel':''}" type="button" data-li="${i}" ${c.done?'disabled':''}>${c.h}</button>`).join('')}</div>
+    <div class="mcol"><div class="mhead">放到一樣長的地方</div>${q.right.map((c,i)=>`<button class="mcard m-right${c.done?' done':''}" type="button" data-ri="${i}" ${c.done?'disabled':''}>${c.h}${c.done?`<small>＝ ${c.pair}</small>`:''}</button>`).join('')}</div></div>`;
+}
+
+function solve(){
+  const q=cur();q.solved=true;q.answerShown=true;
+  q.note={cls:'good',html:`<strong>答對了！</strong>${q.answer.text?'<br>'+q.answer.text:''}`};
+  chime();speak('答對了！'+say(q.answer.text||''));renderQ();
+  setTimeout(()=>{const nx=$('#nextBtn');if(!nx.hidden)nx.focus({preventScroll:true});},50);
+}
+function wrong(){
+  const q=cur();
+  if(settings.wrongVis&&q.answer.text){
+    q.answerShown=true;
+    q.note={cls:'try',html:`<strong>再試一次！</strong>看看綠色的地方：<br>${q.answer.text}`};
+    speak('再試一次。'+say(q.answer.text));
+  }else{
+    q.note={cls:'try',html:`<strong>差一點點，再試一次！</strong>${settings.hint?'<br>也可以按「提示」看看。':''}`};
+    speak('差一點點，再試一次。');
+  }
+  renderQ();
+}
+
+/* ---------- events ---------- */
+$('#levels').addEventListener('click',e=>{const b=e.target.closest('[data-lv]');if(b)startLevel(+b.dataset.lv);});
+$('#speakBtn').addEventListener('click',speakQ);
+$('#toHome').addEventListener('click',()=>{stopSpeak();renderHome();show('home');});
+$('#hintBtn').addEventListener('click',()=>{const q=cur();q.hintShown=!q.hintShown;q.note=null;if(!q.hintShown)q.answerShown=false;renderQ();if(q.hintShown)speak(say(q.hint.text));});
+$('#choices').addEventListener('click',e=>{
+  const b=e.target.closest('.choice');if(!b||b.disabled)return;
+  const q=cur(),c=q.choices[+b.dataset.i];
+  if(c.ok){c.state='good';solve();}else{c.state='wrong';wrong();}
+});
+/* tap on ruler */
+$('#rulerBox').addEventListener('pointerdown',e=>{
+  const q=cur();if(q.type!=='tap'||q.solved)return;
+  const svg=$('#rulerBox svg');if(!svg)return;
+  const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;
+  const ctm=svg.getScreenCTM();if(!ctm)return;
+  const p=pt.matrixTransform(ctm.inverse());
+  const P=+svg.dataset.p,U=+svg.dataset.u,max=+svg.dataset.max;
+  q.marker=Math.max(0,Math.min(max,Math.round((p.x-P)/U)));q.markerWrong=false;
+  renderQ();
+});
+function nudge(d){const q=cur();const max=q.ruler.maxCm*10;q.marker=Math.max(0,Math.min(max,(q.marker??0)+d));q.markerWrong=false;renderQ();}
+$('#nudgeL').addEventListener('click',()=>nudge(-1));
+$('#nudgeR').addEventListener('click',()=>nudge(1));
+$('#confirmTap').addEventListener('click',()=>{const q=cur();if(q.marker==null)return;if(q.marker===q.target)solve();else{q.markerWrong=true;wrong();}});
+$('#nextBtn').addEventListener('click',()=>{
+  stopSpeak();
+  if(G.i<G.qs.length-1){G.i++;renderQ();autoSpeak();}else finishLevel();
+});
+
+/* match: tap-select or drag */
+function tryMatch(li,ri){
+  const q=cur(),L=q.left[li],Rt=q.right[ri];if(L.done||Rt.done)return;
+  if(L.v===Rt.v){
+    L.done=true;Rt.done=true;Rt.pair=L.h;q.sel=null;q.answerShown=false;
+    if(q.left.every(c=>c.done)){q.answer={text:'三組都配對成功！',ruler:null};solve();return;}
+    q.note={cls:'good',html:'<strong>配對成功！</strong>繼續找下一組。'};chime();speak('配對成功！');renderQ();
+  }else{
+    q.sel=null;q.answer=matchAnswer(L.v);wrong();
+    const el=document.querySelector(`[data-ri="${ri}"]`);if(el){el.classList.add('shake');}
+  }
+}
+let drag=null;
+$('#matchBox').addEventListener('pointerdown',e=>{
+  const card=e.target.closest('.m-left');if(!card||card.disabled)return;
+  e.preventDefault();
+  const q=cur(),li=+card.dataset.li;
+  drag={li,card,x:e.clientX,y:e.clientY,moved:false,ghost:null,over:null};
+  q.sel=li;card.classList.add('sel');
+  document.querySelectorAll('.m-left').forEach(c=>{if(c!==card)c.classList.remove('sel');});
+});
+window.addEventListener('pointermove',e=>{
+  if(!drag)return;
+  if(!drag.moved&&Math.hypot(e.clientX-drag.x,e.clientY-drag.y)>8){
+    drag.moved=true;const g=drag.card.cloneNode(true);g.classList.add('ghost');g.style.width=drag.card.offsetWidth+'px';document.body.appendChild(g);drag.ghost=g;
+  }
+  if(drag.ghost){
+    drag.ghost.style.left=e.clientX+'px';drag.ghost.style.top=e.clientY+'px';
+    const t=document.elementFromPoint(e.clientX,e.clientY);const r=t&&t.closest('.m-right:not(.done)');
+    if(drag.over&&drag.over!==r)drag.over.classList.remove('over');
+    if(r)r.classList.add('over');drag.over=r;
+  }
+});
+window.addEventListener('pointerup',e=>{
+  if(!drag)return;const d=drag;drag=null;
+  if(d.ghost)d.ghost.remove();
+  if(d.over)d.over.classList.remove('over');
+  if(d.moved){
+    const t=document.elementFromPoint(e.clientX,e.clientY);const r=t&&t.closest('.m-right:not(.done)');
+    if(r)tryMatch(d.li,+r.dataset.ri);
+  }
+});
+window.addEventListener('pointercancel',()=>{if(drag){if(drag.ghost)drag.ghost.remove();drag=null;}});
+$('#matchBox').addEventListener('click',e=>{
+  const r=e.target.closest('.m-right');if(!r||r.disabled)return;
+  const q=cur();
+  if(q.sel==null){q.note={cls:'hint',html:'先按<b>左邊</b>的卡片，再按右邊。'};renderQ();return;}
+  tryMatch(q.sel,+r.dataset.ri);
+});
+
+function finishLevel(){
+  const id=G.level;progress.done[id]=true;progress.total+=G.qs.length;save();
+  $('#doneTitle').textContent=`第 ${id} 關　過關了！`;
+  $('#doneStars').innerHTML=G.qs.map((_,i)=>starSVG(true,0.15*i)).join('');
+  $('#doneMsg').innerHTML=`你拿到 ${N(G.qs.length)} 顆星星，一共有 ${N(progress.total)} 顆了！`;
+  $('#nextLvBtn').hidden=id>=LEVELS.length;
+  show('done');chime();speak(`過關了！你拿到${G.qs.length}顆星星。`);
+}
+$('#againBtn').addEventListener('click',()=>startLevel(G.level));
+$('#mapBtn').addEventListener('click',()=>{renderHome();show('home');});
+$('#nextLvBtn').addEventListener('click',()=>startLevel(G.level+1));
+
+/* settings */
+const map={'s-speech':'speech','s-auto':'auto','s-hint':'hint','s-wrongvis':'wrongVis','s-sound':'sound'};
+function openSettings(){Object.entries(map).forEach(([id,k])=>{$('#'+id).checked=!!settings[k];});$('#settings').hidden=false;$('#closeSettings').focus();}
+function closeSettings(){$('#settings').hidden=true;resetArm=false;$('#resetBtn').textContent='清除星星紀錄';}
+Object.entries(map).forEach(([id,k])=>$('#'+id).addEventListener('change',e=>{settings[k]=e.target.checked;if(!settings.speech)stopSpeak();save();if(G&&!$('#play').hidden)renderQ();}));
+$('#openSettings').addEventListener('click',openSettings);
+$('#closeSettings').addEventListener('click',closeSettings);
+$('#settings').addEventListener('click',e=>{if(e.target.id==='settings')closeSettings();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#settings').hidden)closeSettings();});
+let resetArm=false;
+$('#resetBtn').addEventListener('click',()=>{
+  if(!resetArm){resetArm=true;$('#resetBtn').textContent='再按一次確定清除';return;}
+  progress={done:{},total:0};save();renderHome();closeSettings();
+});
+
+renderHome();
+})();
+</script>
+
+</body></html>

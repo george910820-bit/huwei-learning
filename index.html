@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>虎尾國小學習教室</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+<style>
+:root{
+  --bg:#fbf6ec; --paper:#fffdf8; --ink:#2b2a26; --soft:#6d685d; --line:#e7dfcf;
+  --zh:#d9653b; --zh-bg:#fbe7dc;
+  --ma:#2f7d8c; --ma-bg:#dcf0f1;
+  --ind:#7a5bb5; --ind-bg:#ece4f8;
+  --oth:#8a7a52; --oth-bg:#f1ead8;
+  --done:#9a9486;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC",system-ui,"Microsoft JhengHei",sans-serif;line-height:1.6}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 16px 64px}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+.brand small{display:block;color:var(--soft);font-weight:500;font-size:15px;letter-spacing:.08em}
+.brand h1{margin:0;font-size:clamp(30px,4vw,44px);font-weight:900;letter-spacing:.04em}
+.brand h1 span{color:var(--zh)}
+.search{flex:0 1 320px;width:100%}
+.search input{width:100%;font:inherit;font-size:17px;padding:12px 16px;border:2px solid var(--line);border-radius:14px;background:var(--paper);color:var(--ink)}
+.search input:focus{outline:none;border-color:var(--ink)}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:24px}
+.chip{font:inherit;font-size:17px;font-weight:700;padding:8px 18px;border-radius:999px;border:2px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer}
+.chip[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:#fff}
+.toggle{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:15px;color:var(--soft);cursor:pointer;user-select:none}
+.toggle input{width:20px;height:20px;accent-color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
+.card{background:var(--paper);border:2px solid var(--line);border-radius:22px;overflow:hidden;display:flex;flex-direction:column;transition:transform .15s,box-shadow .15s}
+.card:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(60,45,20,.10)}
+.band{padding:18px 20px 14px;background:var(--c-bg)}
+.tags{display:flex;gap:8px;align-items:center;margin-bottom:6px;font-size:14px;font-weight:700;color:var(--c)}
+.tags .st{margin-left:auto;font-weight:500;color:var(--soft);background:rgba(255,255,255,.7);padding:1px 10px;border-radius:999px}
+.band h2{margin:0;font-size:26px;font-weight:900;letter-spacing:.03em}
+.body{padding:14px 20px 18px;display:flex;flex-direction:column;gap:14px;flex:1}
+.body p{margin:0;color:var(--soft);font-size:15.5px}
+.foot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.foot time{font-size:13px;color:var(--soft)}
+.play{display:inline-block;text-decoration:none;font-weight:900;font-size:18px;color:#fff;background:var(--c);padding:10px 22px;border-radius:14px}
+.play:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.card.done{opacity:.72}
+.card.done .band{filter:saturate(.4)}
+.s-國語{--c:var(--zh);--c-bg:var(--zh-bg)}
+.s-數學{--c:var(--ma);--c-bg:var(--ma-bg)}
+.s-個別化{--c:var(--ind);--c-bg:var(--ind-bg)}
+.s-其他{--c:var(--oth);--c-bg:var(--oth-bg)}
+.msg{grid-column:1/-1;text-align:center;color:var(--soft);padding:48px 0;font-size:17px}
+footer{margin-top:40px;color:var(--soft);font-size:13px;text-align:center}
+@media (max-width:560px){.toggle{margin-left:0}.band h2{font-size:23px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><small>學生遊戲大廳</small><h1>虎尾國小<span>學習教室</span></h1></div>
+    <label class="search"><input id="q" type="search" placeholder="搜尋遊戲名稱…" aria-label="搜尋遊戲"></label>
+  </header>
+  <div class="bar" id="bar">
+    <label class="toggle"><input type="checkbox" id="showDone">顯示已完成的遊戲</label>
+  </div>
+  <main class="grid" id="grid"><div class="msg">載入遊戲中…</div></main>
+  <footer>點遊戲卡片的「開始玩」就能進入遊戲。遊戲紀錄存在這台電腦的瀏覽器裡。</footer>
+</div>
+<script>
+/* 遊戲清單從 games 資料夾自動產生：
+   每個遊戲一個資料夾 games/<名稱>/，裡面放 index.html，可另放 info.json 寫名稱、科目等。
+   有新資料夾，首頁就自動多一張卡片。 */
+const SUBJECTS=["國語","數學","個別化","其他"];
+const $=s=>document.querySelector(s);
+let games=[], subject="全部";
+
+function repoInfo(){
+  const h=location.hostname, m=h.match(/^([^.]+)\.github\.io$/i);
+  if(!m) return null;
+  const seg=location.pathname.split("/").filter(Boolean)[0];
+  const repo = seg && !seg.includes(".") ? seg : h;
+  return {owner:m[1], repo};
+}
+async function listFolders(){
+  const r=repoInfo();
+  if(r){
+    try{
+      const res=await fetch(`https://api.github.com/repos/${r.owner}/${r.repo}/contents/games`,{cache:"no-store"});
+      if(res.ok){ const a=await res.json(); if(Array.isArray(a)) return a.filter(x=>x.type==="dir").map(x=>x.name); }
+    }catch(e){}
+  }
+  /* 備用：讀 games/list.json（Claude 上架時會一起更新） */
+  try{ const res=await fetch("games/list.json",{cache:"no-store"}); if(res.ok) return await res.json(); }catch(e){}
+  return [];
+}
+async function load(){
+  const names=await listFolders();
+  games=await Promise.all(names.map(async n=>{
+    let info={};
+    try{ const res=await fetch(`games/${n}/info.json`,{cache:"no-store"}); if(res.ok) info=await res.json(); }catch(e){}
+    return { id:n, name:info.name||n, subject:SUBJECTS.includes(info.subject)?info.subject:"其他",
+      grade:info.grade||"", desc:info.desc||"", status:info.status==="已完成"?"已完成":"使用中", updated:info.updated||"" };
+  }));
+  games.sort((a,b)=>(a.status===b.status?0:a.status==="使用中"?-1:1)||String(b.updated).localeCompare(String(a.updated)));
+  renderBar(); render();
+}
+function renderBar(){
+  const used=["全部",...SUBJECTS.filter(s=>games.some(g=>g.subject===s))];
+  const bar=$("#bar"); bar.querySelectorAll(".chip").forEach(c=>c.remove());
+  used.slice().reverse().forEach(s=>{
+    const b=document.createElement("button"); b.className="chip"; b.textContent=s;
+    b.setAttribute("aria-pressed", s===subject);
+    b.onclick=()=>{ subject=s; renderBar(); render(); };
+    bar.prepend(b);
+  });
+}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function render(){
+  const q=$("#q").value.trim(), showDone=$("#showDone").checked;
+  const list=games.filter(g=>(subject==="全部"||g.subject===subject)&&(showDone||g.status!=="已完成")&&(!q||(g.name+g.desc+g.grade).includes(q)));
+  const grid=$("#grid");
+  if(!games.length){ grid.innerHTML='<div class="msg">還沒有遊戲。把遊戲放進 games 資料夾就會出現在這裡。</div>'; return; }
+  if(!list.length){ grid.innerHTML='<div class="msg">找不到符合的遊戲。</div>'; return; }
+  grid.innerHTML=list.map(g=>`<article class="card s-${g.subject}${g.status==="已完成"?" done":""}">
+    <div class="band"><div class="tags"><span>${g.subject}</span>${g.grade?`<span>${esc(g.grade)}</span>`:""}<span class="st">${g.status}</span></div><h2>${esc(g.name)}</h2></div>
+    <div class="body">${g.desc?`<p>${esc(g.desc)}</p>`:""}<div class="foot">${g.updated?`<time>更新 ${esc(g.updated)}</time>`:"<span></span>"}<a class="play" href="games/${encodeURIComponent(g.id)}/">開始玩</a></div></div>
+  </article>`).join("");
+}
+$("#q").addEventListener("input",render);
+$("#showDone").addEventListener("change",render);
+load();
+</script>
+</body>
+</html>
