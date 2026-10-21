@@ -1,0 +1,912 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>序數遊戲</title>
+<!--
+  序數遊戲（單檔可編輯版）
+  ─ 一個檔案、不需要網路即可使用（有網路時會載入 Caprasimo / Figtree 字型）。
+  ─ 程式分段：1 常數資料 → 2 狀態儲存 → 3 語音音效 → 4 出題 → 5 作答流程
+              → 6 遊戲畫面 → 7 提示紀錄與帳號 → 8 獎勵（七巧板/拼圖/圖片） → 9 老師專區 → 10 事件與啟動
+  ─ 學習紀錄存在瀏覽器（localStorage），學生、測試帳號分開存。
+-->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caprasimo&family=Figtree:wght@400;600;700&display=swap">
+<style>
+:root{
+  --color-bg:#f5ead8;--color-text:#201e1d;--color-accent:#c67139;
+  --color-neutral-100:#f9f4ed;--color-neutral-200:#eee7db;--color-neutral-300:#dcd3c4;--color-neutral-400:#c0b6a5;--color-neutral-500:#a19786;--color-neutral-600:#82796a;--color-neutral-700:#645c50;--color-neutral-800:#474238;
+  --color-accent-100:#fff2eb;--color-accent-200:#ffe1d0;--color-accent-300:#ffc6a5;--color-accent-400:#f6a06b;--color-accent-500:#d67f48;--color-accent-600:#b2622d;--color-accent-700:#8c491a;--color-accent-800:#643312;
+  --color-accent-2-100:#f0fae1;--color-accent-2-200:#e1eecc;--color-accent-2-300:#ccdbb2;--color-accent-2-400:#aebf92;--color-accent-2-500:#8fa073;--color-accent-2-600:#728157;--color-accent-2-700:#56633f;--color-accent-2-800:#3d472b;--color-accent-2-900:#272e1b;
+  --font-heading:"Caprasimo",system-ui,sans-serif;--font-body:"Figtree",system-ui,sans-serif;
+  --shadow-sm:0 1px 2px rgba(46,43,37,.14);--shadow-md:0 3px 10px rgba(46,43,37,.16);--shadow-lg:0 12px 32px rgba(46,43,37,.22);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body)}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible{outline:2px solid var(--color-accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--font-heading);font-weight:400;margin:0}
+.hd{font-family:var(--font-heading)}
+/* 遊戲舞台 */
+.gameWrap{height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;touch-action:none}
+.scaler{flex:none;width:1000px;height:780px;transform-origin:center center}
+.stage{position:relative;width:1000px;height:780px;display:flex;flex-direction:column;align-items:center;gap:12px;padding:18px 24px 20px}
+.topbar{width:100%;max-width:960px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.row{display:flex;align-items:center}
+.dot{width:26px;height:26px;border-radius:50%;border:3px solid var(--color-accent-2-500)}
+.roundBtn{border:0;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-md)}
+.qbar{display:flex;align-items:center;gap:18px;padding:10px 28px;border-radius:44px;background:var(--color-neutral-100);border:4px solid var(--color-neutral-700);box-shadow:var(--shadow-md)}
+.big{font-size:60px;font-weight:800;line-height:1}
+.box{width:88px;height:88px;border-radius:24px;background:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-heading);font-size:64px;line-height:1}
+.box img{width:70px;height:70px;object-fit:contain}
+.label{padding:4px 12px;border-radius:999px;background:var(--color-neutral-200);font-size:18px;font-weight:700}
+.tile{position:relative;border-radius:24px;border:4px solid;display:flex;align-items:center;justify-content:center;transition:opacity .3s,box-shadow .25s,border-color .2s}
+.tile img,.floor img{object-fit:contain;pointer-events:none}
+.tile.hover,.floor.hover{border-color:var(--color-accent)!important;box-shadow:0 0 0 8px var(--color-accent-200)!important}
+.tag{width:46px;height:46px;border-radius:50%;background:var(--color-accent-2-100);border:3px solid var(--color-accent-2-500);display:flex;align-items:center;justify-content:center;font-family:var(--font-heading);font-size:26px;line-height:1;color:var(--color-accent-2-800);transition:opacity .3s}
+.floor{position:relative;display:flex;align-items:center;gap:10px;padding:0 8px;border-radius:14px;border:3px solid;transition:opacity .3s,box-shadow .25s,border-color .2s}
+.mark{position:absolute;right:-12px;top:-12px;border-radius:50%;display:flex;align-items:center;justify-content:center;line-height:1}
+.floor .mark{top:50%;right:-14px;transform:translateY(-50%)}
+.mark.num{width:32px;height:32px;background:var(--color-accent);color:var(--color-bg);font-family:var(--font-heading);font-size:19px;box-shadow:var(--shadow-sm)}
+.mark.x{width:38px;height:38px;background:var(--color-neutral-800);color:#fff;font-size:21px;font-weight:700}
+.mark.ok{width:40px;height:40px;background:var(--color-accent-2-600);color:#fff;box-shadow:var(--shadow-sm)}
+.hand{position:absolute;color:oklch(0.58 0.21 27);filter:drop-shadow(0 3px 4px rgba(46,43,37,.25))}
+.opt{position:relative;width:140px;height:128px;border-radius:32px;background:var(--color-neutral-100);border:5px solid;display:flex;align-items:center;justify-content:center;font-family:var(--font-heading);font-size:84px;line-height:1;transition:opacity .3s,box-shadow .25s}
+.token{width:120px;height:120px;border-radius:50%;border:4px dashed var(--color-accent-400);background:var(--color-accent-100);display:flex;align-items:center;justify-content:center;font-size:72px;line-height:1;cursor:grab;touch-action:none}
+.ghost{position:fixed;z-index:70;pointer-events:none;transform:translate(-50%,-50%);font-size:80px;line-height:1;filter:drop-shadow(0 8px 10px rgba(46,43,37,.3))}
+.bigX{position:fixed;inset:0;z-index:60;pointer-events:none;display:flex;align-items:center;justify-content:center;background:rgba(245,234,216,.35)}
+.bigX div{position:absolute;left:50%;top:50%;width:66vmin;height:9vmin;border-radius:999px;background:var(--color-neutral-600);opacity:.85}
+@keyframes shake{0%,100%{transform:translateX(0)}15%{transform:translateX(-12px)}30%{transform:translateX(12px)}45%{transform:translateX(-9px)}60%{transform:translateX(9px)}75%{transform:translateX(-5px)}90%{transform:translateX(5px)}}
+@keyframes bigshake{0%,100%{transform:translateX(0)}12%{transform:translateX(-26px)}25%{transform:translateX(26px)}37%{transform:translateX(-20px)}50%{transform:translateX(20px)}62%{transform:translateX(-12px)}75%{transform:translateX(12px)}87%{transform:translateX(-6px)}}
+.shake{animation:shake .5s}
+.bigshake{animation:bigshake .5s}
+/* 提示紀錄、帳號切換（右下角） */
+.teach{position:fixed;right:10px;bottom:10px;z-index:60;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.ppCard{width:368px;padding:12px 14px 14px;border-radius:24px;background:var(--color-neutral-100);box-shadow:var(--shadow-lg);border:2px solid var(--color-neutral-300);display:flex;flex-direction:column;gap:10px;touch-action:manipulation}
+.ppAmts{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.ppAmt{min-height:58px;border-radius:18px;border:2px solid var(--color-neutral-300);background:var(--color-bg);color:var(--color-text);display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ppAmt b{font-family:var(--font-heading);font-weight:400;font-size:22px;line-height:1.1}
+.ppAmt span{font-size:13px;font-weight:700}
+.pill{min-height:40px;padding:0 14px;border-radius:999px;border:2px solid var(--color-neutral-300);background:var(--color-bg);color:var(--color-text);font-size:14px;font-weight:600}
+.on{background:var(--color-accent)!important;border-color:var(--color-accent-700)!important;color:#fff!important}
+.whoBar{display:flex;flex-direction:column;align-items:stretch;gap:6px;padding:6px;border-radius:24px;background:var(--color-neutral-100);box-shadow:var(--shadow-sm);opacity:.95}
+.whoBar .pill{min-height:38px;font-weight:700}
+.testBadge{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:60;pointer-events:none;padding:6px 16px;border-radius:999px;background:var(--color-accent-2-200);color:var(--color-accent-2-900);font-size:14px;font-weight:700}
+/* 獎勵 */
+.reward{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:32px}
+.pic{width:min(640px,90vw);height:min(440px,60vh);border-radius:48px;overflow:hidden;box-shadow:var(--shadow-lg);border:6px solid var(--color-accent-2-300);background:var(--color-neutral-100)}
+.pic img{display:block;width:100%;height:100%;object-fit:cover}
+/* 老師專區 */
+.teacher{min-height:100vh;padding:32px 24px;display:flex;justify-content:center}
+.tWrap{width:100%;max-width:880px;display:flex;flex-direction:column;gap:24px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));gap:20px}
+.card{background:var(--color-neutral-100);border-radius:28px;padding:22px 24px;display:flex;flex-direction:column;gap:16px;box-shadow:var(--shadow-sm)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:10px 18px;border-radius:999px;border:2px solid var(--color-neutral-300);background:transparent;color:var(--color-text);font-size:15px;font-weight:600}
+.chip.on{border-color:var(--color-accent)!important;color:var(--color-bg)!important}
+.gtitle{font-weight:600;font-size:16px;margin-bottom:8px}
+.note{font-size:13px;color:var(--color-neutral-700);margin-top:8px;text-wrap:pretty}
+.stepBtn{width:44px;height:44px;border-radius:50%;border:2px solid var(--color-neutral-300);background:transparent;font-size:22px;color:var(--color-text)}
+.track{flex:none;width:56px;height:32px;border-radius:999px;position:relative;transition:background .2s}
+.knob{position:absolute;top:4px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:var(--shadow-sm);transition:left .2s}
+.upload{flex:none;white-space:nowrap;padding:10px 18px;border-radius:999px;background:var(--color-accent-2-600);color:#fff;font-size:15px;font-weight:600;cursor:pointer}
+.del{position:absolute;right:-8px;top:-8px;width:32px;height:32px;border-radius:50%;border:0;background:var(--color-neutral-700);color:#fff;font-size:18px;line-height:1}
+.stat{background:var(--color-bg);border-radius:20px;padding:14px 18px}
+.table{min-width:760px;display:flex;flex-direction:column}
+.tr{display:grid;grid-template-columns:1.1fr 1fr 1fr .6fr .7fr .9fr .8fr .8fr 1.4fr;gap:8px;padding:9px 4px;font-size:14px;border-bottom:1px solid var(--color-neutral-200)}
+.tr.th{font-size:13px;font-weight:700;color:var(--color-neutral-700);border-bottom:2px solid var(--color-neutral-300);padding:8px 4px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ═════════════ 1. 常數與資料 ═════════════ */
+const CN = ['零','一','二','三','四','五','六','七','八','九','十'];
+const K = '#2b2622';
+const svgURI = inner => 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">' + inner + '</svg>');
+const eyes = y => `<circle cx="39" cy="${y}" r="5.5" fill="${K}"/><circle cx="61" cy="${y}" r="5.5" fill="${K}"/>`;
+// 內建的簡單動物圖示（名字會用在語音）
+const SIMPLE = [
+  ['小貓', `<polygon points="16,46 22,8 48,30" fill="#E8954A"/><polygon points="84,46 78,8 52,30" fill="#E8954A"/><circle cx="50" cy="60" r="34" fill="#E8954A"/>${eyes(55)}<polygon points="45,66 55,66 50,72" fill="#9C4A22"/>`],
+  ['小狗', `<circle cx="50" cy="56" r="34" fill="#C99A6B"/><ellipse cx="18" cy="56" rx="11" ry="25" fill="#7A5136"/><ellipse cx="82" cy="56" rx="11" ry="25" fill="#7A5136"/>${eyes(52)}<ellipse cx="50" cy="68" rx="8" ry="6" fill="${K}"/>`],
+  ['兔子', `<ellipse cx="37" cy="24" rx="10" ry="24" fill="#C9BFBB"/><ellipse cx="63" cy="24" rx="10" ry="24" fill="#C9BFBB"/><ellipse cx="37" cy="26" rx="4.5" ry="15" fill="#F2AFC0"/><ellipse cx="63" cy="26" rx="4.5" ry="15" fill="#F2AFC0"/><circle cx="50" cy="64" r="30" fill="#C9BFBB"/>${eyes(60)}<circle cx="50" cy="70" r="4" fill="#E07F98"/>`],
+  ['小熊', `<circle cx="24" cy="30" r="13" fill="#8A5A3B"/><circle cx="76" cy="30" r="13" fill="#8A5A3B"/><circle cx="50" cy="58" r="34" fill="#8A5A3B"/><ellipse cx="50" cy="70" rx="15" ry="11" fill="#D2A57C"/>${eyes(52)}<ellipse cx="50" cy="66" rx="5" ry="4" fill="${K}"/>`],
+  ['小豬', `<polygon points="20,42 24,12 46,28" fill="#EC8FA6"/><polygon points="80,42 76,12 54,28" fill="#EC8FA6"/><circle cx="50" cy="58" r="34" fill="#F7B3C2"/>${eyes(50)}<ellipse cx="50" cy="68" rx="15" ry="10" fill="#E8879F"/><circle cx="45" cy="68" r="2.8" fill="#9E4A60"/><circle cx="55" cy="68" r="2.8" fill="#9E4A60"/>`],
+  ['青蛙', `<circle cx="30" cy="36" r="15" fill="#5DB04B"/><circle cx="70" cy="36" r="15" fill="#5DB04B"/><ellipse cx="50" cy="62" rx="40" ry="28" fill="#5DB04B"/><circle cx="30" cy="36" r="9" fill="#fff"/><circle cx="70" cy="36" r="9" fill="#fff"/><circle cx="30" cy="37" r="5" fill="${K}"/><circle cx="70" cy="37" r="5" fill="${K}"/><path d="M30 66 Q50 80 70 66" stroke="#2F6B26" stroke-width="4" fill="none" stroke-linecap="round"/>`],
+  ['老鼠', `<circle cx="22" cy="32" r="19" fill="#9AA0A6"/><circle cx="78" cy="32" r="19" fill="#9AA0A6"/><circle cx="22" cy="32" r="11" fill="#F2AFC0"/><circle cx="78" cy="32" r="11" fill="#F2AFC0"/><circle cx="50" cy="60" r="30" fill="#9AA0A6"/>${eyes(56)}<circle cx="50" cy="68" r="4.5" fill="#E07F98"/>`],
+  ['小雞', `<circle cx="42" cy="22" r="7" fill="#E5533D"/><circle cx="50" cy="17" r="8" fill="#E5533D"/><circle cx="58" cy="22" r="7" fill="#E5533D"/><circle cx="50" cy="58" r="34" fill="#F6CF3D"/>${eyes(52)}<polygon points="42,62 58,62 50,74" fill="#EE8A2B"/>`],
+  ['獅子', `<circle cx="50" cy="54" r="45" fill="#C9772C"/><circle cx="50" cy="56" r="30" fill="#F2B544"/>${eyes(52)}<polygon points="45,62 55,62 50,68" fill="#7A3E14"/>`],
+  ['熊貓', `<circle cx="24" cy="30" r="13" fill="${K}"/><circle cx="76" cy="30" r="13" fill="${K}"/><circle cx="50" cy="58" r="33" fill="#fff" stroke="${K}" stroke-width="3"/><ellipse cx="38" cy="55" rx="9" ry="11" fill="${K}"/><ellipse cx="62" cy="55" rx="9" ry="11" fill="${K}"/><circle cx="39" cy="53" r="3" fill="#fff"/><circle cx="61" cy="53" r="3" fill="#fff"/><ellipse cx="50" cy="69" rx="5" ry="3.5" fill="${K}"/>`]
+].map(([name, inner], i) => ({ id: 's' + i, name, src: svgURI(inner) }));
+
+// 方向與情境：startLeft = 從畫面左邊（或下面、前面）開始數
+const DIRS = {
+  L: { word: '從左邊數', label: '排隊・從左邊數', scene: 'row', startLeft: true, rot: 0 },
+  R: { word: '從右邊數', label: '排隊・從右邊數', scene: 'row', startLeft: false, rot: 180 },
+  F: { word: '從前面數', label: '買冰淇淋・從前面數', scene: 'queue', startLeft: true, rot: 0 },
+  B: { word: '從後面數', label: '買冰淇淋・從後面數', scene: 'queue', startLeft: false, rot: 180 },
+  D: { word: '從下面數', label: '大樓・從下面數', scene: 'building', startLeft: true, rot: -90 },
+  U: { word: '從上面數', label: '大樓・從上面數', scene: 'building', startLeft: false, rot: 90 }
+};
+const DKEYS = ['L', 'R', 'F', 'B', 'D', 'U'];
+const TYPES = { find: '找第幾隻（點動物）', which: '是第幾隻（選數字）' };
+const TSHORT = { find: '找第幾隻', which: '是第幾隻' };
+const TAG_OP = [1, 0.28, 0];
+const TAG_NAME = ['顯示', '淡淡的', '隱藏'];
+const DEFAULTS = { animalSet: 'simple', len: 6, count: 6, types: { find: true, which: false }, dirs: { L: true, R: false, F: false, B: false, D: false, U: false }, order: 'group', mode: 'tap', tagLevel: 0, autoFade: true, countWord: 'plain', countBtn: true, autoSpeak: true, prompt: true, wrongFx: 'soft', wrongSound: 'soft', rewardMode: 'tangram', puzzleN: 6, puzzleHint: true, tanLevel: 'lines', tanCount: 5 };
+const LS_S = 'xushu.settings.v1', LS_R = 'xushu.records.v1', LS_RW = 'fenhe.rewards.v1', LS_A = 'xushu.animals.v1';
+const VOICE_RATE = 0.8;
+
+// 老師提示紀錄：提示量（0–4）與提示方式（可複選）
+const PP_AM = [['獨立', '自己完成'], ['輕度', '一句話提醒'], ['中度', '重複提醒＋指示'], ['高度', '不斷複誦＋指示'], ['全協助', '手把手帶做']];
+const PP_ME = [['point', '手勢提示'], ['say', '口語提示'], ['visual', '視覺提示'], ['model', '示範'], ['hand', '肢體協助']];
+const PP_MN = Object.fromEntries(PP_ME);
+const ppText = r => r.pl == null ? '—' : PP_AM[r.pl][0] + (r.pm && r.pm.length ? '・' + r.pm.map(k => PP_MN[k]).join('、') : '');
+
+// 圖示（Lucide）
+const IC = {
+  speaker: s => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>`,
+  hand: `<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-4 0v1"/><path d="M14 10V4a2 2 0 0 0-4 0v2"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>`,
+  gear: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg>`,
+  check: s => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`,
+  arrowR: s => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`,
+  flag: `<svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 22V3"/><path d="M5 3h12l-3 4 3 4H5"/></svg>`,
+  chev: r => `<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(${r}deg)"><path d="m9 6 6 6-6 6"/></svg>`,
+  again: `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>`
+};
+
+/* ═════════════ 2. 狀態與儲存 ═════════════ */
+const load = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } };
+const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } };
+const sv = load(LS_S, {});
+const S = {
+  view: 'game',
+  settings: { ...DEFAULTS, ...sv, types: { ...DEFAULTS.types, ...(sv.types || {}) }, dirs: { ...DEFAULTS.dirs, ...(sv.dirs || {}) } },
+  testMode: localStorage.getItem(LS_R + '.who') === 'test',
+  records: [], rw: { custom: [], off: [], ...load(LS_RW, {}) }, animals: load(LS_A, []),
+  questions: [], q: 0, cur: null, lock: false, fx: null, ca: null, streak: 0,
+  confirmClear: false, rewardSrc: '', rewardNote: '', animalNote: '', ppT: null, puzzleKey: 0
+};
+const recKey = () => LS_R + (S.testMode ? '.test' : '');
+S.records = load(recKey(), []);
+function set(patch) { Object.assign(S, patch); render(); }
+function setS(patch) { S.settings = { ...S.settings, ...patch }; save(LS_S, S.settings); render(); }
+function saveRecords() { save(recKey(), S.records); }
+
+let timers = [];
+const later = (fn, ms) => { const t = setTimeout(fn, ms); timers.push(t); return t; };
+function clearTimers() { timers.forEach(clearTimeout); timers = []; S.ca = null; S.fx = null; S.lock = false; }
+const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rnd(0, i); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+function shrinkImage(file, max = 900, type = 'image/jpeg') {
+  return new Promise((res, rej) => {
+    const fr = new FileReader(); fr.onerror = rej;
+    fr.onload = () => { const im = new Image(); im.onerror = rej; im.onload = () => {
+      const s = Math.min(1, max / Math.max(im.width, im.height)), w = Math.round(im.width * s), h = Math.round(im.height * s);
+      const cv = document.createElement('canvas'); cv.width = w; cv.height = h; const g = cv.getContext('2d');
+      if (type === 'image/jpeg') { g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); } g.drawImage(im, 0, 0, w, h); res(cv.toDataURL(type, 0.82));
+    }; im.src = fr.result; };
+    fr.readAsDataURL(file);
+  });
+}
+
+/* ═════════════ 3. 語音與音效 ═════════════ */
+function speak(text) {
+  if (!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'zh-TW'; u.rate = VOICE_RATE;
+  const vs = speechSynthesis.getVoices();
+  const v = vs.find(v => /zh[-_]TW/i.test(v.lang)) || vs.find(v => /^zh/i.test(v.lang));
+  if (v) u.voice = v;
+  speechSynthesis.speak(u);
+}
+let AC = null;
+function playWrong(kind) {
+  try {
+    const C = window.AudioContext || window.webkitAudioContext; if (!C) return;
+    const ac = AC || (AC = new C()); if (ac.state === 'suspended') ac.resume();
+    const t = ac.currentTime;
+    if (kind === 'buzz') {
+      [[0, 0.22], [0.27, 0.42]].forEach(([d, len]) => ['square', 'sawtooth'].forEach((type, j) => {
+        const o = ac.createOscillator(), g = ac.createGain();
+        o.type = type; o.frequency.setValueAtTime(j ? 175 : 140, t + d); o.frequency.linearRampToValueAtTime(j ? 150 : 115, t + d + len);
+        g.gain.setValueAtTime(0.0001, t + d); g.gain.exponentialRampToValueAtTime(0.16, t + d + 0.015); g.gain.setValueAtTime(0.16, t + d + len - 0.05); g.gain.exponentialRampToValueAtTime(0.0001, t + d + len);
+        o.connect(g).connect(ac.destination); o.start(t + d); o.stop(t + d + len + 0.02);
+      }));
+      return;
+    }
+    [[330, 0], [247, 0.16]].forEach(([f, d]) => {
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t + d); g.gain.exponentialRampToValueAtTime(0.18, t + d + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t + d + 0.28);
+      o.connect(g).connect(ac.destination); o.start(t + d); o.stop(t + d + 0.3);
+    });
+  } catch (e) {}
+}
+
+/* ═════════════ 4. 出題 ═════════════ */
+const idxOf = (q, pos) => DIRS[q.dir].startLeft ? pos - 1 : q.len - pos;   // 第 pos 隻在畫面上的位置
+const posOf = (q, i) => DIRS[q.dir].startLeft ? i + 1 : q.len - i;
+const qText = q => q.type === 'find' ? `${DIRS[q.dir].word}，第${CN[q.pos]}隻是誰？` : `${DIRS[q.dir].word}，${q.animals[idxOf(q, q.pos)].name}排在第${'幾'}隻？`;
+const okText = q => { const a = q.animals[idxOf(q, q.pos)].name; return q.type === 'find' ? `第${CN[q.pos]}隻是${a}` : `${a}排在第${CN[q.pos]}隻`; };
+
+function pickAnimals(len) {
+  const custom = S.settings.animalSet === 'custom' ? S.animals.filter(a => a.src) : [];
+  return shuffle([...shuffle(custom), ...shuffle(SIMPLE)].slice(0, len));
+}
+function genQuestions() {
+  const s = S.settings;
+  const types = Object.keys(TYPES).filter(k => s.types[k]); if (!types.length) types.push('find');
+  const dirs = DKEYS.filter(k => s.dirs[k]); if (!dirs.length) dirs.push('L');
+  const combos = []; types.forEach(t => dirs.forEach(d => combos.push([t, d])));
+  const len = Math.max(3, Math.min(10, s.len));
+  const qs = []; let prev = -1, prevC = -1;
+  for (let i = 0; i < s.count; i++) {
+    let ci;
+    if (s.order === 'mix') { let k = 0; do { ci = rnd(0, combos.length - 1); k++; } while (ci === prevC && combos.length > 1 && k < 6); }
+    else ci = Math.floor(i * combos.length / s.count);
+    prevC = ci;
+    const [type, dir] = combos[ci];
+    let pos, k = 0; do { pos = rnd(1, len); k++; } while (pos === prev && k < 10); prev = pos;
+    const q = { type, dir, len, pos, animals: pickAnimals(len) };
+    q.mode = s.mode === 'alt' ? (i % 2 ? 'drag' : 'tap') : s.mode;
+    if (type === 'which') {   // 選項：答案＋鏡像位置（數錯方向）＋鄰近數字
+      const mirror = len + 1 - pos, pool = [];
+      if (mirror !== pos) pool.push(mirror);
+      shuffle([pos - 1, pos + 1, pos - 2, pos + 2]).forEach(v => { if (v >= 1 && v <= len && v !== pos && !pool.includes(v)) pool.push(v); });
+      q.opts = shuffle([pos, ...pool.slice(0, 2)]);
+    }
+    qs.push(q);
+  }
+  return qs;
+}
+const build = qd => ({ ...qd, wrong: [], errors: 0, mirror: 0, prompted: false, counted: false, done: false });
+
+/* ═════════════ 5. 作答流程 ═════════════ */
+function newRound() {
+  clearTimers();
+  const questions = genQuestions();
+  set({ questions, q: 0, cur: build(questions[0]), ppT: null });
+  onQuestionStart(questions[0]);
+}
+function onQuestionStart(q) { if (S.view === 'game' && S.settings.autoSpeak) later(() => speak(qText(q)), 700); }
+function goNext() {
+  clearTimers();
+  S.ppT = null;
+  if (S.q + 1 >= S.questions.length) {
+    const mode = rewardMode();
+    set({ view: 'reward', rewardSrc: pickReward(), puzzleKey: S.puzzleKey + 1 });
+    if (mode === 'picture') speak('完成了！'); else if (mode === 'tangram') speak('看右邊，拼一樣的');
+    return;
+  }
+  set({ q: S.q + 1, cur: build(S.questions[S.q + 1]) });
+  onQuestionStart(S.cur);
+}
+// 數一數：從起點逐一唱數到答案
+function countAlong(done) {
+  const cur = S.cur, n = cur.pos, ord = S.settings.countWord === 'ord';
+  let j = 0;
+  set({ ca: { n: 0 }, lock: true });
+  const tick = () => {
+    j++; set({ ca: { n: j } }); speak((ord ? '第' : '') + CN[j]);
+    if (j < n) later(tick, 800);
+    else later(() => { speak(cur.type === 'find' ? `第${CN[n]}隻` : okText(cur)); later(() => { S.ca = null; done && done(); }, 1300); }, 700);
+  };
+  later(tick, 300);
+}
+const afterPrompt = () => { S.cur = { ...S.cur, prompted: true }; set({ lock: false }); };
+function onCountBtn() {
+  const cur = S.cur;
+  if (!cur || cur.done || S.lock || drag) return;
+  S.cur = { ...cur, counted: true };
+  countAlong(afterPrompt);
+}
+function answer(kind, key) {
+  const cur = S.cur;
+  if (!cur || cur.done || S.lock || cur.wrong.includes(key)) return;
+  const s = S.settings, ti = idxOf(cur, cur.pos);
+  const correct = kind === 'tile' ? key === ti : cur.opts[key] === cur.pos;
+  if (correct) {
+    S.cur = { ...cur, done: true, gift: cur.mode === 'drag' && kind === 'tile', sel: key };
+    speak(okText(cur));
+    const first = cur.errors === 0 && !cur.prompted && !cur.counted;
+    const t = Date.now();
+    const rec = { t, type: cur.type, dir: cur.dir, n: cur.pos, len: cur.len, errors: cur.errors, mirror: cur.mirror, prompted: cur.prompted, counted: cur.counted, tag: s.tagLevel, mode: cur.mode };
+    S.records = [rec, ...S.records].slice(0, 800); saveRecords();
+    let streak = first ? S.streak + 1 : 0, tagLevel = s.tagLevel;
+    if (s.autoFade) {   // 數字牌自動褪除
+      if (streak >= 3 && tagLevel < 2) { tagLevel++; streak = 0; }
+      else if (cur.errors >= 2 && tagLevel > 0) { tagLevel--; streak = 0; }
+    }
+    S.streak = streak; S.ppT = t; S.ppLast = load('tj.pp.last', null);   // 「同上題」用的是上一題的紀錄
+    if (tagLevel !== s.tagLevel) setS({ tagLevel }); else render();
+    return;
+  }
+  const isMirror = kind === 'tile' ? posOf(cur, key) === cur.len + 1 - cur.pos : cur.opts[key] === cur.len + 1 - cur.pos;
+  S.cur = { ...cur, errors: cur.errors + 1, mirror: cur.mirror + (isMirror ? 1 : 0), wrong: [...cur.wrong, key] };
+  S.lock = true;
+  if (s.wrongSound) playWrong(s.wrongSound);
+  let wait = 300;
+  if (s.wrongFx === 'strong') { S.fx = { big: true }; later(() => set({ fx: null }), 1100); wait = 1200; }
+  else if (s.wrongFx === 'soft') { S.fx = { key }; later(() => set({ fx: null }), 700); wait = 800; }
+  render();
+  later(() => { if (!s.prompt) { set({ lock: false }); return; } countAlong(afterPrompt); }, wait);
+}
+
+// 拖曳禮物（直接操作 DOM，避免拖曳中重畫）
+let drag = null;
+function dragStart(e) {
+  const cur = S.cur;
+  if (!cur || cur.done || S.lock) return;
+  e.preventDefault();
+  const g = document.createElement('div'); g.className = 'ghost'; g.textContent = '🎁';
+  g.style.left = e.clientX + 'px'; g.style.top = e.clientY + 'px'; g.style.fontSize = 80 * scale() + 'px';
+  document.body.appendChild(g);
+  const tok = document.querySelector('[data-token]'); if (tok) tok.style.opacity = 0.25;
+  drag = { g, over: null };
+}
+const tileAt = (x, y) => { const el = document.elementFromPoint(x, y); return el && el.closest ? el.closest('[data-tile]') : null; };
+window.addEventListener('pointermove', e => {
+  if (!drag) return;
+  drag.g.style.left = e.clientX + 'px'; drag.g.style.top = e.clientY + 'px';
+  const t = tileAt(e.clientX, e.clientY);
+  if (t !== drag.over) { if (drag.over) drag.over.classList.remove('hover'); if (t) t.classList.add('hover'); drag.over = t; }
+});
+const dragEnd = e => {
+  if (!drag) return;
+  const t = tileAt(e.clientX, e.clientY); drag.g.remove(); drag = null;
+  if (t) answer('tile', Number(t.dataset.tile)); else render();
+};
+window.addEventListener('pointerup', dragEnd); window.addEventListener('pointercancel', dragEnd);
+function nudgeToken() {
+  const tok = document.querySelector('[data-token]');
+  if (tok) { tok.classList.remove('shake'); void tok.offsetWidth; tok.classList.add('shake'); }
+  speak('把禮物拖過去');
+}
+
+/* ═════════════ 6. 遊戲畫面 ═════════════ */
+const scale = () => Math.min(window.innerWidth / 1000, window.innerHeight / 780);
+function gameHTML() {
+  const s = S.settings, cur = S.cur; if (!cur) return '';
+  const { ca, lock, fx } = S;
+  const D = DIRS[cur.dir], n = cur.len, ti = idxOf(cur, cur.pos);
+  const building = D.scene === 'building', queue = D.scene === 'queue';
+  const gap = 10, avail = 900 - (queue ? 124 : 0) - 100;
+  const tw = Math.floor(Math.min(96, (avail - gap * (n - 1)) / n));
+  const floorH = Math.floor(Math.min(64, 460 / n - 4)), tagSz = Math.min(44, floorH - 8), tagFs = Math.min(24, floorH - 20);
+  const tagOp = ca || cur.prompted || cur.done ? 1 : (TAG_OP[s.tagLevel] ?? 1);
+  const tapMode = cur.type === 'find' && cur.mode === 'tap';
+  const chevRot = building ? (D.startLeft ? -90 : 90) : (D.startLeft ? 0 : 180);
+
+  const steps = S.questions.map((_, i) => `<div class="dot" style="background:${i < S.q || (i === S.q && cur.done) ? 'var(--color-accent-2-500)' : 'transparent'};border-color:${i === S.q ? 'var(--color-accent)' : 'var(--color-accent-2-500)'}"></div>`).join('');
+
+  // 每隻動物的狀態
+  const T = cur.animals.map((a, i) => {
+    const pos = posOf(cur, i), wrong = cur.type === 'find' && cur.wrong.includes(i);
+    const isT = i === ti, ok = isT && cur.done;
+    const counted = ca && pos <= ca.n, current = ca && pos === ca.n;
+    const promptHere = isT && !cur.done && cur.prompted && !lock && cur.type === 'find';
+    const markWhich = cur.type === 'which' && isT;
+    const shaking = fx && !fx.big && cur.type === 'find' && fx.key === i;
+    return {
+      i, a, pos, ok, shaking, current, counted,
+      bg: ok ? 'var(--color-accent-2-100)' : counted ? 'var(--color-accent-100)' : '#fff',
+      border: ok ? 'var(--color-accent-2-600)' : current || promptHere || markWhich ? 'var(--color-accent)' : counted ? 'var(--color-accent-300)' : 'var(--color-neutral-300)',
+      glow: promptHere ? '0 0 0 8px var(--color-accent-200)' : ok ? '0 0 0 8px var(--color-accent-2-200)' : markWhich && !cur.done ? '0 0 0 6px var(--color-accent-100)' : 'var(--shadow-sm)',
+      op: wrong && !shaking ? 0.4 : cur.done && !isT ? 0.45 : 1,
+      x: wrong && s.wrongFx !== false, gift: ok && cur.gift,
+      cursor: tapMode && !cur.done ? 'pointer' : 'default'
+    };
+  });
+  const marks = t => (t.counted ? `<div class="mark num">${t.pos}</div>` : '') + (t.x ? '<div class="mark x">✕</div>' : '') + (t.ok ? `<div class="mark ok">${IC.check(24)}</div>` : '');
+
+  let scene;
+  if (!building) {
+    const rowTiles = T.map(t => `<div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+        <div class="tile${t.shaking ? ' shake' : ''}" data-tile="${t.i}" data-act="tile" data-arg="${t.i}" style="width:${tw}px;height:${tw + 10}px;background:${t.bg};border-color:${t.border};box-shadow:${t.glow};opacity:${t.op};cursor:${t.cursor}">
+          <img src="${t.a.src}" alt="" draggable="false" style="width:${Math.round(tw * 0.82)}px;height:${Math.round(tw * 0.82)}px">${marks(t)}
+          ${t.gift ? '<div style="position:absolute;left:-10px;bottom:-10px;font-size:34px;line-height:1">🎁</div>' : ''}
+          ${t.current ? '<div class="hand" style="left:50%;top:-96px;transform:translateX(-50%)"><svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v16"/><path d="m5 12 7 7 7-7"/></svg></div>' : ''}
+        </div>
+        <div class="tag" style="opacity:${tagOp}">${t.pos}</div>
+      </div>`).join('');
+    scene = `<div class="row" style="gap:10px">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        ${queue ? '<div style="width:104px;height:150px;border-radius:28px;background:var(--color-accent-100);border:4px solid var(--color-accent-500);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="font-size:58px;line-height:1">🍦</div><div style="width:70px;height:10px;border-radius:999px;background:repeating-linear-gradient(90deg,var(--color-accent-500) 0 10px,#fff 10px 20px)"></div></div>' : ''}
+        <div class="label">${queue ? '前面' : '左'}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+        <div style="width:${n * tw + (n - 1) * gap}px;height:34px;display:flex;flex-direction:${D.startLeft ? 'row' : 'row-reverse'};align-items:center;gap:6px;color:var(--color-accent-2-600)">
+          ${IC.flag}<div style="flex:1;height:6px;border-radius:999px;background:var(--color-accent-2-300)"></div>${IC.chev(chevRot)}
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:${gap}px">${rowTiles}</div>
+      </div>
+      <div class="label">${queue ? '後面' : '右'}</div>
+    </div>`;
+  } else {
+    const floors = T.map(t => `<div class="floor${t.shaking ? ' shake' : ''}" data-tile="${t.i}" data-act="tile" data-arg="${t.i}" style="height:${floorH}px;background:${t.bg};border-color:${t.border};box-shadow:${t.glow};opacity:${t.op};cursor:${t.cursor}">
+        <div class="tag" style="flex:none;width:${tagSz}px;height:${tagSz}px;font-size:${tagFs}px;opacity:${tagOp}">${t.pos}</div>
+        <div style="flex:1;display:flex;align-items:center;justify-content:center"><img src="${t.a.src}" alt="" draggable="false" style="width:${floorH - 10}px;height:${floorH - 10}px"></div>
+        ${t.gift ? `<div style="font-size:${tagFs}px;line-height:1">🎁</div>` : ''}${marks(t)}
+        ${t.current ? '<div class="hand" style="left:-90px;top:50%;transform:translateY(-50%)"><svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h16"/><path d="m12 5 7 7-7 7"/></svg></div>' : ''}
+      </div>`).join('');
+    scene = `<div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+      <div class="label" style="font-size:16px;padding:2px 12px">上</div>
+      <div style="display:flex;align-items:stretch;gap:10px">
+        <div style="display:flex;flex-direction:column;align-items:center">
+          <div style="width:300px;height:40px;background:var(--color-accent-500);clip-path:polygon(50% 0,100% 100%,0 100%)"></div>
+          <div style="width:280px;padding:6px;border-radius:0 0 18px 18px;background:var(--color-neutral-300);border:4px solid var(--color-neutral-700);border-top:0;display:flex;flex-direction:column-reverse;gap:4px">${floors}</div>
+        </div>
+        <div style="width:34px;display:flex;flex-direction:${D.startLeft ? 'column-reverse' : 'column'};align-items:center;gap:6px;color:var(--color-accent-2-600);padding:44px 0 6px">
+          ${IC.flag}<div style="flex:1;width:6px;border-radius:999px;background:var(--color-accent-2-300)"></div>${IC.chev(chevRot)}
+        </div>
+      </div>
+      <div class="label" style="font-size:16px;padding:2px 12px">下</div>
+    </div>`;
+  }
+
+  // 題目列
+  const ansBox = cur.done ? 'background:var(--color-accent-2-100);border:4px solid var(--color-accent-2-600)' : 'background:#fff;border:4px dashed var(--color-neutral-400)';
+  const ansSrc = cur.animals[ti].src;
+  const qbar = cur.type === 'find'
+    ? `<div class="big">第</div><div class="box" style="border:5px solid var(--color-accent)">${cur.pos}</div><div class="big">隻</div>
+       <div style="color:var(--color-neutral-400)">${IC.arrowR(34)}</div>
+       <div class="box" style="${ansBox};font-size:56px;color:var(--color-neutral-500)">${cur.done ? `<img src="${ansSrc}" alt="">` : '?'}</div>`
+    : `<div class="box" style="border:5px dashed var(--color-accent)"><img src="${ansSrc}" alt=""></div>
+       <div style="font-size:44px;font-weight:800;line-height:1">排在</div><div class="big">第</div>
+       <div class="box" style="${ansBox};color:${cur.done ? 'var(--color-text)' : 'var(--color-neutral-500)'}">${cur.done ? cur.pos : '?'}</div><div class="big">隻</div>`;
+
+  // 作答區：禮物 / 數字選項 / 下一題
+  let panel = '';
+  if (cur.type === 'find' && cur.mode === 'drag' && !cur.done)
+    panel += `<div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div class="token" data-token style="opacity:${lock ? 0.5 : 1}">🎁</div><div style="color:var(--color-neutral-500)"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg></div></div>`;
+  if (cur.type === 'which')
+    panel += (cur.opts || []).map((v, i) => {
+      const wrong = cur.wrong.includes(i), ok = cur.done && v === cur.pos;
+      const prompt = !cur.done && cur.prompted && !lock && v === cur.pos;
+      const shaking = fx && !fx.big && fx.key === i;
+      return `<div class="opt${shaking ? ' shake' : ''}" data-act="opt" data-arg="${i}" style="border-color:${ok ? 'var(--color-accent-2-600)' : prompt ? 'var(--color-accent)' : 'var(--color-neutral-300)'};box-shadow:${prompt ? '0 0 0 10px var(--color-accent-200), var(--shadow-md)' : ok ? '0 0 0 8px var(--color-accent-2-200)' : 'var(--shadow-sm)'};opacity:${wrong && !shaking ? 0.35 : cur.done && !ok ? 0.35 : lock ? 0.6 : 1};pointer-events:${wrong || cur.done || lock ? 'none' : 'auto'};cursor:pointer">${v}
+        ${wrong && s.wrongFx !== false ? '<div class="mark x" style="width:40px;height:40px;font-family:var(--font-body);font-size:22px">✕</div>' : ''}${ok ? `<div class="mark ok" style="width:44px;height:44px">${IC.check(26)}</div>` : ''}</div>`;
+    }).join('');
+  const next = cur.done ? `<div style="position:absolute;right:28px;bottom:24px;display:flex;align-items:center;gap:16px">
+      <button class="roundBtn" data-act="say" aria-label="再唸一次" style="width:76px;height:76px;background:var(--color-accent);color:var(--color-bg)">${IC.speaker(36)}</button>
+      <button class="roundBtn" data-act="next" aria-label="下一題" style="width:104px;height:104px;background:var(--color-accent-2-600);color:#fff;box-shadow:var(--shadow-lg)">${IC.arrowR(52)}</button>
+    </div>` : '';
+
+  return `<div class="gameWrap">
+  <div class="scaler" id="scaler" style="transform:scale(${scale()})">
+  <div class="stage${fx && fx.big ? ' bigshake' : ''}">
+    <div class="topbar">
+      <div class="row" style="gap:10px">${steps}
+        <div style="width:44px;height:44px;border-radius:50%;background:var(--color-accent-2-200);border:3px dashed var(--color-accent-2-500);margin-left:6px;position:relative"><div style="position:absolute;inset:10px;border-radius:50%;background:var(--color-accent-2-400)"></div></div>
+      </div>
+      <div class="row" style="gap:12px">
+        <button class="roundBtn" data-act="speakQ" aria-label="唸題目" style="width:64px;height:64px;background:var(--color-accent);color:var(--color-bg)">${IC.speaker(32)}</button>
+        ${s.countBtn !== false && !cur.done ? `<button data-act="count" aria-label="數一數" style="height:64px;padding:0 18px;border-radius:999px;border:3px solid var(--color-accent-2-500);background:var(--color-accent-2-100);color:var(--color-accent-2-800);display:flex;align-items:center;gap:8px;opacity:${lock ? 0.4 : 1}">${IC.hand}<div class="hd" style="font-size:22px;letter-spacing:2px">123</div></button>` : ''}
+        <div data-gear style="display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--color-neutral-500);cursor:pointer;padding:4px">${IC.gear}<div style="font-size:10px">長按</div></div>
+      </div>
+    </div>
+    <div class="qbar">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+        <div style="width:60px;height:60px;border-radius:50%;background:var(--color-accent-2-100);border:3px solid var(--color-accent-2-500);color:var(--color-accent-2-700);display:flex;align-items:center;justify-content:center">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(${D.rot}deg)"><circle cx="4" cy="12" r="2.5" fill="currentColor"/><path d="M7 12h13"/><path d="m15 7 5 5-5 5"/></svg>
+        </div>
+        <div style="font-size:14px;color:var(--color-neutral-700)">${D.word}</div>
+      </div>
+      ${qbar}
+    </div>
+    <div style="flex:1;min-height:0;width:100%;display:flex;flex-direction:${building ? 'row' : 'column'};align-items:center;justify-content:center;gap:${building ? 48 : 18}px">
+      ${scene}
+      <div style="display:flex;flex-direction:${building ? 'column' : 'row'};align-items:center;justify-content:center;gap:20px;min-height:150px;min-width:200px">${panel}${next}</div>
+    </div>
+  </div>
+  </div>
+</div>
+${fx && fx.big ? '<div class="bigX"><div style="transform:translate(-50%,-50%) rotate(45deg)"></div><div style="transform:translate(-50%,-50%) rotate(-45deg)"></div></div>' : ''}
+${teachHTML()}`;
+}
+
+/* ═════════════ 7. 提示紀錄與帳號（遊戲畫面右下角） ═════════════ */
+let ppOn = localStorage.getItem('tj.pp.on') !== '0';
+function setPP(patch) {
+  S.records = S.records.map(r => r.t === S.ppT ? { ...r, ...patch } : r); saveRecords();
+  const rec = S.records.find(r => r.t === S.ppT);
+  if (rec) save('tj.pp.last', { pl: rec.pl, pm: rec.pm || [] });
+  render();
+}
+function setUser(test) {
+  S.testMode = test;
+  try { localStorage.setItem(LS_R + '.who', test ? 'test' : 'student'); } catch (e) {}
+  S.records = load(recKey(), []); S.confirmClear = false;
+  newRound();
+}
+function teachHTML() {
+  const rec = S.ppT != null ? S.records.find(r => r.t === S.ppT) : null, pm = (rec && rec.pm) || [];
+  const last = S.ppLast, hasLast = last && last.pl != null;
+  const card = rec && ppOn ? `<div class="ppCard">
+      <div class="row" style="justify-content:space-between;gap:8px">
+        <div class="hd" style="font-size:17px">這題給了多少提示？</div>
+        <button data-act="ppClose" aria-label="略過" style="width:36px;height:36px;border-radius:50%;border:2px solid var(--color-neutral-300);background:transparent;color:var(--color-neutral-700);font-size:18px;line-height:1">×</button>
+      </div>
+      <div class="ppAmts">${PP_AM.map(([l], i) => `<button class="ppAmt${rec.pl === i ? ' on' : ''}" data-act="ppAmt" data-arg="${i}"><b>${i}</b><span>${l}</span></button>`).join('')}</div>
+      <div style="font-size:13px;color:var(--color-neutral-700);margin-top:-4px">${rec.pl != null ? PP_AM[rec.pl][1] : '點一下選擇（可略過）'}</div>
+      <div class="chips" style="gap:6px">${PP_ME.map(([k, l]) => `<button class="pill${pm.includes(k) ? ' on' : ''}" data-act="ppMeth" data-arg="${k}">${l}</button>`).join('')}</div>
+      ${hasLast ? `<button data-act="ppSame" class="pill" style="border:2px dashed var(--color-accent-2-600);background:var(--color-accent-2-100);color:var(--color-accent-2-900);font-weight:700">同上題：${ppText(last)}</button>` : ''}
+    </div>` : '';
+  return `${S.testMode ? '<div class="testBadge">測試帳號</div>' : ''}
+  <div class="teach">${card}
+    <div class="whoBar">
+      <button class="pill${!S.testMode ? ' on' : ''}" data-act="who" data-arg="0">學生</button>
+      <button class="pill${S.testMode ? ' on' : ''}" data-act="who" data-arg="1">測試</button>
+      <button class="pill${ppOn ? ' on' : ''}" data-act="ppToggle">提示紀錄：${ppOn ? '開' : '關'}</button>
+    </div>
+  </div>`;
+}
+
+/* ═════════════ 8. 獎勵：七巧板、拼圖、圖片 ═════════════ */
+const rewardPool = () => S.rw.custom.map(c => ({ ...c, off: S.rw.off.includes(c.id) }));
+function pickReward() {
+  const pool = rewardPool().filter(r => !r.off);
+  if (!pool.length) return '';
+  const ch = pool.length > 1 ? pool.filter(r => r.src !== S.rewardSrc) : pool;
+  return ch[Math.floor(Math.random() * ch.length)].src;
+}
+// 拼圖、看圖片需要先加入獎勵圖片；沒有圖片時改玩七巧板
+const rewardMode = () => { const m = S.settings.rewardMode || 'tangram'; return m !== 'tangram' && !rewardPool().some(r => !r.off) ? 'tangram' : m; };
+function saveRw(rw) { if (save(LS_RW, rw)) set({ rw, rewardNote: '' }); else set({ rewardNote: '儲存空間已滿，請先刪除幾張圖片。' }); }
+function rewardHTML() {
+  const mode = rewardMode();
+  const dots = S.questions.map(() => '<div class="dot" style="background:var(--color-accent-2-500)"></div>').join('');
+  return `<div class="reward" data-screen-label="獎勵">
+    <div class="row" style="gap:10px">${dots}</div>
+    ${mode === 'picture' ? `<div class="pic">${S.rewardSrc ? `<img src="${S.rewardSrc}" alt="">` : ''}</div>` : '<div id="rewardHost"></div>'}
+    <h1 id="doneTitle" style="font-size:56px;color:var(--color-accent-700);display:${mode === 'picture' ? 'block' : 'none'}">完成了！</h1>
+    <button class="roundBtn" data-act="again" aria-label="再玩一次" style="width:88px;height:88px;background:var(--color-accent);color:var(--color-bg)">${IC.again}</button>
+  </div>`;
+}
+function mountReward() {
+  const host = document.getElementById('rewardHost'); if (!host) return;
+  const s = S.settings, onDone = () => { speak('完成了！'); const t = document.getElementById('doneTitle'); if (t) t.style.display = 'block'; };
+  if (rewardMode() === 'tangram') mountTangram(host, { figure: S.puzzleKey, level: s.tanLevel, count: s.tanCount, onDone });
+  else mountJigsaw(host, { src: S.rewardSrc, n: s.puzzleN, hint: s.puzzleHint !== false, onDone });
+}
+
+// 七巧板圖案：t = 片的種類（L 大三角、M 中三角、S 小三角、Q 正方形、P 平行四邊形），p = 頂點（單位格）
+const TANGRAM_FIGURES = [
+  { name: '房子', pieces: [
+    { t: 'L', p: [[0, 2], [2, 0], [2, 2]] }, { t: 'L', p: [[2, 0], [4, 2], [2, 2]] },
+    { t: 'Q', p: [[1, 2], [2, 2], [2, 3], [1, 3]] }, { t: 'M', p: [[3, 2], [3, 4], [2, 3]] },
+    { t: 'S', p: [[2, 2], [3, 2], [2, 3]] }, { t: 'P', p: [[1, 3], [2, 3], [3, 4], [2, 4]] },
+    { t: 'S', p: [[1, 3], [1, 4], [2, 4]] } ] },
+  { name: '帆船', pieces: [
+    { t: 'L', p: [[0, 2], [2, 0], [2, 2]] }, { t: 'L', p: [[0, 2], [2, 2], [2, 4]] },
+    { t: 'M', p: [[2, 2], [2, 4], [3, 3]] },
+    { t: 'S', p: [[0, 4], [1, 4], [1, 5]] }, { t: 'Q', p: [[1, 4], [2, 4], [2, 5], [1, 5]] },
+    { t: 'S', p: [[2, 4], [3, 4], [2, 5]] }, { t: 'P', p: [[2, 5], [3, 4], [4, 4], [3, 5]] } ] },
+  { name: '火箭', pieces: [
+    { t: 'M', p: [[0, 1], [2, 1], [1, 0]] },
+    { t: 'L', p: [[0, 1], [2, 1], [0, 3]] }, { t: 'L', p: [[2, 1], [2, 3], [0, 3]] },
+    { t: 'S', p: [[0, 2], [0, 3], [-1, 3]] }, { t: 'S', p: [[2, 2], [2, 3], [3, 3]] },
+    { t: 'Q', p: [[0.5, 3], [1.5, 3], [1.5, 4], [0.5, 4]] },
+    { t: 'P', p: [[0.5, 4], [1.5, 5], [1.5, 6], [0.5, 5]] } ] },
+  { name: '大方塊', pieces: [
+    { t: 'L', p: [[2, 0], [4, 2], [2, 2]] }, { t: 'L', p: [[2, 0], [2, 2], [0, 2]] },
+    { t: 'M', p: [[3, 3], [2, 4], [1, 3]] }, { t: 'S', p: [[4, 2], [3, 3], [3, 2]] },
+    { t: 'Q', p: [[3, 2], [3, 3], [2, 3], [2, 2]] }, { t: 'S', p: [[2, 2], [2, 3], [1, 2]] },
+    { t: 'P', p: [[0, 2], [1, 2], [2, 3], [1, 3]] } ] },
+  { name: '箭頭', pieces: [
+    { t: 'L', p: [[2, 0], [2, 2], [4, 2]] }, { t: 'L', p: [[2, 2], [4, 2], [2, 4]] },
+    { t: 'Q', p: [[0, 1], [1, 1], [1, 2], [0, 2]] }, { t: 'M', p: [[2, 1], [2, 3], [1, 2]] },
+    { t: 'S', p: [[1, 1], [2, 1], [1, 2]] }, { t: 'P', p: [[0, 2], [1, 2], [2, 3], [1, 3]] },
+    { t: 'S', p: [[0, 2], [0, 3], [1, 3]] } ] }
+];
+// level：'lines' 有每片的線、'outline' 只有外框、'rotate' 外框＋自己轉；count：要拼幾片（其餘先放好）
+function mountTangram(host, o) {
+  const NS = 'http://www.w3.org/2000/svg', CW = 1000, CH = 700, U = 72;
+  const BOARD = { x: 20, y: 16, w: 640, h: 380 }, TRAY = { x: 20, y: 412, w: 640, h: 272 }, MODEL = { x: 690, y: 16, w: 290, h: 668 };
+  const COL = { L: 'var(--color-accent-500)', M: 'var(--color-accent-2-500)', S: 'var(--color-accent-300)', Q: 'var(--color-accent-2-700)', P: 'var(--color-accent-700)' };
+  const AREA = { L: 4, M: 2, Q: 2, P: 2, S: 1 };
+  const fig = TANGRAM_FIGURES[Math.abs(o.figure | 0) % TANGRAM_FIGURES.length];
+  const level = ['lines', 'outline', 'rotate'].includes(o.level) ? o.level : 'lines', rotate = level === 'rotate';
+  const count = [3, 5, 7].includes(o.count) ? o.count : 5;
+  const cen = pts => [pts.reduce((s, p) => s + p[0], 0) / pts.length, pts.reduce((s, p) => s + p[1], 0) / pts.length];
+  const rot = (rel, k) => { const a = k * Math.PI / 4, c = Math.cos(a), s = Math.sin(a); return rel.map(([x, y]) => [x * c - y * s, x * s + y * c]); };
+  const same = (a, b) => a.length === b.length && a.every(p => b.some(q => Math.hypot(p[0] - q[0], p[1] - q[1]) < 4));
+  const ptsStr = (rel, x, y) => rel.map(([a, b]) => (a + x).toFixed(1) + ',' + (b + y).toFixed(1)).join(' ');
+  const layout = (scaleMax, box) => {
+    const all = fig.pieces.flatMap(p => p.p), xs = all.map(p => p[0]), ys = all.map(p => p[1]);
+    const mnx = Math.min(...xs), mny = Math.min(...ys), w = Math.max(...xs) - mnx, hh = Math.max(...ys) - mny;
+    const s = Math.min(scaleMax, box.w * 0.9 / w, box.h * 0.88 / hh);
+    const ox = box.x + (box.w - w * s) / 2 - mnx * s, oy = box.y + (box.h - hh * s) / 2 - mny * s;
+    return fig.pieces.map(pc => { const abs = pc.p.map(([x, y]) => [ox + x * s, oy + y * s]), c = cen(abs); return { t: pc.t, c, rel: abs.map(([x, y]) => [x - c[0], y - c[1]]) }; });
+  };
+  const el = (tag, attrs, style, text) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); Object.assign(e.style, style || {}); if (text) e.textContent = text; return e; };
+
+  const slots = layout(U, BOARD);
+  const order = shuffle(slots.map((_, i) => i)).sort((a, b) => AREA[slots[b].t] - AREA[slots[a].t]);
+  const free = new Set(order.slice(0, Math.min(count, slots.length)));
+  const movers = shuffle([...free]), cols = Math.min(4, movers.length), rows = Math.ceil(movers.length / cols);
+  const cw = TRAY.w / cols, chh = TRAY.h / rows;
+  const pieces = slots.map((sl, i) => {
+    if (!free.has(i)) return { id: i, t: sl.t, rel: sl.rel, x: sl.c[0], y: sl.c[1], locked: true, slot: i };
+    const k = movers.indexOf(i);
+    let rel = sl.rel;
+    if (rotate) { let tries = 0; do { rel = rot(sl.rel, 1 + Math.floor(Math.random() * 7)); tries++; } while (slots.some(q => q.t === sl.t && same(rel, q.rel)) && tries < 20); }
+    return { id: i, t: sl.t, rel, x: TRAY.x + cw * (k % cols + 0.5), y: TRAY.y + chh * (Math.floor(k / cols) + 0.5), locked: false, slot: -1 };
+  });
+
+  const svg = el('svg', { viewBox: `0 0 ${CW} ${CH}` }, { display: 'block', width: 'min(1000px, 94vw, calc((100vh - 190px) * 1.4286))', height: 'auto', touchAction: 'none', userSelect: 'none' });
+  const board = el('rect', { x: BOARD.x, y: BOARD.y, width: BOARD.w, height: BOARD.h, rx: 32 }, { fill: 'var(--color-neutral-100)', stroke: 'none', strokeWidth: 12, transition: 'stroke .4s' });
+  svg.append(board, el('rect', { x: TRAY.x + 2, y: TRAY.y + 2, width: TRAY.w - 4, height: TRAY.h - 4, rx: 32 }, { fill: 'none', stroke: 'var(--color-neutral-300)', strokeWidth: 3, strokeDasharray: '10 8' }));
+  if (rotate) svg.append(el('text', { x: BOARD.x + 28, y: BOARD.y + 40 }, { fill: 'var(--color-neutral-700)', fontSize: '22px', fontFamily: 'var(--font-body)' }, '點一下可以轉'));
+  svg.append(el('rect', { x: MODEL.x, y: MODEL.y, width: MODEL.w, height: MODEL.h, rx: 32 }, { fill: 'var(--color-neutral-100)' }));
+  svg.append(el('text', { x: MODEL.x + MODEL.w / 2, y: MODEL.y + 46, 'text-anchor': 'middle' }, { fill: 'var(--color-text)', fontSize: '30px', fontFamily: 'var(--font-heading)' }, fig.name));
+  layout(46, { x: MODEL.x + 10, y: MODEL.y + 70, w: MODEL.w - 20, h: MODEL.h - 90 }).forEach(m => svg.append(el('polygon', { points: ptsStr(m.rel, m.c[0], m.c[1]) }, { fill: COL[m.t], stroke: 'var(--color-neutral-100)', strokeWidth: 3, strokeLinejoin: 'round' })));
+  slots.forEach(sl => svg.append(el('polygon', { points: ptsStr(sl.rel, sl.c[0], sl.c[1]) }, { fill: 'var(--color-neutral-300)', stroke: 'var(--color-neutral-300)', strokeWidth: 2 })));
+  if (level === 'lines') slots.forEach(sl => svg.append(el('polygon', { points: ptsStr(sl.rel, sl.c[0], sl.c[1]) }, { fill: 'none', stroke: 'var(--color-neutral-600)', strokeWidth: 2.5, strokeDasharray: '8 6' })));
+  const gLocked = el('g', {}), gFree = el('g', {}); svg.append(gLocked, gFree);
+
+  const style = p => Object.assign(p.el.style, { fill: COL[p.t], stroke: p.locked ? 'var(--color-neutral-100)' : '#fff', strokeWidth: p.locked ? 3 : 4, strokeLinejoin: 'round', cursor: p.locked ? 'default' : 'grab', filter: p.locked ? 'none' : 'drop-shadow(0 6px 8px rgba(46,43,37,.25))' });
+  const draw = p => p.el.setAttribute('points', ptsStr(p.rel, p.x, p.y));
+  const local = e => { const r = svg.getBoundingClientRect(); return { x: (e.clientX - r.left) * CW / r.width, y: (e.clientY - r.top) * CH / r.height }; };
+  let drag = null, finished = false;
+  pieces.forEach(p => {
+    p.el = el('polygon', {}); draw(p); style(p); (p.locked ? gLocked : gFree).append(p.el);
+    p.el.addEventListener('pointerdown', e => {
+      if (p.locked || finished) return;
+      e.preventDefault(); try { p.el.setPointerCapture(e.pointerId); } catch (_) {}
+      const q = local(e); gFree.append(p.el);   // 拿起來的片放最上層
+      drag = { p, dx: q.x - p.x, dy: q.y - p.y, sx: q.x, sy: q.y, moved: false };
+    });
+    p.el.addEventListener('pointermove', e => {
+      if (!drag || drag.p !== p) return;
+      const q = local(e); if (Math.hypot(q.x - drag.sx, q.y - drag.sy) > 8) drag.moved = true;
+      p.x = Math.max(10, Math.min(MODEL.x - 20, q.x - drag.dx)); p.y = Math.max(10, Math.min(CH - 10, q.y - drag.dy)); draw(p);
+    });
+    const up = () => {
+      if (!drag || drag.p !== p) return;
+      const moved = drag.moved; drag = null;
+      if (!moved && rotate) p.rel = rot(p.rel, 1);   // 點一下＝轉 45 度
+      const used = new Set(pieces.filter(x => x.locked).map(x => x.slot));
+      const j = slots.findIndex((sl, i) => !used.has(i) && sl.t === p.t && Math.hypot(sl.c[0] - p.x, sl.c[1] - p.y) < 46 && same(p.rel, sl.rel));
+      if (j >= 0) { Object.assign(p, { rel: slots[j].rel, x: slots[j].c[0], y: slots[j].c[1], locked: true, slot: j }); gLocked.append(p.el); style(p); }
+      draw(p);
+      if (!finished && pieces.every(x => x.locked)) { finished = true; board.style.stroke = 'var(--color-accent-2-300)'; setTimeout(() => o.onDone && o.onDone(), 500); }
+    };
+    p.el.addEventListener('pointerup', up); p.el.addEventListener('pointercancel', up);
+  });
+  host.append(svg);
+}
+// 拼圖：n = 4/6/8 片；hint = 顯示淡淡底圖
+function mountJigsaw(host, o) {
+  const GRID = { 4: [2, 2], 6: [3, 2], 8: [4, 2] }, CW = 1000, CH = 620, BW = 450, BH = 300, BX = 275, BY = 20, TY = 360;
+  const n = GRID[o.n] ? o.n : 6, [cols, rows] = GRID[n], pw = BW / cols, ph = BH / rows;
+  const div = (style, parent) => { const d = document.createElement('div'); Object.assign(d.style, style); if (parent) parent.append(d); return d; };
+  const wrap = div({ position: 'relative', width: 'min(1000px, 94vw, calc((100vh - 190px) * 1.6129))', aspectRatio: '1000 / 620', touchAction: 'none', userSelect: 'none' });
+  const inner = div({ position: 'absolute', left: 0, top: 0, width: CW + 'px', height: CH + 'px', transformOrigin: '0 0' }, wrap);
+  div({ position: 'absolute', left: '20px', top: TY - 14 + 'px', width: CW - 40 + 'px', height: CH - TY + 4 + 'px', borderRadius: '36px', border: '3px dashed var(--color-neutral-300)' }, inner);
+  const board = div({ position: 'absolute', left: BX - 14 + 'px', top: BY - 14 + 'px', width: BW + 28 + 'px', height: BH + 28 + 'px', borderRadius: '30px', background: 'var(--color-neutral-100)', boxShadow: 'var(--shadow-md)', transition: 'box-shadow .4s' }, inner);
+  const hint = o.hint ? div({ position: 'absolute', left: BX + 'px', top: BY + 'px', width: BW + 'px', height: BH + 'px', opacity: 0.22 }, inner) : null;
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) div({ position: 'absolute', left: BX + c * pw + 'px', top: BY + r * ph + 'px', width: pw + 'px', height: ph + 'px', border: '2px dashed var(--color-neutral-400)' }, inner);
+  const ids = []; for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) ids.push({ id: r * cols + c, c, r });
+  const gap = Math.max(8, (CW - 60 - n * pw) / Math.max(1, n - 1)), x0 = (CW - (n * pw + (n - 1) * gap)) / 2;
+  let z = 3, finished = false, sc = 1;
+  const pieces = shuffle(ids).map((p, k) => ({ ...p, x: x0 + k * (pw + gap), y: TY + (CH - TY - ph) / 2 + (Math.random() - 0.5) * 40, locked: false }));
+  const pos = p => { p.el.style.left = p.x + 'px'; p.el.style.top = p.y + 'px'; };
+  const local = e => { const r = wrap.getBoundingClientRect(); return { x: (e.clientX - r.left) / sc, y: (e.clientY - r.top) / sc }; };
+  pieces.forEach(p => {
+    p.el = div({ position: 'absolute', width: pw + 'px', height: ph + 'px', backgroundColor: '#e8dfd0', borderRadius: '14px', boxShadow: '0 0 0 3px #fff, 0 8px 18px rgba(46,43,37,.28)', zIndex: 2, cursor: 'grab', touchAction: 'none', transition: 'left .18s, top .18s, border-radius .25s' }, inner);
+    pos(p);
+    let d = null;
+    p.el.addEventListener('pointerdown', e => { if (p.locked || finished) return; e.preventDefault(); try { p.el.setPointerCapture(e.pointerId); } catch (_) {} const q = local(e); d = { dx: q.x - p.x, dy: q.y - p.y }; p.el.style.zIndex = ++z; p.el.style.transition = 'none'; });
+    p.el.addEventListener('pointermove', e => { if (!d) return; const q = local(e); p.x = Math.max(0, Math.min(CW - pw, q.x - d.dx)); p.y = Math.max(0, Math.min(CH - ph, q.y - d.dy)); pos(p); });
+    const up = () => {
+      if (!d) return; d = null; p.el.style.transition = 'left .18s, top .18s, border-radius .25s';
+      const tx = BX + p.c * pw, ty = BY + p.r * ph;
+      if (Math.hypot(p.x - tx, p.y - ty) < 55) { Object.assign(p, { x: tx, y: ty, locked: true }); Object.assign(p.el.style, { borderRadius: 0, boxShadow: 'none', zIndex: 1, cursor: 'default' }); }
+      pos(p);
+      if (!finished && pieces.every(x => x.locked)) { finished = true; board.style.boxShadow = '0 0 0 10px var(--color-accent-2-300), var(--shadow-lg)'; setTimeout(() => o.onDone && o.onDone(), 500); }
+    };
+    p.el.addEventListener('pointerup', up); p.el.addEventListener('pointercancel', up);
+  });
+  const im = new Image();
+  im.onload = () => {
+    const s = Math.max(BW / im.width, BH / im.height), w = im.width * s, hh = im.height * s, ox = (w - BW) / 2, oy = (hh - BH) / 2;
+    const bg = { backgroundImage: `url("${o.src}")`, backgroundSize: `${w}px ${hh}px`, backgroundRepeat: 'no-repeat' };
+    if (hint) Object.assign(hint.style, bg, { backgroundPosition: `${-ox}px ${-oy}px` });
+    pieces.forEach(p => Object.assign(p.el.style, bg, { backgroundPosition: `${-(p.c * pw + ox)}px ${-(p.r * ph + oy)}px` }));
+  };
+  im.src = o.src;
+  host.append(wrap);
+  const fit = () => { sc = wrap.offsetWidth / CW; inner.style.transform = `scale(${sc})`; };
+  fit(); window.addEventListener('resize', fit);
+}
+
+/* ═════════════ 9. 老師專區（長按齒輪 1 秒進入） ═════════════ */
+const chip = (label, on, act, attrs = '') => `<button class="chip${on ? ' on' : ''}" data-act="${act}" ${attrs}>${label}</button>`;
+const pick = (key, list) => list.map(([v, l]) => chip(l, S.settings[key] === v, 'set', `data-k="${key}" data-v="${v}"`)).join('');
+const group = (title, chips, note) => `<div><div class="gtitle">${title}</div><div class="chips">${chips}</div>${note ? `<div class="note">${note}</div>` : ''}</div>`;
+function teacherHTML() {
+  const s = S.settings, recs = S.records;
+  const first = r => r.errors === 0 && !r.prompted && !r.counted;
+  const pctOf = l => l.length ? Math.round(l.filter(first).length / l.length * 100) + '%' : '—';
+  const p2 = x => String(x).padStart(2, '0');
+  const fmt = t => { const d = new Date(t); return `${p2(d.getMonth() + 1)}/${p2(d.getDate())} ${p2(d.getHours())}:${p2(d.getMinutes())}`; };
+  const stepper = (label, hint, key, lo, hi) => `<div class="row" style="justify-content:space-between;gap:12px">
+      <div><div style="font-weight:600;font-size:16px">${label}</div><div style="font-size:13px;color:var(--color-neutral-700)">${hint}</div></div>
+      <div class="row" style="gap:10px"><button class="stepBtn" data-act="step" data-k="${key}" data-v="-1" data-lo="${lo}" data-hi="${hi}">−</button>
+      <div class="hd" style="min-width:36px;text-align:center;font-size:26px">${s[key]}</div>
+      <button class="stepBtn" data-act="step" data-k="${key}" data-v="1" data-lo="${lo}" data-hi="${hi}">+</button></div></div>`;
+  const toggle = (label, hint, key) => `<div class="row" data-act="toggle" data-k="${key}" style="justify-content:space-between;gap:12px;cursor:pointer;padding:4px 0">
+      <div><div style="font-weight:600;font-size:16px">${label}</div><div style="font-size:13px;color:var(--color-neutral-700)">${hint}</div></div>
+      <div class="track" style="background:${s[key] ? 'var(--color-accent-2-600)' : 'var(--color-neutral-300)'}"><div class="knob" style="left:${s[key] ? 28 : 4}px"></div></div></div>`;
+  const hasPics = rewardPool().some(r => !r.off);
+  const tLv = ['lines', 'outline', 'rotate'].includes(s.tanLevel) ? s.tanLevel : 'lines', tN = [3, 5, 7].includes(s.tanCount) ? s.tanCount : 5;
+  const perPos = Array.from({ length: 10 }, (_, k) => {
+    const n = k + 1, l = recs.filter(r => r.n === n), v = l.length ? l.filter(first).length / l.length : null;
+    const bg = v === null ? 'var(--color-bg)' : v >= 0.8 ? 'var(--color-accent-2-200)' : v >= 0.5 ? 'var(--color-neutral-200)' : 'var(--color-accent-200)';
+    return `<div style="border-radius:16px;background:${bg};padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:2px"><div class="hd" style="font-size:24px;line-height:1.1">${n}</div><div style="font-size:13px;font-weight:700">${v === null ? '—' : Math.round(v * 100) + '%'}</div><div style="font-size:11px;color:var(--color-neutral-700)">${l.length ? l.length + ' 題' : ''}</div></div>`;
+  }).join('');
+  const perGroup = [
+    ...DKEYS.filter(k => recs.some(r => r.dir === k)).map(k => [DIRS[k].word, pctOf(recs.filter(r => r.dir === k))]),
+    ...Object.keys(TYPES).filter(k => recs.some(r => r.type === k)).map(k => [TSHORT[k], pctOf(recs.filter(r => r.type === k))])
+  ].map(([l, p]) => `<div style="padding:8px 14px;border-radius:999px;background:var(--color-bg);font-size:14px">${l}：<b>${p}</b></div>`).join('');
+  const withPP = recs.filter(r => r.pl != null);
+  const stats = [
+    ['作答題數', recs.length],
+    ['一次答對（無錯、無數一數、無提示）', pctOf(recs)],
+    ['平均錯誤次數', recs.length ? (recs.reduce((x, r) => x + r.errors, 0) / recs.length).toFixed(1) : '—'],
+    ['數錯方向（選到另一頭的同位置）', recs.reduce((x, r) => x + (r.mirror || 0), 0) + ' 次'],
+    ['平均老師提示量（0–4）', withPP.length ? (withPP.reduce((x, r) => x + r.pl, 0) / withPP.length).toFixed(1) : '—']
+  ].map(([l, v]) => `<div class="stat"><div style="font-size:13px;color:var(--color-neutral-700)">${l}</div><div class="hd" style="font-size:30px">${v}</div></div>`).join('');
+  const rows = recs.slice(0, 40).map(r => `<div class="tr"><div>${fmt(r.t)}</div><div>${TSHORT[r.type]}${r.mode === 'drag' ? '・拖曳' : ''}</div><div>${DIRS[r.dir].word}</div><div>${r.n}／${r.len}</div><div>${r.errors}</div><div>${r.mirror ? r.mirror + ' 次' : '—'}</div><div>${[r.counted ? '數一數' : '', r.prompted && !r.counted ? '提示' : ''].filter(Boolean).join('、') || '—'}</div><div style="color:${first(r) ? 'var(--color-accent-2-700)' : 'var(--color-neutral-600)'};font-weight:700">${first(r) ? '是' : '否'}</div><div style="font-size:13px">${ppText(r)}</div></div>`).join('');
+
+  return `<div class="teacher" data-screen-label="教師設定"><div class="tWrap">
+    <div class="row" style="justify-content:space-between;gap:16px;flex-wrap:wrap">
+      <div><h1 style="font-size:38px;margin-bottom:4px">教師設定</h1><div style="color:var(--color-neutral-700);font-size:15px">10 以內的序數：第幾隻</div></div>
+      <button data-act="start" class="hd" style="font-size:20px;padding:14px 28px;border-radius:999px;border:0;background:var(--color-accent);color:var(--color-bg);box-shadow:var(--shadow-md)">套用並開始</button>
+    </div>
+    <div class="grid2">
+      <div class="card"><h3 style="font-size:22px">題目</h3>
+        ${stepper('排隊動物數', '一排有幾隻（3–10）', 'len', 3, 10)}
+        ${stepper('每回合題數', '完成後玩獎勵', 'count', 1, 12)}
+        ${group('題型', Object.keys(TYPES).map(k => chip(TYPES[k], s.types[k], 'type', `data-k="${k}"`)).join(''), '建議先只開「找第幾隻」，熟練後再加「是第幾隻」。')}
+        ${group('情境與方向（可複選）', DKEYS.map(k => chip(DIRS[k].label, s.dirs[k], 'dir', `data-k="${k}"`)).join(''), '建議順序：從左邊數 → 從右邊數 → 前面／後面 → 大樓。')}
+        ${group('出題順序', pick('order', [['group', '同方向一組'], ['mix', '混合']]))}
+        ${group('作答方式', pick('mode', [['tap', '點選'], ['drag', '拖曳禮物'], ['alt', '輪流']]), '點選：直接點動物。拖曳：要把下方的禮物拖到動物身上。「是第幾隻」固定點選數字。')}
+      </div>
+      <div class="card"><h3 style="font-size:22px">提示與回饋</h3>
+        ${group(`數字牌（目前：${TAG_NAME[s.tagLevel] ?? '顯示'}）`, pick('tagLevel', [[0, '顯示'], [1, '淡淡的'], [2, '隱藏']]), '動物腳下的 1、2、3…；數一數或答錯提示時一定會亮出來。')}
+        ${group('唱數用語', pick('countWord', [['plain', '一、二、三…'], ['ord', '第一、第二、第三…']]), '數完都會說「第○隻」。')}
+        ${toggle('數字牌自動褪除', '連續 3 題一次答對 → 變淡一級；一題錯 2 次 → 回到上一級', 'autoFade')}
+        ${toggle('顯示「數一數」按鈕', '按下後從起點逐一點數並唱數，停在答案', 'countBtn')}
+        ${toggle('自動唸題目', '出題時唸「從左邊數，第三隻是誰？」', 'autoSpeak')}
+        ${toggle('答錯後提示答案', '自動從起點數到答案，答案發亮', 'prompt')}
+        ${group('答錯視覺', pick('wrongFx', [[false, '關閉'], ['soft', '輕微：選項搖動＋小叉'], ['strong', '明顯：全畫面晃動＋大叉叉']]))}
+        ${group('答錯音效', pick('wrongSound', [[false, '關閉'], ['soft', '柔和：咚—咚'], ['buzz', '明顯：嗶—嗶—']]) + '<button class="chip" data-act="testSound" style="border-style:dashed;color:var(--color-neutral-700)">▶ 試聽</button>')}
+      </div>
+    </div>
+
+    <div class="card" style="gap:14px">
+      <div class="row" style="justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap">
+        <div><h3 style="font-size:22px;margin-bottom:4px">動物圖片</h3><div style="font-size:13px;color:var(--color-neutral-700);text-wrap:pretty">上傳的圖片不夠一排時，會用簡單圖示補上。名字會用在語音，例如「第三隻是小貓」。</div></div>
+        <label class="upload">＋ 上傳動物<input type="file" accept="image/*" multiple data-change="addAnimal" style="display:none"></label>
+      </div>
+      <div class="chips">${pick('animalSet', [['simple', '簡單圖示'], ['custom', '用我上傳的圖片']])}</div>
+      <div class="chips" style="gap:10px">${SIMPLE.map(a => `<div style="display:flex;flex-direction:column;align-items:center;gap:4px;width:64px"><div style="width:64px;height:64px;border-radius:16px;background:#fff;display:flex;align-items:center;justify-content:center"><img src="${a.src}" alt="" style="width:52px;height:52px"></div><div style="font-size:13px">${a.name}</div></div>`).join('')}</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px">${S.animals.map(a => `<div style="position:relative;display:flex;flex-direction:column;gap:6px">
+          <div style="aspect-ratio:1;border-radius:18px;background:#fff;border:3px solid var(--color-accent-2-500);display:flex;align-items:center;justify-content:center;overflow:hidden"><img src="${a.src}" alt="" style="width:86%;height:86%;object-fit:contain"></div>
+          <input value="${esc(a.name)}" data-change="animalName" data-id="${a.id}" placeholder="名字" style="width:100%;padding:8px 12px;border-radius:999px;border:2px solid var(--color-neutral-300);background:#fff;font-size:15px;font-family:var(--font-body);text-align:center">
+          <button class="del" data-act="delAnimal" data-arg="${a.id}" aria-label="刪除">×</button></div>`).join('')}</div>
+      ${S.animalNote ? `<div style="font-size:13px;color:var(--color-accent-800)">${S.animalNote}</div>` : ''}
+    </div>
+
+    <div class="card" style="gap:14px">
+      <div class="row" style="justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap">
+        <div><h3 style="font-size:22px;margin-bottom:4px">獎勵</h3><div style="font-size:13px;color:var(--color-neutral-700)">拼圖、看圖片需要先加入獎勵圖片；沒有圖片時會改玩七巧板。點圖片可停用／啟用。</div></div>
+        <label class="upload">＋ 加入圖片<input type="file" accept="image/*" multiple data-change="addReward" style="display:none"></label>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:20px">
+        ${group('獎勵方式', pick('rewardMode', [['tangram', '七巧板'], ['puzzle', '拼圖'], ['picture', '看圖片']]))}
+        ${group('七巧板難度', pick('tanLevel', [['lines', '有每片的線'], ['outline', '只有外框'], ['rotate', '外框＋自己轉']]))}
+        ${group('七巧板要拼幾片', pick('tanCount', [[3, '3 片'], [5, '5 片'], [7, '7 片']]))}
+        ${group('拼圖片數', pick('puzzleN', [[4, '4 片'], [6, '6 片'], [8, '8 片']]))}
+        ${group('拼圖底圖提示', pick('puzzleHint', [[true, '顯示淡淡底圖'], [false, '不顯示']]))}
+      </div>
+      ${!hasPics && s.rewardMode !== 'tangram' ? '<div style="font-size:13px;color:var(--color-accent-800)">目前沒有獎勵圖片，會先玩七巧板。</div>' : ''}
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px">${rewardPool().map(r => `<div style="position:relative">
+          <div data-act="toggleRw" data-arg="${r.id}" style="aspect-ratio:3/2;border-radius:18px;overflow:hidden;cursor:pointer;border:4px solid ${r.off ? 'var(--color-neutral-300)' : 'var(--color-accent-2-500)'};opacity:${r.off ? 0.3 : 1}"><img src="${r.src}" alt="" style="display:block;width:100%;height:100%;object-fit:cover"></div>
+          <button class="del" data-act="delRw" data-arg="${r.id}" aria-label="刪除">×</button></div>`).join('')}</div>
+      ${S.rewardNote ? `<div style="font-size:13px;color:var(--color-accent-800)">${S.rewardNote}</div>` : ''}
+    </div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap">
+        <div class="row" style="gap:12px;flex-wrap:wrap"><h3 style="font-size:22px">學習紀錄</h3>
+          <div class="row" style="gap:6px">${chip('學生', !S.testMode, 'who', 'data-arg="0" style="padding:6px 14px;font-size:13px"')}${chip('測試帳號', S.testMode, 'who', 'data-arg="1" style="padding:6px 14px;font-size:13px"')}</div>
+          ${S.testMode ? '<span style="font-size:13px;color:var(--color-accent-2-800)">測試紀錄另外存，不會混到學生紀錄</span>' : ''}
+        </div>
+        <button data-act="clear" style="padding:8px 16px;border-radius:999px;border:2px solid var(--color-neutral-300);background:transparent;color:var(--color-neutral-700);font-size:14px">${S.confirmClear ? '再按一次確認清除' : '清除紀錄'}</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">${stats}</div>
+      <div><div style="font-weight:600;font-size:15px;margin-bottom:8px">各位置（第幾隻）一次答對率</div><div style="display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:6px">${perPos}</div></div>
+      <div class="chips">${perGroup}</div>
+      <div style="overflow-x:auto"><div class="table">
+        <div class="tr th"><div>時間</div><div>題型</div><div>方向</div><div>第幾</div><div>錯誤</div><div>數錯方向</div><div>數一數／提示</div><div>一次答對</div><div>提示量／方式</div></div>
+        ${rows || '<div style="padding:18px 4px;color:var(--color-neutral-600);font-size:14px">尚無紀錄。</div>'}
+      </div></div>
+    </div>
+  </div></div>`;
+}
+
+/* ═════════════ 10. 事件與啟動 ═════════════ */
+const app = document.getElementById('app');
+function render() {
+  if (S.view === 'reward' && document.getElementById('rewardHost')) return;   // 獎勵進行中不重畫
+  app.innerHTML = S.view === 'game' ? gameHTML() : S.view === 'reward' ? rewardHTML() : teacherHTML();
+  if (S.view === 'reward') mountReward();
+}
+const parseV = v => v === 'true' ? true : v === 'false' ? false : /^-?\d+$/.test(v) ? +v : v;
+const ACT = {
+  tile: a => { const cur = S.cur, i = +a; if (cur.type === 'find' && cur.mode === 'tap') answer('tile', i); else if (cur.type === 'find' && cur.mode === 'drag' && !cur.done && !S.lock) nudgeToken(); },
+  opt: a => answer('opt', +a),
+  count: () => onCountBtn(),
+  speakQ: () => { if (!S.ca) speak(S.cur.done ? okText(S.cur) : qText(S.cur)); },
+  say: () => speak(okText(S.cur)),
+  next: () => goNext(),
+  again: () => { S.view = 'game'; app.innerHTML = ''; newRound(); },
+  start: () => { S.view = 'game'; S.streak = 0; newRound(); },
+  ppAmt: a => setPP({ pl: +a }),
+  ppMeth: k => { const rec = S.records.find(r => r.t === S.ppT), pm = (rec && rec.pm) || []; setPP({ pm: pm.includes(k) ? pm.filter(x => x !== k) : [...pm, k] }); },
+  ppSame: () => { const last = S.ppLast; if (last) setPP({ pl: last.pl, pm: last.pm || [] }); },
+  ppClose: () => set({ ppT: null }),
+  ppToggle: () => { ppOn = !ppOn; try { localStorage.setItem('tj.pp.on', ppOn ? '1' : '0'); } catch (e) {} set({ ppT: null }); },
+  who: a => { const t = a === '1'; if (t !== S.testMode) { if (S.view === 'game') setUser(t); else { S.testMode = t; try { localStorage.setItem(LS_R + '.who', t ? 'test' : 'student'); } catch (e) {} set({ records: load(recKey(), []), confirmClear: false }); } } },
+  set: (a, el) => setS({ [el.dataset.k]: parseV(el.dataset.v) }),
+  step: (a, el) => { const k = el.dataset.k; setS({ [k]: Math.max(+el.dataset.lo, Math.min(+el.dataset.hi, S.settings[k] + +el.dataset.v)) }); },
+  toggle: (a, el) => setS({ [el.dataset.k]: !S.settings[el.dataset.k] }),
+  type: (a, el) => setS({ types: { ...S.settings.types, [el.dataset.k]: !S.settings.types[el.dataset.k] } }),
+  dir: (a, el) => setS({ dirs: { ...S.settings.dirs, [el.dataset.k]: !S.settings.dirs[el.dataset.k] } }),
+  testSound: () => { if (S.settings.wrongSound) playWrong(S.settings.wrongSound); },
+  delAnimal: id => saveAnimals(S.animals.filter(x => x.id !== id)),
+  toggleRw: id => saveRw({ ...S.rw, off: S.rw.off.includes(id) ? S.rw.off.filter(x => x !== id) : [...S.rw.off, id] }),
+  delRw: id => saveRw({ custom: S.rw.custom.filter(c => c.id !== id), off: S.rw.off.filter(x => x !== id) }),
+  clear: () => {
+    if (!S.confirmClear) { set({ confirmClear: true }); setTimeout(() => set({ confirmClear: false }), 3000); return; }
+    S.records = []; try { localStorage.removeItem(recKey()); } catch (e) {} set({ confirmClear: false });
+  }
+};
+function saveAnimals(animals) { if (save(LS_A, animals)) set({ animals, animalNote: '' }); else set({ animalNote: '儲存空間已滿，請先刪除幾張圖片。' }); }
+const CHANGE = {
+  animalName: el => saveAnimals(S.animals.map(x => x.id === el.dataset.id ? { ...x, name: el.value } : x)),
+  addAnimal: async el => {
+    const files = [...(el.files || [])], added = [];
+    for (const f of files) { try { added.push({ id: 'a' + Date.now() + Math.random().toString(36).slice(2, 6), name: f.name.replace(/\.[^.]+$/, '').slice(0, 6), src: await shrinkImage(f, 320, 'image/png') }); } catch (_) {} }
+    if (added.length) { S.settings.animalSet = 'custom'; save(LS_S, S.settings); saveAnimals([...S.animals, ...added]); }
+  },
+  addReward: async el => {
+    const files = [...(el.files || [])], added = [];
+    for (const f of files) { try { added.push({ id: 'c' + Date.now() + Math.random().toString(36).slice(2, 6), src: await shrinkImage(f) }); } catch (_) {} }
+    if (added.length) saveRw({ ...S.rw, custom: [...S.rw.custom, ...added] });
+  }
+};
+app.addEventListener('click', e => { const el = e.target.closest('[data-act]'); if (el && ACT[el.dataset.act]) ACT[el.dataset.act](el.dataset.arg, el, e); });
+app.addEventListener('change', e => { const el = e.target.closest('[data-change]'); if (el && CHANGE[el.dataset.change]) CHANGE[el.dataset.change](el, e); });
+let gearT = null;
+app.addEventListener('pointerdown', e => {
+  if (e.target.closest('[data-gear]')) gearT = setTimeout(() => { clearTimers(); S.view = 'teacher'; render(); window.scrollTo(0, 0); }, 1000);
+  if (e.target.closest('[data-token]')) dragStart(e);
+});
+['pointerup', 'pointercancel'].forEach(t => window.addEventListener(t, () => clearTimeout(gearT)));
+window.addEventListener('resize', () => { const sc = document.getElementById('scaler'); if (sc) sc.style.transform = `scale(${scale()})`; });
+if (window.speechSynthesis) speechSynthesis.getVoices();
+newRound();
+</script>
+</body>
+</html>
+
+</body></html>
