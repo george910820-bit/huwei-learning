@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最後一名，也是勇敢的人・教學簡報</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@500;700;900&display=swap">
+<style>
+:root{--night:#1d2340;--deck:#272f57;--line:#3c4679;--paper:#fffaf0;--sun:#ffc83d;--ink:#2b2036}
+*{box-sizing:border-box}
+body{margin:0;background:var(--night);color:var(--paper);font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif}
+.app{max-width:1280px;margin:0 auto;padding:12px 16px 24px;display:flex;flex-direction:column;gap:12px}
+.view{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:16px;background:#000}
+.canvas{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0}
+.canvas section{position:absolute;inset:0;width:1920px;height:1080px;box-sizing:border-box;overflow:hidden;opacity:0;visibility:hidden;transition:opacity .35s}
+.canvas section.on{opacity:1;visibility:visible}
+.canvas h1,.canvas h2,.canvas h3,.canvas p,.canvas ul,.canvas ol{margin:0}
+.canvas ul,.canvas ol{padding-left:1.3em}
+.canvas a{color:inherit}
+.canvas aside{display:none}
+.ctrls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{font:inherit;font-family:'Huninn','Noto Sans TC',sans-serif;font-size:1.05rem;color:var(--ink);background:var(--paper);border:3px solid var(--ink);border-radius:14px;padding:8px 16px;cursor:pointer;box-shadow:0 4px 0 #0d1024}
+.btn:focus-visible{outline:4px solid #3fa9f5;outline-offset:3px}
+#num{font-family:'Huninn','Noto Sans TC',sans-serif;font-variant-numeric:tabular-nums;min-width:5em;text-align:center}
+.sp{flex:1}
+.notes{background:var(--deck);border:2px solid var(--line);border-radius:14px;padding:12px 16px;line-height:1.7;color:#e6e8f6}
+.notes b{color:var(--sun)}
+.view:fullscreen{border-radius:0;aspect-ratio:auto;width:100vw;height:100vh}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="view" id="view"><div class="canvas" id="canvas">
+<section id="cover" data-transition="fade" style="background:#1d2340;color:#fffaf0;font-family:'Noto Sans TC', 'Microsoft JhengHei', sans-serif;padding:128px;display:flex;flex-direction:column">
+<img src="img/cover.png" alt="片名《最後一名，也是勇敢的人》與阿樂、小安、阿凱三個卡通角色" style="position:absolute;left:0;top:0;width:1920px;height:1080px;object-fit:cover">
+<p style="position:absolute;left:64px;top:56px;width:640px;font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:32px;color:#2b2036;background:#fffaf0;padding:10px 28px;border-radius:999px;border:4px solid #2b2036">溝通小劇場｜三年級資源班</p>
+<aside>開場：直接念片名，請學生猜猜看「最後一名為什麼會是勇敢的人？」先不公布答案，看完影片再回來問一次。</aside>
+</section>
+
+<section id="goals" data-transition="fade" style="background:#fffaf0;color:#2b2036;font-family:'Noto Sans TC', 'Microsoft JhengHei', sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<h2 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:80px;font-weight:400;line-height:1.15">今天要學什麼？</h2>
+<div style="display:flex;gap:48px;flex:1">
+<div style="flex:1;display:flex;flex-direction:column;gap:24px;background:#ffffff;padding:56px;border:6px solid #2b2036;border-radius:40px;box-shadow:10px 12px 0 #2b2036">
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:40px;color:#fffaf0;background:#3f8fd8;width:72px;height:72px;border-radius:50%;text-align:center;line-height:1.8">1</p>
+<h3 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:56px;font-weight:400;line-height:1.3">輸了，心情不好<br>是正常的</h3>
+<p style="font-size:40px;line-height:1.5;color:#4a4560">會難過、會生氣，都沒關係。</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:24px;background:#ffffff;padding:56px;border:6px solid #2b2036;border-radius:40px;box-shadow:10px 12px 0 #2b2036">
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:40px;color:#fffaf0;background:#e8553f;width:72px;height:72px;border-radius:50%;text-align:center;line-height:1.8">2</p>
+<h3 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:56px;font-weight:400;line-height:1.3">學會<br>「勇敢四步驟」</h3>
+<p style="font-size:40px;line-height:1.5;color:#4a4560">讓自己好起來，也不讓別人難過。</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#8a8299">溝通小劇場｜最後一名，也是勇敢的人</p>
+<aside>念兩個目標，強調第一點：難過、生氣都可以，重點是接下來怎麼做。</aside>
+</section>
+
+<section id="warmup" data-transition="fade" style="background:#1d2340;color:#fffaf0;font-family:'Noto Sans TC', 'Microsoft JhengHei', sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:center;gap:64px">
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:40px;color:#ffc83d">想一想</p>
+<h1 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:120px;font-weight:400;line-height:1.15">你有沒有輸過？</h1>
+<div style="display:flex;gap:32px;flex-wrap:wrap">
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:44px;color:#2b2036;background:#fffaf0;padding:20px 40px;border-radius:999px">什麼時候輸了？</p>
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:44px;color:#2b2036;background:#fffaf0;padding:20px 40px;border-radius:999px">心情怎麼樣？</p>
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:44px;color:#2b2036;background:#fffaf0;padding:20px 40px;border-radius:999px">你做了什麼？</p>
+</div>
+<aside>每位學生說一個輸的經驗（比賽、遊戲、考試都可以）。只要聽和回應心情，先不要評論做得對不對。</aside>
+</section>
+
+<section id="watch" data-transition="fade" style="background:#fffaf0;color:#2b2036;font-family:'Noto Sans TC', 'Microsoft JhengHei', sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<h2 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:80px;font-weight:400;line-height:1.15">一起看影片</h2>
+<div style="display:flex;gap:64px;align-items:start">
+<img src="img/tryagain.png" alt="阿樂在跑道上咬牙往前跑" style="width:960px;height:540px;object-fit:cover;border-radius:28px;border:6px solid #2b2036">
+<div style="flex:1;display:flex;flex-direction:column;gap:28px">
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:44px;color:#e8553f">看的時候，注意：</p>
+<ol style="font-size:40px;line-height:1.5;color:#2b2036">
+<li>阿樂輸了，做了什麼？</li>
+<li>大家的心情怎麼樣？</li>
+<li>阿樂怎麼讓自己好起來？</li>
+</ol>
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:36px;background:#ffc83d;padding:16px 36px;border-radius:999px;align-self:flex-start;border:4px solid #2b2036"><a href="./#video" target="_top">打開影片</a></p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#8a8299">溝通小劇場｜最後一名，也是勇敢的人</p>
+<aside>先把三個問題念一次，再播影片（約 3 分鐘）。影片有分段，可以在「阿樂生氣了」那段結束時按暫停，先問學生：大家開心嗎？</aside>
+</section>
+
+<section id="angry" data-transition="fade" style="background:#fffaf0;color:#2b2036;font-family:'Noto Sans TC', 'Microsoft JhengHei', sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<h2 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:80px;font-weight:400;line-height:1.15">阿樂做了什麼？</h2>
+<div style="display:flex;gap:64px;align-items:start">
+<img src="img/angry.png" alt="阿樂頭上冒火，大喊不公平" style="width:960px;height:540px;object-fit:cover;border-radius:28px;border:6px solid #2b2036">
+<div style="flex:1;display:flex;flex-direction:column;gap:28px">
+<p style="font-size:40px;line-height:1.5;background:#ffe9e3;padding:24px 32px;border-radius:24px">用力跺腳，<br>頭上冒火。</p>
+<p style="font-size:40px;line-height:1.5;background:#ffe9e3;padding:24px 32px;border-radius:24px">把帽子<br>丟到地上。</p>
+<p style="font-size:40px;line-height:1.5;background:#ffe9e3;padding:24px 32px;border-radius:24px">大喊：「不公平！<br>我不玩了！」</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#8a8299">溝通小劇場｜最後一名，也是勇敢的人</p>
+<aside>請學生先自己說，再一張一張帶出來。可以請學生模仿阿樂的表情（不用真的丟東西）。</aside>
+</section>
+
+<section id="result" data-transition="fade" style="background:#fffaf0;color:#2b2036;font-family:'Noto Sans TC', 'Microsoft JhengHei', sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<h2 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:80px;font-weight:400;line-height:1.15">結果呢？</h2>
+<div style="display:flex;gap:64px">
+<div style="flex:1;display:flex;flex-direction:column;gap:24px">
+<img src="img/friends.png" alt="小安和阿凱嚇一跳，看著生氣的阿樂" style="width:800px;height:450px;object-fit:cover;border-radius:28px;border:6px solid #2b2036">
+<p style="font-size:40px;line-height:1.4">小安和阿凱嚇一跳，不開心。</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:24px">
+<img src="img/sad.png" alt="阿樂頭上有烏雲，哭了" style="width:800px;height:450px;object-fit:cover;border-radius:28px;border:6px solid #2b2036">
+<p style="font-size:40px;line-height:1.4">事情沒有變好，阿樂更難過了。</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#8a8299">溝通小劇場｜最後一名，也是勇敢的人</p>
+<aside>重點：亂發脾氣不會讓自己變贏，反而讓自己和朋友都更不舒服。問學生：如果你是小安，你還想跟阿樂玩嗎？</aside>
+</section>
+
+<section id="feelings" data-transition="fade" style="background:#fffaf0;color:#2b2036;font-family:'Noto Sans TC', 'Microsoft JhengHei', sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<h2 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:80px;font-weight:400;line-height:1.15">輸了的時候</h2>
+<div style="display:flex;gap:48px;flex:1">
+<div style="flex:1;display:flex;flex-direction:column;gap:28px;background:#dff5ea;padding:56px;border:6px solid #1f8a50;border-radius:40px">
+<h3 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:56px;font-weight:400;color:#14663b">可以有的心情</h3>
+<div style="display:flex;gap:28px">
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:64px;background:#ffffff;padding:16px 40px;border-radius:24px;border:4px solid #2b2036">難過</p>
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:64px;background:#ffffff;padding:16px 40px;border-radius:24px;border:4px solid #2b2036">生氣</p>
+</div>
+<p style="font-size:40px;line-height:1.5;color:#14663b">這是正常的，可以說出來。</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:28px;background:#ffe9e3;padding:56px;border:6px solid #c2412d;border-radius:40px">
+<h3 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:56px;font-weight:400;color:#a33322">不可以做的事</h3>
+<ul style="font-size:44px;line-height:1.55">
+<li>丟東西</li>
+<li>罵人、怪別人</li>
+<li>說「我不玩了」</li>
+</ul>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#8a8299">溝通小劇場｜最後一名，也是勇敢的人</p>
+<aside>把「心情」和「行為」分開：心情沒有對錯，行為才需要調整。可以請學生把自己的經驗分到左邊或右邊。</aside>
+</section>
+
+<section id="steps" data-transition="fade" style="background:#ffc83d;color:#2b2036;font-family:'Noto Sans TC', 'Microsoft JhengHei', sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:center;gap:72px">
+<h1 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:120px;font-weight:400;line-height:1.1">勇敢四步驟</h1>
+<div style="display:flex;gap:32px">
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#fffaf0;padding:40px;border:6px solid #2b2036;border-radius:36px;box-shadow:8px 10px 0 #2b2036">
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:40px;color:#fffaf0;background:#e8553f;width:72px;height:72px;border-radius:50%;text-align:center;line-height:1.8">1</p>
+<h3 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:64px;font-weight:400">停一停</h3>
+<p style="font-size:32px;line-height:1.4;color:#4a4560">雙手比「停」</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#fffaf0;padding:40px;border:6px solid #2b2036;border-radius:36px;box-shadow:8px 10px 0 #2b2036">
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:40px;color:#fffaf0;background:#2f86d6;width:72px;height:72px;border-radius:50%;text-align:center;line-height:1.8">2</p>
+<h3 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:64px;font-weight:400">吸口氣</h3>
+<p style="font-size:32px;line-height:1.4;color:#4a4560">手放肚子</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#fffaf0;padding:40px;border:6px solid #2b2036;border-radius:36px;box-shadow:8px 10px 0 #2b2036">
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:40px;color:#fffaf0;background:#d94f8c;width:72px;height:72px;border-radius:50%;text-align:center;line-height:1.8">3</p>
+<h3 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:64px;font-weight:400">說心情</h3>
+<p style="font-size:32px;line-height:1.4;color:#4a4560">手放胸口</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#fffaf0;padding:40px;border:6px solid #2b2036;border-radius:36px;box-shadow:8px 10px 0 #2b2036">
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:40px;color:#fffaf0;background:#1f9a6c;width:72px;height:72px;border-radius:50%;text-align:center;line-height:1.8">4</p>
+<h3 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:64px;font-weight:400">說好話</h3>
+<p style="font-size:32px;line-height:1.4;color:#4a4560">比讚</p>
+</div>
+</div>
+<aside>先整體看一次四個步驟和手勢，帶學生做一次手勢就好，接下來四張投影片再一步一步練。</aside>
+</section>
+
+<section id="step1" data-transition="fade" style="background:#fffaf0;color:#2b2036;font-family:'Noto Sans TC', 'Microsoft JhengHei', sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;gap:28px;align-items:center">
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:36px;color:#fffaf0;background:#e8553f;padding:10px 28px;border-radius:999px">第 1 步</p>
+<h2 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:80px;font-weight:400;line-height:1.15">停一停</h2>
+</div>
+<div style="display:flex;gap:64px;align-items:start">
+<img src="img/s1.png" alt="阿樂和阿凱雙手往前比停" style="width:960px;height:540px;object-fit:cover;border-radius:28px;border:6px solid #2b2036">
+<div style="flex:1;display:flex;flex-direction:column;gap:20px">
+<h3 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:44px;font-weight:400;color:#c2412d">手勢</h3>
+<p style="font-size:40px;line-height:1.5">雙手往前比「停」。</p>
+<h3 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:44px;font-weight:400;color:#c2412d">要做的事</h3>
+<p style="font-size:40px;line-height:1.5">先不要動，<br>不丟東西、不罵人。</p>
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:36px;background:#ffc83d;padding:14px 32px;border-radius:999px;align-self:flex-start;border:4px solid #2b2036">一起做做看！</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#8a8299">溝通小劇場｜勇敢四步驟</p>
+<aside>老師說「我輸了！」，學生馬上比「停」。可以玩幾次像「一二三木頭人」的反應遊戲，讓手勢變成習慣。</aside>
+</section>
+
+<section id="step2" data-transition="fade" style="background:#fffaf0;color:#2b2036;font-family:'Noto Sans TC', 'Microsoft JhengHei', sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;gap:28px;align-items:center">
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:36px;color:#fffaf0;background:#2f86d6;padding:10px 28px;border-radius:999px">第 2 步</p>
+<h2 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:80px;font-weight:400;line-height:1.15">吸口氣</h2>
+</div>
+<div style="display:flex;gap:64px;align-items:start">
+<img src="img/s2.png" alt="阿樂和阿凱手放肚子，閉眼慢慢吸氣" style="width:960px;height:540px;object-fit:cover;border-radius:28px;border:6px solid #2b2036">
+<div style="flex:1;display:flex;flex-direction:column;gap:20px">
+<h3 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:44px;font-weight:400;color:#1f6fb8">手勢</h3>
+<p style="font-size:40px;line-height:1.5">手放在肚子上。</p>
+<h3 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:44px;font-weight:400;color:#1f6fb8">要做的事</h3>
+<p style="font-size:40px;line-height:1.5">慢慢吸，肚子變大；<br>慢慢吐，肚子變小。<br>做三次。</p>
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:36px;background:#ffc83d;padding:14px 32px;border-radius:999px;align-self:flex-start;border:4px solid #2b2036">一起數：1、2、3</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#8a8299">溝通小劇場｜勇敢四步驟</p>
+<aside>老師慢慢數，吸氣數 1、2、3，吐氣數 1、2、3、4。讓學生把手放在肚子上，感覺肚子變大、變小。</aside>
+</section>
+
+<section id="step3" data-transition="fade" style="background:#fffaf0;color:#2b2036;font-family:'Noto Sans TC', 'Microsoft JhengHei', sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;gap:28px;align-items:center">
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:36px;color:#fffaf0;background:#d94f8c;padding:10px 28px;border-radius:999px">第 3 步</p>
+<h2 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:80px;font-weight:400;line-height:1.15">說心情</h2>
+</div>
+<div style="display:flex;gap:64px;align-items:start">
+<img src="img/s3.png" alt="阿樂手放胸口說出心情，旁邊有一顆藍色的心" style="width:960px;height:540px;object-fit:cover;border-radius:28px;border:6px solid #2b2036">
+<div style="flex:1;display:flex;flex-direction:column;gap:20px">
+<h3 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:44px;font-weight:400;color:#b8306f">手勢</h3>
+<p style="font-size:40px;line-height:1.5">手放在胸口。</p>
+<h3 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:44px;font-weight:400;color:#b8306f">要說的話</h3>
+<p style="font-size:40px;line-height:1.5;background:#ffe3ef;padding:20px 28px;border-radius:24px">「我很難過，<br>因為我輸了。」</p>
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:36px;background:#ffc83d;padding:14px 32px;border-radius:999px;align-self:flex-start;border:4px solid #2b2036">換你說說看！</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#8a8299">溝通小劇場｜勇敢四步驟</p>
+<aside>句型：「我很＿＿，因為＿＿。」心情可以換成生氣、失望。提醒：說心情是說自己的感覺，不是怪別人。</aside>
+</section>
+
+<section id="step4" data-transition="fade" style="background:#fffaf0;color:#2b2036;font-family:'Noto Sans TC', 'Microsoft JhengHei', sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;gap:28px;align-items:center">
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:36px;color:#fffaf0;background:#1f9a6c;padding:10px 28px;border-radius:999px">第 4 步</p>
+<h2 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:80px;font-weight:400;line-height:1.15">說好話</h2>
+</div>
+<div style="display:flex;gap:64px;align-items:start">
+<img src="img/s4.png" alt="阿樂和阿凱比讚" style="width:960px;height:540px;object-fit:cover;border-radius:28px;border:6px solid #2b2036">
+<div style="flex:1;display:flex;flex-direction:column;gap:20px">
+<h3 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:44px;font-weight:400;color:#14724f">對別人說</h3>
+<p style="font-size:40px;line-height:1.5;background:#dff5ea;padding:16px 28px;border-radius:24px">「恭喜你！」</p>
+<h3 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:44px;font-weight:400;color:#14724f">對自己說</h3>
+<p style="font-size:40px;line-height:1.5;background:#dff5ea;padding:16px 28px;border-radius:24px">「我有努力，<br>下次再加油！」</p>
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:36px;background:#ffc83d;padding:14px 32px;border-radius:999px;align-self:flex-start;border:4px solid #2b2036">比讚，說說看！</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#8a8299">溝通小劇場｜勇敢四步驟</p>
+<aside>兩兩一組練習：一個人扮演贏的人，另一個人比讚說「恭喜你！」，再對自己說「我有努力，下次再加油！」然後交換。</aside>
+</section>
+
+<section id="tryagain" data-transition="fade" style="background:#fffaf0;color:#2b2036;font-family:'Noto Sans TC', 'Microsoft JhengHei', sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<h2 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:80px;font-weight:400;line-height:1.15">阿樂再比一次</h2>
+<div style="display:flex;gap:64px">
+<div style="flex:1;display:flex;flex-direction:column;gap:24px">
+<img src="img/last.png" alt="阿樂跑到終點，是最後一名，眼睛水汪汪" style="width:800px;height:450px;object-fit:cover;border-radius:28px;border:6px solid #2b2036">
+<p style="font-size:40px;line-height:1.4">還是最後一名，<br>阿樂用勇敢四步驟。</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:24px">
+<img src="img/sticker.png" alt="林老師給阿樂勇敢貼紙，大家一起歡呼" style="width:800px;height:450px;object-fit:cover;border-radius:28px;border:6px solid #2b2036">
+<p style="font-size:40px;line-height:1.4">老師說：「跑到最後，<br>好勇敢！」</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#8a8299">溝通小劇場｜最後一名，也是勇敢的人</p>
+<aside>回到開場的問題：「最後一名為什麼也是勇敢的人？」引導出：他沒有放棄，跑到終點；輸了也用好方法面對。</aside>
+</section>
+
+<section id="game" data-transition="fade" style="background:#fffaf0;color:#2b2036;font-family:'Noto Sans TC', 'Microsoft JhengHei', sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<h2 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:80px;font-weight:400;line-height:1.15">玩遊戲輸了，也可以用</h2>
+<div style="display:flex;gap:64px;align-items:start">
+<img src="img/game.png" alt="下課玩翻牌遊戲，阿凱輸了，正在用勇敢四步驟" style="width:960px;height:540px;object-fit:cover;border-radius:28px;border:6px solid #2b2036">
+<div style="flex:1;display:flex;flex-direction:column;gap:28px">
+<p style="font-size:40px;line-height:1.5">下課玩遊戲，<br>這次是阿凱輸了。</p>
+<p style="font-size:40px;line-height:1.5">他也用勇敢四步驟，<br>最後笑著說：</p>
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:48px;line-height:1.4;background:#dff5ea;padding:24px 32px;border-radius:24px;border:4px solid #1f9a6c">「恭喜你！<br>我們再玩一次！」</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#8a8299">溝通小劇場｜最後一名，也是勇敢的人</p>
+<aside>讓學生知道勇敢四步驟不只用在賽跑：玩遊戲、比賽、抽籤沒抽到，都可以用。</aside>
+</section>
+
+<section id="practice" data-transition="fade" style="background:#f3ead8;color:#2b2036;font-family:'Noto Sans TC', 'Microsoft JhengHei', sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<h2 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:80px;font-weight:400;line-height:1.15">換你演演看</h2>
+<p style="font-size:40px;line-height:1.5;color:#4a4560">老師抽一張情境卡，你用勇敢四步驟演出來。</p>
+<div style="display:flex;gap:40px;flex:1">
+<div style="flex:1;display:flex;flex-direction:column;gap:24px;background:#fffaf0;padding:48px;border:6px solid #2b2036;border-radius:36px;box-shadow:8px 10px 0 #2b2036">
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:32px;color:#fffaf0;background:#e8553f;padding:8px 24px;border-radius:999px;align-self:flex-start">情境 1</p>
+<h3 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:52px;font-weight:400;line-height:1.3">畫畫比賽<br>沒有得獎</h3>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:24px;background:#fffaf0;padding:48px;border:6px solid #2b2036;border-radius:36px;box-shadow:8px 10px 0 #2b2036">
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:32px;color:#fffaf0;background:#2f86d6;padding:8px 24px;border-radius:999px;align-self:flex-start">情境 2</p>
+<h3 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:52px;font-weight:400;line-height:1.3">下棋<br>輸給同學</h3>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:24px;background:#fffaf0;padding:48px;border:6px solid #2b2036;border-radius:36px;box-shadow:8px 10px 0 #2b2036">
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:32px;color:#fffaf0;background:#1f9a6c;padding:8px 24px;border-radius:999px;align-self:flex-start">情境 3</p>
+<h3 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:52px;font-weight:400;line-height:1.3">跳繩比賽<br>最後一名</h3>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#8a8299">溝通小劇場｜最後一名，也是勇敢的人</p>
+<aside>3～4 人一組：一人演輸的人，其他人當觀眾，看他四個步驟有沒有都做到（手勢＋說的話）。也可以請學生用自己剛剛分享的經驗來演。</aside>
+</section>
+
+<section id="chant" data-transition="fade" style="background:#1d2340;color:#fffaf0;font-family:'Noto Sans TC', 'Microsoft JhengHei', sans-serif;padding:128px;display:flex;flex-direction:row;align-items:center;gap:72px">
+<div style="flex:1;display:flex;flex-direction:column;gap:20px">
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:40px;color:#ffc83d">一起念口訣</p>
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:76px;line-height:1.3">停一停，吸口氣，</p>
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:76px;line-height:1.3">說心情，說好話；</p>
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:76px;line-height:1.3;color:#ffc83d">最後一名也很棒，</p>
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:76px;line-height:1.3;color:#ffc83d">我有努力到最後！</p>
+</div>
+<img src="img/chant.png" alt="阿樂、小安、阿凱舉手歡呼" style="width:720px;height:405px;object-fit:cover;border-radius:28px;border:6px solid #fffaf0">
+<aside>邊念邊做手勢：停一停（比停）、吸口氣（手放肚子）、說心情（手放胸口）、說好話（比讚），最後兩句一起舉手。可以念三遍，一遍比一遍大聲。</aside>
+</section>
+
+<section id="quiz" data-transition="fade" style="background:#fffaf0;color:#2b2036;font-family:'Noto Sans TC', 'Microsoft JhengHei', sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<h2 style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:80px;font-weight:400;line-height:1.15">挑戰題時間</h2>
+<div style="display:flex;gap:48px;flex:1">
+<div style="flex:1;display:flex;flex-direction:column;gap:32px;background:#ffffff;padding:56px;border:6px solid #2b2036;border-radius:40px;box-shadow:10px 12px 0 #2b2036">
+<p style="font-size:44px;line-height:1.5">打開「勇敢四步驟挑戰題」，<br>回答 8 個問題。</p>
+<ol style="font-size:40px;line-height:1.6;color:#4a4560">
+<li>按喇叭，聽題目。</li>
+<li>答錯沒關係，可以再試一次。</li>
+<li>做完，把成績頁給老師看。</li>
+</ol>
+</div>
+<div style="width:520px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:32px;background:#ffc83d;padding:48px;border:6px solid #2b2036;border-radius:40px">
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:96px;line-height:1">8 題</p>
+<p style="font-family:'Huninn', 'Noto Sans TC', sans-serif;font-size:40px;background:#fffaf0;padding:16px 40px;border-radius:999px;border:4px solid #2b2036"><a href="./#quiz" target="_top">打開挑戰題</a></p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#8a8299">溝通小劇場｜最後一名，也是勇敢的人</p>
+<aside>成績頁會顯示每一題「一次就答對」或「試了幾次」，可以截圖當評量紀錄。答錯的題目可以按「再練習答錯的題」。</aside>
+</section>
+
+</div></div>
+<div class="ctrls"><button class="btn" id="prev">◀ 上一張</button><span id="num"></span><button class="btn" id="next">下一張 ▶</button><span class="sp"></span><button class="btn" id="nb" aria-pressed="false">老師備註</button><button class="btn" id="fs">全螢幕</button></div>
+<div class="notes" id="notes" hidden></div>
+</div>
+<script>
+const view=document.getElementById('view'),cv=document.getElementById('canvas'),S=[...cv.querySelectorAll('section')];
+let i=0;
+function fit(){const w=view.clientWidth,h=view.clientHeight,k=Math.min(w/1920,h/1080);cv.style.transform=`translate(${(w-1920*k)/2}px,${(h-1080*k)/2}px) scale(${k})`;}
+function show(n){i=Math.max(0,Math.min(S.length-1,n));S.forEach((s,k)=>s.classList.toggle('on',k===i));document.getElementById('num').textContent=`${i+1} / ${S.length}`;const a=S[i].querySelector('aside');document.getElementById('notes').innerHTML='<b>老師備註：</b>'+(a?a.textContent:'（無）');}
+document.getElementById('prev').onclick=()=>show(i-1);
+document.getElementById('next').onclick=()=>show(i+1);
+view.onclick=e=>{if(e.target.closest('a'))return;show(i+1)};
+document.getElementById('nb').onclick=e=>{const n=document.getElementById('notes');n.hidden=!n.hidden;e.target.setAttribute('aria-pressed',!n.hidden)};
+document.getElementById('fs').onclick=()=>{if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});else view.requestFullscreen&&view.requestFullscreen().catch(()=>{})};
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){e.preventDefault();show(i+1)}if(e.key==='ArrowLeft'||e.key==='PageUp')show(i-1)});
+addEventListener('resize',fit);document.addEventListener('fullscreenchange',fit);
+fit();show(0);
+</script>
+</body>
+</html>

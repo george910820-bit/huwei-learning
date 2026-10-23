@@ -13,6 +13,7 @@
   --zh:#d9653b; --zh-bg:#fbe7dc;
   --ma:#2f7d8c; --ma-bg:#dcf0f1;
   --ind:#7a5bb5; --ind-bg:#ece4f8;
+  --sp:#b04a7a; --sp-bg:#f8e1ec;
   --oth:#8a7a52; --oth-bg:#f1ead8;
   --done:#9a9486;
 }
@@ -48,6 +49,7 @@ header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;
 .card.done .band{filter:saturate(.4)}
 .s-國語{--c:var(--zh);--c-bg:var(--zh-bg)}
 .s-數學{--c:var(--ma);--c-bg:var(--ma-bg)}
+.s-特需{--c:var(--sp);--c-bg:var(--sp-bg)}
 .s-個別化{--c:var(--ind);--c-bg:var(--ind-bg)}
 .s-其他{--c:var(--oth);--c-bg:var(--oth-bg)}
 .msg{grid-column:1/-1;text-align:center;color:var(--soft);padding:48px 0;font-size:17px}
@@ -71,7 +73,7 @@ footer{margin-top:40px;color:var(--soft);font-size:13px;text-align:center}
 /* 遊戲清單從 games 資料夾自動產生：
    每個遊戲一個資料夾 games/<名稱>/，裡面放 index.html，可另放 info.json 寫名稱、科目等。
    有新資料夾，首頁就自動多一張卡片。 */
-const SUBJECTS=["國語","數學","個別化","其他"];
+const SUBJECTS=["國語","數學","特需","個別化","其他"];
 const $=s=>document.querySelector(s);
 let games=[], subject="全部";
 
@@ -124,7 +126,7 @@ function render(){
   if(!list.length){ grid.innerHTML='<div class="msg">找不到符合的遊戲。</div>'; return; }
   grid.innerHTML=list.map(g=>`<article class="card s-${g.subject}${g.status==="已完成"?" done":""}">
     <div class="band"><div class="tags"><span>${g.subject}</span>${g.grade?`<span>${esc(g.grade)}</span>`:""}<span class="st">${g.status}</span></div><h2>${esc(g.name)}</h2></div>
-    <div class="body">${g.desc?`<p>${esc(g.desc)}</p>`:""}<div class="foot">${g.updated?`<time>更新 ${esc(g.updated)}</time>`:"<span></span>"}<a class="play" href="games/${encodeURIComponent(g.id)}/">開始玩</a></div></div>
+    <div class="body">${g.desc?`<p>${esc(g.desc)}</p>`:""}<div class="foot">${g.updated?`<time>更新 ${esc(g.updated)}</time>`:"<span></span>"}<a class="play" href="games/${encodeURIComponent(g.id)}/">${g.subject==="特需"?"打開教材":"開始玩"}</a></div></div>
   </article>`).join("");
 }
 $("#q").addEventListener("input",render);

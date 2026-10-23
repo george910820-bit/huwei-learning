@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最後一名，也是勇敢的人</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@500;700;900&display=swap">
+<style>
+:root{--night:#1d2340;--deck:#272f57;--line:#3c4679;--paper:#fffaf0;--sun:#ffc83d;--coral:#ff6b57;--ink:#2b2036;--muted:#b5bce0}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--night);color:var(--paper);font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif;display:flex;flex-direction:column}
+header{padding:12px 16px 0;max-width:1320px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.home{color:var(--muted);text-decoration:none;font-size:.95rem}
+.home:hover{color:var(--paper)}
+.tag{font-family:'Huninn','Noto Sans TC',sans-serif;background:#a98be0;color:var(--ink);padding:3px 12px;border-radius:999px;font-size:.9rem}
+h1{margin:0;font-family:'Huninn','Noto Sans TC',sans-serif;font-weight:400;font-size:clamp(1.3rem,3vw,1.8rem)}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tab{font:inherit;font-family:'Huninn','Noto Sans TC',sans-serif;font-size:1.1rem;color:var(--paper);background:transparent;border:3px solid var(--line);border-bottom:0;border-radius:16px 16px 0 0;padding:9px 20px;cursor:pointer;display:flex;align-items:center;gap:8px}
+.tab span{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--line);font-size:.9rem}
+.tab[aria-selected="true"]{background:var(--paper);color:var(--ink);border-color:var(--paper)}
+.tab[aria-selected="true"] span{background:var(--coral);color:#fff}
+.tab:focus-visible{outline:4px solid #3fa9f5;outline-offset:2px}
+.open{margin-left:auto;align-self:center;color:var(--muted);font-size:.95rem}
+main{flex:1;display:flex;min-height:0;border-top:3px solid var(--paper)}
+iframe{flex:1;width:100%;border:0;min-height:calc(100vh - 120px);background:var(--night)}
+</style>
+</head>
+<body>
+<header>
+  <div class="top"><a class="home" href="../../">← 回遊戲大廳</a><span class="tag">特需・溝通技巧</span><h1>最後一名，也是勇敢的人</h1></div>
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="t-video" data-f="video.html" aria-selected="true"><span>1</span>動畫短片</button>
+    <button class="tab" role="tab" id="t-quiz" data-f="quiz.html" aria-selected="false"><span>2</span>挑戰題</button>
+    <button class="tab" role="tab" id="t-slides" data-f="slides.html" aria-selected="false"><span>3</span>教學簡報</button>
+    <a class="open" id="open" href="video.html" target="_blank" rel="noopener">在新分頁開啟</a>
+  </div>
+</header>
+<main><iframe id="frame" title="教材內容" src="video.html" allow="fullscreen; autoplay" allowfullscreen></iframe></main>
+<script>
+const tabs=[...document.querySelectorAll('.tab')],frame=document.getElementById('frame'),open=document.getElementById('open');
+function pick(name,push){
+  const t=tabs.find(x=>x.id==='t-'+name)||tabs[0];
+  tabs.forEach(x=>x.setAttribute('aria-selected',x===t));
+  if(!frame.src.endsWith(t.dataset.f)) frame.src=t.dataset.f;
+  open.href=t.dataset.f;
+  if(push) history.replaceState(null,'','#'+t.id.slice(2));
+}
+tabs.forEach(t=>t.onclick=()=>pick(t.id.slice(2),true));
+addEventListener('hashchange',()=>pick(location.hash.slice(1)));
+pick(location.hash.slice(1)||'video');
+</script>
+</body>
+</html>
