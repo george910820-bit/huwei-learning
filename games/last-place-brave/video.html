@@ -76,9 +76,9 @@ h1{margin:0;font-family:var(--f-round);font-weight:400;font-size:clamp(1.3rem,3.
 </head>
 <body>
 <div class="wrap">
-  <header><span class="tag">溝通小劇場</span><h1>最後一名，也是勇敢的人</h1></header>
+  <header><span class="tag">虎尾小劇場</span><h1>最後一名，也是勇敢的人</h1></header>
   <div class="stage" id="stage">
-    <svg id="svg" viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="阿樂、小安和阿凱的卡通短片"></svg>
+    <svg id="svg" viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="最後一名，也是勇敢的人卡通短片"></svg>
     <div class="sub" id="sub" aria-live="polite"><span class="who" id="subWho">旁白</span><span id="subText"></span></div>
     <button class="bigplay" id="bigplay"><i aria-hidden="true">▶</i><b>開始播放</b></button>
   </div>
@@ -138,7 +138,9 @@ const CH = {
   le:  { name: '阿樂', skin: '#ffd8b4', hair: '#5a3416', shirt: '#ff8a3d', pants: '#2f62d6', shoe: '#e8463c', style: 'spiky', cap: '#e63946', ph: 0, blink: .3 },
   an:  { name: '小安', skin: '#ffe2c8', hair: '#3b2240', shirt: '#ff6fa8', pants: '#7c5ce0', shoe: '#7c5ce0', style: 'pony', ph: 1.1, blink: 1.5 },
   kai: { name: '阿凱', skin: '#f3c9a1', hair: '#1f2230', shirt: '#2fbf8f', pants: '#4d5468', shoe: '#2a2f45', style: 'neat', glasses: true, ph: 2.2, blink: 2.4 },
-  t:   { name: '林老師', skin: '#f5cda6', hair: '#2a2a33', shirt: '#3b6fe0', pants: '#2c4fae', shoe: '#ffffff', style: 'short', adult: true, ph: .6, blink: .9 },
+  t:   { name: '林老師', skin: '#f5cda6', hair: '#2a2a33', shirt: '#3b6fe0', pants: '#2c4fae', shoe: '#ffffff', style: 'short', adult: true, coach: true, ph: .6, blink: .9 },
+  mom: { name: '媽媽', skin: '#ffdcc0', hair: '#4a2a20', shirt: '#9b7bff', pants: '#5b4bb0', shoe: '#3a2f5a', style: 'bun', adult: true, skirt: '#5b4bb0', ph: 1.7, blink: 2.0 },
+  dad: { name: '爸爸', skin: '#f0c39a', hair: '#26242e', shirt: '#4f8fd8', pants: '#3d4252', shoe: '#2a2f45', style: 'dad', adult: true, mustache: true, ph: .4, blink: 1.2 },
 };
 function P(id, o) {
   return Object.assign({ id, x: 640, y: 680, s: .85, face: 1, expr: 'neutral', talk: false, lx: .25, ly: 0,
@@ -188,7 +190,7 @@ function armSVG(side, a, d, c) {
   <line x1="${f1(p.ex)}" y1="${f1(p.ey)}" x2="${f1(p.hx)}" y2="${f1(p.hy)}" stroke="${OL}" stroke-width="25" stroke-linecap="round"/>
   <line x1="${p.sx}" y1="${p.sy}" x2="${f1(p.ex)}" y2="${f1(p.ey)}" stroke="${sleeve}" stroke-width="23" stroke-linecap="round"/>
   <line x1="${f1(p.ex)}" y1="${f1(p.ey)}" x2="${f1(p.hx)}" y2="${f1(p.hy)}" stroke="${d.adult ? sleeve : d.skin}" stroke-width="16" stroke-linecap="round"/>`;
-  if (d.adult) s += `<line x1="${p.sx}" y1="${p.sy}" x2="${f1(p.ex)}" y2="${f1(p.ey)}" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".9"/>`;
+  if (d.coach) s += `<line x1="${p.sx}" y1="${p.sy}" x2="${f1(p.ex)}" y2="${f1(p.ey)}" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".9"/>`;
   const hx = f1(p.hx), hy = f1(p.hy);
   if (c.palms) {
     const ang = p.r2 * 180 / Math.PI + 180;
@@ -203,10 +205,11 @@ function armSVG(side, a, d, c) {
   return s;
 }
 function legSVG(side, ang, d) {
-  const col = d.adult ? d.pants : d.skin;
+  const col = d.adult && !d.skirt ? d.pants : d.skin;
   return `<g transform="translate(${side * 22},-104) rotate(${f1(ang)})"><rect x="-13" y="-6" width="26" height="96" rx="12" fill="${col}" stroke="${OL}" stroke-width="4.5"/>${d.adult ? '' : `<rect x="-13" y="64" width="26" height="16" fill="#fff" stroke="${OL}" stroke-width="3.5"/>`}<ellipse cx="9" cy="94" rx="25" ry="13" fill="${d.shoe}" stroke="${OL}" stroke-width="4.5"/></g>`;
 }
 function hairBackSVG(d, T) {
+  if (d.style === 'bun') return `<circle cx="0" cy="-394" r="38" fill="${d.hair}" stroke="${OL}" stroke-width="5"/><path d="M-98 -300 Q-112 -230 -90 -206 L-80 -262Z M98 -300 Q112 -230 90 -206 L80 -262Z" fill="${d.hair}" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/>`;
   if (d.style !== 'pony') return '';
   const sw = Math.sin(T * 5 + d.ph) * 9;
   return `<g transform="translate(-74,-352) rotate(${f1(sw - 18)})"><path d="M0 0 C-64 8 -96 86 -52 150 C-34 104 -6 56 0 0Z" fill="${d.hair}" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/></g>
@@ -225,6 +228,8 @@ function hairFrontSVG(d) {
     <path d="M-98 -300 Q-114 -246 -96 -214 L-84 -262Z M98 -300 Q114 -246 96 -214 L84 -262Z" fill="${d.hair}" ${st}/>
     <g transform="translate(52,-350) rotate(20)"><path d="M0 0 L-18 -11 L-18 11Z M0 0 L18 -11 L18 11Z" fill="#ffd23f" stroke="${OL}" stroke-width="3.5"/><circle r="6" fill="#ff9f1c" stroke="${OL}" stroke-width="3"/></g>`;
   }
+  if (d.style === 'bun') return `<path d="M-100 -262 C-112 -410 112 -410 100 -262 L92 -312 Q40 -350 -6 -322 Q-50 -330 -92 -312Z" fill="${d.hair}" ${st}/>`;
+  if (d.style === 'dad') return `<path d="M-96 -276 C-108 -404 108 -404 96 -276 L88 -322 Q30 -352 -20 -330 L-34 -344 Q-60 -336 -88 -322Z" fill="${d.hair}" ${st}/>`;
   if (d.style === 'neat') {
     return `<path d="M-98 -268 C-114 -408 114 -408 98 -268 L90 -318 Q46 -356 -6 -330 Q-54 -312 -92 -318Z" fill="${d.hair}" ${st}/>`;
   }
@@ -244,7 +249,7 @@ function hatProp(x, y, rot, sc = 1) {
 // ---------- 表情 ----------
 const BROW = { neutral: [0, 0], happy: [-.2, -6], laugh: [-.2, -8], proud: [-.4, -8], surprised: [-.2, -18], shocked: [0, -24],
   angry: [1.25, 6], determined: [.8, 2], sad: [-1, 0], teary: [-1.1, -2], cry: [-1.2, -4], worried: [-1, -4], calm: [0, -2],
-  dizzy: [-.5, -6], awkward: [-.6, -2], tired: [-.5, 2], shy: [-.3, -4] };
+  dizzy: [-.5, -6], awkward: [-.6, -2], tired: [-.5, 2], shy: [-.3, -4], yuck: [.5, 2], yawn: [-.6, -8], weary: [-.7, 2] };
 function eyeSVG(e, cx, cy, sd, blink, T, d) {
   const ix = -sd;
   const oval = `<ellipse cx="${f1(cx)}" cy="${f1(cy)}" rx="11" ry="15" fill="${OL}"/><circle cx="${f1(cx + 3)}" cy="${f1(cy - 5)}" r="4.2" fill="#fff"/>`;
@@ -252,7 +257,8 @@ function eyeSVG(e, cx, cy, sd, blink, T, d) {
   const closedDn = `<path d="M${f1(cx - 13)} ${f1(cy)} Q${f1(cx)} ${f1(cy + 11)} ${f1(cx + 13)} ${f1(cy)}" fill="none" stroke="${OL}" stroke-width="6" stroke-linecap="round"/>`;
   const lid = (outerY, innerY) => `<path d="M${f1(cx - ix * 17)} ${f1(cy - 24)} L${f1(cx + ix * 17)} ${f1(cy - 24)} L${f1(cx + ix * 17)} ${f1(cy + innerY)} L${f1(cx - ix * 17)} ${f1(cy + outerY)}Z" fill="${d.skin}"/>`;
   if (['happy', 'laugh', 'proud', 'shy'].includes(e)) return closedUp;
-  if (e === 'calm' || e === 'cry') return closedDn;
+  if (e === 'calm' || e === 'cry' || e === 'yawn') return closedDn;
+  if (e === 'yuck') return `<path d="M${f1(cx - ix * 12)} ${f1(cy - 10)} L${f1(cx + ix * 10)} ${f1(cy)} L${f1(cx - ix * 12)} ${f1(cy + 10)}" fill="none" stroke="${OL}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>`;
   if (e === 'awkward') return `<path d="M${f1(cx - 13)} ${f1(cy)} L${f1(cx + 13)} ${f1(cy)}" stroke="${OL}" stroke-width="6" stroke-linecap="round"/>`;
   if (e === 'dizzy') {
     let pth = ''; for (let i = 0; i <= 26; i++) { const a = i * .5 + T * 8 * sd, r = 1 + i * .55; pth += (i ? 'L' : 'M') + f1(cx + Math.cos(a) * r) + ' ' + f1(cy + Math.sin(a) * r); }
@@ -266,14 +272,14 @@ function eyeSVG(e, cx, cy, sd, blink, T, d) {
   if (e === 'angry') return oval + lid(-16, -2);
   if (e === 'determined') return oval + lid(-20, -9) + `<path d="M${f1(cx + 3)} ${f1(cy - 9)} l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z" fill="#fff"/>`;
   if (e === 'sad' || e === 'worried') return oval + lid(-4, -16);
-  if (e === 'tired') return oval + lid(-6, -6);
+  if (e === 'tired' || e === 'weary') return oval + lid(-6, -6);
   if (e === 'teary') return `<ellipse cx="${f1(cx)}" cy="${f1(cy)}" rx="13" ry="16" fill="${OL}"/><circle cx="${f1(cx + 3)}" cy="${f1(cy - 5)}" r="5.5" fill="#fff"/><circle cx="${f1(cx - 4)}" cy="${f1(cy + 5)}" r="3" fill="#fff"/><ellipse cx="${f1(cx)}" cy="${f1(cy + 13)}" rx="13" ry="5" fill="#7cc8ff" opacity=".95"/>` + lid(-4, -18);
   return oval;
 }
 function mouthSVG(e, talk, T, mx, my, c) {
   const dark = '#6b1d2a';
   const g = (inner) => `<g transform="translate(${f1(mx)},${f1(my)})">${inner}</g>`;
-  if (talk && !['laugh', 'shocked'].includes(e)) {
+  if (talk && !['laugh', 'shocked', 'yawn'].includes(e)) {
     const o = clamp(.25 + .75 * Math.abs(Math.sin(T * 13.3) * Math.sin(T * 7.1 + 1)));
     if (e === 'angry') return g(`<path d="M-28 -6 L28 -6 L19 ${f1(12 + 22 * o)} L-19 ${f1(12 + 22 * o)}Z" fill="${dark}" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/><rect x="-22" y="-5" width="44" height="7" fill="#fff"/>`);
     if (['sad', 'teary', 'cry', 'worried'].includes(e)) return g(`<path d="M-20 6 Q0 -6 20 6 Q14 ${f1(10 + 18 * o)} 0 ${f1(12 + 18 * o)} Q-14 ${f1(10 + 18 * o)} -20 6Z" fill="${dark}" stroke="${OL}" stroke-width="4.5"/>`);
@@ -289,10 +295,13 @@ function mouthSVG(e, talk, T, mx, my, c) {
     case 'shocked': return g(`<ellipse cx="0" cy="12" rx="17" ry="30" fill="${dark}" stroke="${OL}" stroke-width="4.5"/>`);
     case 'angry': case 'determined':
       return g(`<rect x="-24" y="-8" width="48" height="19" rx="7" fill="#fff" stroke="${OL}" stroke-width="4.5"/><path d="M-12 -8 V11 M0 -8 V11 M12 -8 V11 M-24 1.5 H24" stroke="${OL}" stroke-width="3"/>`);
+    case 'weary': return g(`<path d="M-14 6 Q0 0 14 6" fill="none" stroke="${OL}" stroke-width="5.5" stroke-linecap="round"/>`);
     case 'sad': return g(`<path d="M-18 10 Q0 -6 18 10" fill="none" stroke="${OL}" stroke-width="5.5" stroke-linecap="round"/>`);
     case 'teary': return g(`<path d="M-22 8 q5.5 -7 11 0 t11 0 t11 0 t11 0" fill="none" stroke="${OL}" stroke-width="5" stroke-linecap="round"/>`);
     case 'cry': return g(`<path d="M-30 0 Q0 -14 30 0 Q22 30 0 32 Q-22 30 -30 0Z" fill="${dark}" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/>`);
     case 'worried': case 'awkward': return g(`<path d="M-20 4 q5 -6 10 0 t10 0 t10 0 t10 0" fill="none" stroke="${OL}" stroke-width="5" stroke-linecap="round"/>`);
+    case 'yawn': return g(`<ellipse cx="0" cy="8" rx="20" ry="30" fill="${dark}" stroke="${OL}" stroke-width="4.5"/><ellipse cx="0" cy="26" rx="10" ry="6" fill="#ff7b8a"/>`);
+    case 'yuck':
     case 'dizzy': return g(`<path d="M-20 4 q5 -6 10 0 t10 0 t10 0 t10 0" fill="none" stroke="${OL}" stroke-width="5" stroke-linecap="round"/><path d="M6 6 Q8 26 18 22 Q22 12 16 5Z" fill="#ff7b8a" stroke="${OL}" stroke-width="3.5"/>`);
     case 'tired': return g(`<ellipse cx="0" cy="4" rx="15" ry="12" fill="${dark}" stroke="${OL}" stroke-width="4.5"/><path d="M-7 10 Q-8 30 0 32 Q8 30 7 10Z" fill="#ff7b8a" stroke="${OL}" stroke-width="3.5"/>`);
     case 'calm': return g(`<path d="M-14 0 Q0 10 14 0" fill="none" stroke="${OL}" stroke-width="5" stroke-linecap="round"/>`);
@@ -319,6 +328,7 @@ function faceSVG(c, d, T) {
     }
   }
   s += mouthSVG(c.expr, c.talk, T, lx * .8, -236 + ly, c);
+  if (d.mustache) s += `<path d="M${f1(lx * .8 - 30)} ${f1(-254 + ly)} Q${f1(lx * .8 - 14)} ${f1(-268 + ly)} ${f1(lx * .8)} ${f1(-256 + ly)} Q${f1(lx * .8 + 14)} ${f1(-268 + ly)} ${f1(lx * .8 + 30)} ${f1(-254 + ly)} Q${f1(lx * .8)} ${f1(-246 + ly)} ${f1(lx * .8 - 30)} ${f1(-254 + ly)}Z" fill="${d.hair}"/>`;
   return s;
 }
 
@@ -335,8 +345,10 @@ function charSVG(c, T) {
   o += `<g transform="translate(0,-150) scale(${f1(b * 100) / 100},${f1((1 + (b - 1) * .4) * 100) / 100}) translate(0,150)">`;
   o += `<path d="M-50 -206 Q-60 -150 -56 -100 L56 -100 Q60 -150 50 -206 Q0 -224 -50 -206Z" fill="${d.shirt}" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/>`;
   if (d.adult) {
-    o += `<path d="M-56 -124 L56 -124 L58 -96 L-58 -96Z" fill="${d.pants}" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/>`;
-    o += `<path d="M-6 -214 L-6 -126" stroke="#fff" stroke-width="5"/><path d="M-28 -212 Q0 -168 28 -212" fill="none" stroke="${OL}" stroke-width="3"/><rect x="-10" y="-176" width="22" height="13" rx="5" fill="#c0c7d6" stroke="${OL}" stroke-width="3.5"/>`;
+    if (d.skirt) o += `<path d="M-56 -126 L56 -126 L78 -58 L-78 -58Z" fill="${d.skirt}" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/>`;
+    else o += `<path d="M-56 -124 L56 -124 L58 -96 L-58 -96Z" fill="${d.pants}" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/>`;
+    if (d.coach) o += `<path d="M-6 -214 L-6 -126" stroke="#fff" stroke-width="5"/><path d="M-28 -212 Q0 -168 28 -212" fill="none" stroke="${OL}" stroke-width="3"/><rect x="-10" y="-176" width="22" height="13" rx="5" fill="#c0c7d6" stroke="${OL}" stroke-width="3.5"/>`;
+    else o += `<path d="M-22 -214 L0 -190 L22 -214" fill="#fff" stroke="${OL}" stroke-width="4" stroke-linejoin="round"/>`;
   } else {
     o += `<path d="M-56 -124 L56 -124 L60 -86 L6 -86 L0 -100 L-6 -86 L-60 -86Z" fill="${d.pants}" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/>`;
     o += `<path d="M-20 -214 L0 -194 L20 -214" fill="none" stroke="${OL}" stroke-width="4" stroke-linejoin="round"/>`;
@@ -552,6 +564,41 @@ function fxSVG(c, T) {
         s += thinkBubble(f.p, h.x + sd * 230 * c.s + (f.dx || 0), h.y - 210 * c.s, 40, h.x + sd * 60 * c.s, h.y - 110 * c.s, sc);
         break;
       }
+      case 'zip': {
+        const px = -26 + clamp(a / .8) * 52;
+        let teeth = ''; for (let k = -3; k <= 3; k++) teeth += `<rect x="${k * 8 - 2.5}" y="-6" width="5" height="12" rx="1.5" fill="#d7dbe6" stroke="${OL}" stroke-width="1.5"/>`;
+        s += `<g transform="translate(${f1(h.x + c.lx * 8 * c.s * c.face)},${f1(h.y + 54 * c.s)}) scale(${f1(c.s * sc * 100) / 100})"><rect x="-34" y="-5" width="68" height="10" rx="5" fill="#7a4b3a"/>${teeth}<g transform="translate(${f1(px)},2)"><rect x="-7" y="-4" width="14" height="22" rx="4" fill="#ffc83d" stroke="${OL}" stroke-width="3"/></g></g>`;
+        break;
+      }
+      case 'mag': {
+        const bob = Math.sin(T * 3) * 6;
+        s += `<g transform="translate(${f1(h.x + c.face * 48 * c.s)},${f1(h.y + (6 + bob) * c.s)}) scale(${f1(c.s * sc * 100) / 100}) rotate(${c.face * -25})"><rect x="-9" y="34" width="18" height="60" rx="7" fill="#a5713f" stroke="${OL}" stroke-width="5"/><circle r="44" fill="#dff3ff" fill-opacity=".55" stroke="${OL}" stroke-width="9"/><path d="M-22 -18 q10 -12 26 -8" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/></g>`;
+        break;
+      }
+      case 'yawn': {
+        const ph = (T * .7) % 1;
+        s += g(txt('哈～', 0, 0, 44, '#fff', { sw: 8 }), c.face * (120 + ph * 40), 40 - ph * 50, 1);
+        break;
+      }
+      case 'sigh': {
+        const ph = (T * .9) % 1;
+        s += `<g transform="translate(${f1(h.x + c.face * (80 + ph * 90) * c.s)},${f1(h.y + (60 - ph * 30) * c.s)}) scale(${f1(c.s * (0.6 + ph * .7) * 100) / 100})" opacity="${f1((1 - ph) * 100) / 100}"><path d="M-30 0 q0 -24 22 -20 q8 -18 28 -6 q22 -4 16 18 q8 18 -18 18 h-34 q-20 0 -14 -10z" fill="#e7ecf5" stroke="${OL}" stroke-width="4"/></g>`;
+        break;
+      }
+      case 'phone':
+        s += `<g transform="translate(${f1(h.x + c.face * 100 * c.s)},${f1(h.y + 4 * c.s)}) scale(${f1(c.s * 100) / 100}) rotate(${c.face * 12})"><rect x="-16" y="-36" width="32" height="64" rx="7" fill="#2f3550" stroke="${OL}" stroke-width="4"/><rect x="-11" y="-28" width="22" height="44" rx="3" fill="#9fd3ff"/><circle cx="${c.face * -24}" cy="30" r="15" fill="${CH[c.id].skin}" stroke="${OL}" stroke-width="4"/></g>`;
+        break;
+      case 'heat': {
+        let w = '';
+        for (let k = 0; k < 3; k++) { const ph = (T * .8 + k / 3) % 1; w += `<path d="M${-50 + k * 50} ${f1(-110 - ph * 70)} q10 -12 0 -24 t0 -24" fill="none" stroke="#ff7b54" stroke-width="7" stroke-linecap="round" opacity="${f1((1 - ph) * 100) / 100}"/>`; }
+        s += g(w); break;
+      }
+      case 'monster': {
+        const ms = f.p ?? .5;
+        if (ms <= .02) break;
+        s += `<g transform="translate(${f1(h.x - c.face * (110 + ms * 60) * c.s)},${f1(h.y + (40 - ms * 70) * c.s)}) scale(${f1(c.s * ms * 100) / 100})">${monsterSVG(T, f.mood || 'grin')}</g>`;
+        break;
+      }
       case 'say': {
         const sd = f.side || c.face;
         s += bubble(f.p, h.x + sd * (f.dx ?? 230) * c.s, h.y - (f.dy ?? 200) * c.s, f.size || 42, h.x + sd * 60 * c.s, h.y - 90 * c.s, { sc, spiky: f.spiky, fill: f.fill, color: f.color });
@@ -617,13 +664,13 @@ function bgField(T, sc) {
   for (let x = off4 - 140; x < 1600; x += 140) for (const yy of [598, 651, 702]) s += `<rect x="${f1(x)}" y="${yy}" width="44" height="5" rx="2.5" fill="#fff" opacity=".35"/>`;
   return s;
 }
-function bgClass(T) {
+function bgClass(T, o = {}) {
   let s = `<rect x="-500" y="-400" width="2280" height="1520" fill="#ffe7c2"/>`;
   s += `<rect x="-500" y="430" width="2280" height="20" fill="#e9b97c"/><rect x="-500" y="450" width="2280" height="400" fill="#f5c98f"/>`;
   for (let x = -40; x < 1320; x += 110) s += `<line x1="${x}" y1="450" x2="${x - 60}" y2="760" stroke="#e3ad6c" stroke-width="4"/>`;
   s += `<rect x="150" y="80" width="560" height="250" rx="10" fill="#b77a45" stroke="${OL}" stroke-width="5"/><rect x="168" y="96" width="524" height="218" fill="#2f5d4a"/>`;
-  s += txt('下課時間', 330, 190, 54, '#f4f7ef', { sw: 0, w: 700 }) + `<g opacity=".85">${starPath(560, 170, 30, 13, 5, -90, 'none', 0).replace('fill="none"', 'fill="none" stroke="#ffe680" stroke-width="5"')}</g><circle cx="610" cy="250" r="26" fill="none" stroke="#ffd0e0" stroke-width="5"/><path d="M598 246 h3 M617 246 h3 M600 258 q10 8 20 0" stroke="#ffd0e0" stroke-width="5" fill="none" stroke-linecap="round"/>`;
-  s += `<rect x="860" y="80" width="300" height="250" rx="10" fill="url(#win)" stroke="${OL}" stroke-width="6"/>${cloud(960 + Math.sin(T * .3) * 30, 170, .55)}<line x1="1010" y1="80" x2="1010" y2="330" stroke="${OL}" stroke-width="6"/><line x1="860" y1="205" x2="1160" y2="205" stroke="${OL}" stroke-width="6"/>`;
+  s += txt(o.board || '下課時間', 330, 190, 54, '#f4f7ef', { sw: 0, w: 700 }) + `<g opacity=".85">${starPath(560, 170, 30, 13, 5, -90, 'none', 0).replace('fill="none"', 'fill="none" stroke="#ffe680" stroke-width="5"')}</g><circle cx="610" cy="250" r="26" fill="none" stroke="#ffd0e0" stroke-width="5"/><path d="M598 246 h3 M617 246 h3 M600 258 q10 8 20 0" stroke="#ffd0e0" stroke-width="5" fill="none" stroke-linecap="round"/>`;
+  s += `<rect x="860" y="80" width="300" height="250" rx="10" fill="url(#win)" stroke="${OL}" stroke-width="6"/>${o.rain ? '' : cloud(960 + Math.sin(T * .3) * 30, 170, .55)}${o.rain ? rainWin(T) : ''}${o.hot ? `<circle cx="1090" cy="130" r="34" fill="#ffb703" stroke="${OL}" stroke-width="4"/>` : ''}<line x1="1010" y1="80" x2="1010" y2="330" stroke="${OL}" stroke-width="6"/><line x1="860" y1="205" x2="1160" y2="205" stroke="${OL}" stroke-width="6"/>`;
   s += `<circle cx="780" cy="70" r="34" fill="#fff" stroke="${OL}" stroke-width="5"/><line x1="780" y1="70" x2="780" y2="48" stroke="${OL}" stroke-width="4" stroke-linecap="round"/><line x1="780" y1="70" x2="${f1(780 + Math.cos(T * .8) * 18)}" y2="${f1(70 + Math.sin(T * .8) * 18)}" stroke="#e8463c" stroke-width="4" stroke-linecap="round"/>`;
   const cols = ['#ff6b57', '#ffc83d', '#37c99b', '#3fa9f5', '#ff6fa8'];
   let flags = `<path d="M-20 28 Q640 70 1300 28" fill="none" stroke="${OL}" stroke-width="3"/>`;
@@ -632,29 +679,34 @@ function bgClass(T) {
 }
 function drawBG(R, T, S) {
   if (R.bg === 'field') return bgField(T, S.scroll);
-  if (R.bg === 'class') return bgClass(T);
+  if (R.bg === 'class') return bgClass(T, R.bgo || {});
+  if (R.bg === 'home') return bgHome(T, R.bgo || {});
   return bgStage(T, PAL[R.pal || 'warm']);
 }
 
-// ---------- 勇敢四步驟 ----------
-const STEPS = [
-  { n: 1, t: '停一停', c: '#ff6b57', say: '先不要動、不要丟東西' },
-  { n: 2, t: '吸口氣', c: '#3fa9f5', say: '慢慢吸、慢慢吐，三次' },
-  { n: 3, t: '說心情', c: '#ff6fa8', say: '我很難過，因為我輸了' },
-  { n: 4, t: '說好話', c: '#2fbf8f', say: '恭喜你！下次再加油！' },
-];
-function stepIcon(i, T) {
-  if (i === 0) {
-    let d = ''; for (let k = 0; k < 8; k++) { const a = (k * 45 + 22.5) * Math.PI / 180; d += (k ? 'L' : 'M') + f1(Math.cos(a) * 52) + ' ' + f1(Math.sin(a) * 52); }
-    return `<path d="${d}Z" fill="#e8343a" stroke="${OL}" stroke-width="6" stroke-linejoin="round"/><path d="${d}Z" fill="none" stroke="#fff" stroke-width="4" transform="scale(.82)"/>${txt('停', 0, 17, 48, '#fff', { sw: 0 })}`;
-  }
-  if (i === 1) {
-    const b = 1 + Math.sin(T * 3) * .08;
-    return `<g transform="scale(${f1(b * 100) / 100})"><circle r="50" fill="#e4f4ff" stroke="${OL}" stroke-width="6"/><path d="M-32 -12 q16 -14 32 0 t32 0" fill="none" stroke="#3fa9f5" stroke-width="8" stroke-linecap="round"/><path d="M-32 6 q16 -14 32 0 t26 0" fill="none" stroke="#3fa9f5" stroke-width="8" stroke-linecap="round"/><path d="M-26 24 q14 -12 28 0" fill="none" stroke="#3fa9f5" stroke-width="8" stroke-linecap="round"/></g>`;
-  }
-  if (i === 2) return `${heartPath(0, 4, 44, '#ff6fa8', 6)}<circle cx="-14" cy="-4" r="5" fill="${OL}"/><circle cx="14" cy="-4" r="5" fill="${OL}"/><path d="M-10 12 Q0 20 10 12" fill="none" stroke="${OL}" stroke-width="4" stroke-linecap="round"/>`;
-  return `<g transform="rotate(${f1(Math.sin(T * 4) * 8)})"><rect x="-34" y="-8" width="58" height="52" rx="16" fill="#ffd8b4" stroke="${OL}" stroke-width="6"/><rect x="-14" y="-52" width="22" height="52" rx="11" fill="#ffd8b4" stroke="${OL}" stroke-width="6"/><path d="M-30 12 h40 M-30 28 h40" stroke="${OL}" stroke-width="4" stroke-linecap="round"/><rect x="24" y="0" width="16" height="44" rx="6" fill="#2fbf8f" stroke="${OL}" stroke-width="5"/></g>`;
-}
+// ---------- 步驟圖示 ----------
+const ICON = {
+  stop: T => { let d = ''; for (let k = 0; k < 8; k++) { const a = (k * 45 + 22.5) * Math.PI / 180; d += (k ? 'L' : 'M') + f1(Math.cos(a) * 52) + ' ' + f1(Math.sin(a) * 52); }
+    return `<path d="${d}Z" fill="#e8343a" stroke="${OL}" stroke-width="6" stroke-linejoin="round"/><path d="${d}Z" fill="none" stroke="#fff" stroke-width="4" transform="scale(.82)"/>${txt('停', 0, 17, 48, '#fff', { sw: 0 })}`; },
+  breath: T => { const b = 1 + Math.sin(T * 3) * .08;
+    return `<g transform="scale(${f1(b * 100) / 100})"><circle r="50" fill="#e4f4ff" stroke="${OL}" stroke-width="6"/><path d="M-32 -12 q16 -14 32 0 t32 0" fill="none" stroke="#3fa9f5" stroke-width="8" stroke-linecap="round"/><path d="M-32 6 q16 -14 32 0 t26 0" fill="none" stroke="#3fa9f5" stroke-width="8" stroke-linecap="round"/><path d="M-26 24 q14 -12 28 0" fill="none" stroke="#3fa9f5" stroke-width="8" stroke-linecap="round"/></g>`; },
+  heart: T => `${heartPath(0, 4, 44, '#ff6fa8', 6)}<circle cx="-14" cy="-4" r="5" fill="${OL}"/><circle cx="14" cy="-4" r="5" fill="${OL}"/><path d="M-10 12 Q0 20 10 12" fill="none" stroke="${OL}" stroke-width="4" stroke-linecap="round"/>`,
+  thumb: T => `<g transform="rotate(${f1(Math.sin(T * 4) * 8)})"><rect x="-34" y="-8" width="58" height="52" rx="16" fill="#ffd8b4" stroke="${OL}" stroke-width="6"/><rect x="-14" y="-52" width="22" height="52" rx="11" fill="#ffd8b4" stroke="${OL}" stroke-width="6"/><path d="M-30 12 h40 M-30 28 h40" stroke="${OL}" stroke-width="4" stroke-linecap="round"/><rect x="24" y="0" width="16" height="44" rx="6" fill="#2fbf8f" stroke="${OL}" stroke-width="5"/></g>`,
+  zip: T => { let t2 = ''; for (let k = -3; k <= 3; k++) t2 += `<rect x="${k * 11 - 3}" y="-8" width="6" height="16" rx="2" fill="#b8bfd0" stroke="${OL}" stroke-width="2"/>`;
+    const px = -30 + ((T * .6) % 1) * 60;
+    return `<circle r="50" fill="#ffe0e6" stroke="${OL}" stroke-width="6"/><rect x="-40" y="-6" width="80" height="12" rx="6" fill="#7a4b3a"/>${t2}<g transform="translate(${f1(px)},0)"><rect x="-9" y="-6" width="18" height="30" rx="5" fill="#ffc83d" stroke="${OL}" stroke-width="4"/></g>`; },
+  mag: T => `<g transform="rotate(${f1(-20 + Math.sin(T * 3) * 10)})"><rect x="-8" y="26" width="16" height="44" rx="6" fill="#a5713f" stroke="${OL}" stroke-width="5"/><circle cx="0" cy="-8" r="38" fill="#dff3ff" stroke="${OL}" stroke-width="8"/><path d="M-18 -22 q10 -10 22 -6" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round"/></g>`,
+  bulb: T => { let r = ''; for (let k = 0; k < 7; k++) { const a = (-180 + k * 30) * Math.PI / 180, L = 60 + Math.sin(T * 8 + k) * 6; r += `<line x1="${f1(Math.cos(a) * 44)}" y1="${f1(Math.sin(a) * 44 - 6)}" x2="${f1(Math.cos(a) * L)}" y2="${f1(Math.sin(a) * L - 6)}" stroke="#ffb703" stroke-width="7" stroke-linecap="round"/>`; }
+    return r + `<circle cx="0" cy="-6" r="34" fill="#fff36b" stroke="${OL}" stroke-width="6"/><rect x="-14" y="26" width="28" height="20" rx="5" fill="#b8bfd0" stroke="${OL}" stroke-width="5"/>`; },
+  eye: T => { const bl = (T % 3) < .15; return `<path d="M-52 0 Q0 -46 52 0 Q0 46 -52 0Z" fill="#fff" stroke="${OL}" stroke-width="6"/>${bl ? `<path d="M-40 0 H40" stroke="${OL}" stroke-width="6"/>` : `<circle r="20" fill="#3fa9f5" stroke="${OL}" stroke-width="5"/><circle r="9" fill="${OL}"/><circle cx="6" cy="-6" r="4" fill="#fff"/>`}`; },
+  think: T => `<g fill="#fff" stroke="${OL}" stroke-width="6"><circle cx="-34" cy="18" r="8"/><circle cx="-20" cy="4" r="11"/></g><path d="M-14 -8 C-30 -30 -6 -52 14 -42 C30 -58 56 -40 46 -20 C62 -4 44 18 26 10 C14 24 -10 18 -14 -8Z" fill="#fff" stroke="${OL}" stroke-width="6" stroke-linejoin="round"/>${txt('？', 18, -6, 40, '#9b7bff', { sw: 0 })}`,
+  ask: T => `<path d="M-46 -34 h92 a12 12 0 0 1 12 12 v44 a12 12 0 0 1 -12 12 h-50 l-24 20 v-20 h-18 a12 12 0 0 1 -12 -12 v-44 a12 12 0 0 1 12 -12Z" fill="#fff" stroke="${OL}" stroke-width="6" stroke-linejoin="round"/>${txt('？', 0, 14, 48, '#ff6b57', { sw: 0 })}`,
+  help: T => `<g transform="translate(0,${f1(Math.sin(T * 3) * 4)})"><path d="M-40 6 q0 30 40 30 q40 0 40 -30Z" fill="#ffd8b4" stroke="${OL}" stroke-width="6" stroke-linejoin="round"/>${heartPath(0, -18, 24, '#ff5d8f', 5)}</g>`,
+  name: T => `<rect x="-52" y="-34" width="104" height="68" rx="14" fill="#fff" stroke="${OL}" stroke-width="6"/><rect x="-52" y="-34" width="104" height="22" rx="10" fill="#ff6b57"/><path d="M-52 -14 H52" stroke="${OL}" stroke-width="5"/>${txt('阿凱', 0, 22, 30, OL, { sw: 0 })}`,
+  talk: T => `<path d="M-46 -34 h92 a12 12 0 0 1 12 12 v44 a12 12 0 0 1 -12 12 h-50 l-24 20 v-20 h-18 a12 12 0 0 1 -12 -12 v-44 a12 12 0 0 1 12 -12Z" fill="#e4f4ff" stroke="${OL}" stroke-width="6" stroke-linejoin="round"/><path d="M-30 -12 h60 M-30 6 h40" stroke="#3fa9f5" stroke-width="8" stroke-linecap="round"/>`,
+  wish: T => `<g transform="rotate(${f1(T * 30 % 360)})">${starPath(0, 0, 50, 22, 5, -90, '#ffd23f', 6)}</g>`,
+};
+function stepIcon(i, T) { return (ICON[STEPS[i].ic] || ICON.wish)(T); }
 function stepCard(i, cx, cy, sc, T, o = {}) {
   if (sc <= .01) return '';
   const st = STEPS[i], w = o.w || 700, h = o.h || 170;
@@ -668,7 +720,7 @@ function stepCard(i, cx, cy, sc, T, o = {}) {
 }
 function chips(active, T, done = -1) {
   let s = '';
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < STEPS.length; i++) {
     const st = STEPS[i], on = i === active, x = 30 + i * 176, y = 26, sc = on ? 1 + Math.sin(T * 6) * .03 : 1;
     const fill = on ? st.c : (i <= done ? '#fffaf0' : 'rgba(255,250,240,.75)');
     s += `<g transform="translate(${x + 80},${y + 30}) scale(${f1(sc * 100) / 100})"><rect x="-80" y="-30" width="160" height="60" rx="30" fill="${fill}" stroke="${OL}" stroke-width="5"/><circle cx="-48" cy="0" r="20" fill="${on ? '#fff' : st.c}" stroke="${OL}" stroke-width="4"/>${txt(st.n, -48, 10, 28, on ? st.c : '#fff', { sw: 0 })}${txt(st.t, 14, 11, 30, on ? '#fff' : OL, { sw: 0 })}</g>`;
@@ -676,7 +728,7 @@ function chips(active, T, done = -1) {
   return s;
 }
 function titleSVG(t, T, y1 = 190, y2 = 318, sc = 1) {
-  const l1 = [...'最後一名，'], l2 = [...'也是勇敢的人'];
+  const l1 = [...TITLE_LINES[0]], l2 = [...TITLE_LINES[1]];
   let s = `<g transform="translate(640,0) scale(${sc}) translate(-640,0)">`;
   const line = (arr, y, size, fill, t0) => {
     const w = arr.length * size;
@@ -690,6 +742,68 @@ function titleSVG(t, T, y1 = 190, y2 = 318, sc = 1) {
   line(l1, y1, 104, '#fffaf0', .2);
   line(l2, y2, 124, '#ff6b57', .55);
   return s + '</g>';
+}
+
+// ---------- 抱怨小怪獸 ----------
+function monsterSVG(T, mood = 'grin') {
+  const wob = Math.sin(T * 4) * 6, sq = 1 + Math.sin(T * 4) * .04;
+  const eyes = mood === 'scared'
+    ? `<circle cx="-30" cy="-30" r="18" fill="#fff" stroke="${OL}" stroke-width="5"/><circle cx="30" cy="-30" r="18" fill="#fff" stroke="${OL}" stroke-width="5"/><circle cx="-30" cy="-28" r="6" fill="${OL}"/><circle cx="30" cy="-28" r="6" fill="${OL}"/><path d="M-48 -56 L-16 -48 M48 -56 L16 -48" stroke="${OL}" stroke-width="6" stroke-linecap="round"/>`
+    : `<circle cx="-30" cy="-28" r="16" fill="#fff36b" stroke="${OL}" stroke-width="5"/><circle cx="30" cy="-28" r="16" fill="#fff36b" stroke="${OL}" stroke-width="5"/><circle cx="-26" cy="-26" r="7" fill="${OL}"/><circle cx="34" cy="-26" r="7" fill="${OL}"/><path d="M-50 -54 L-12 -40 M50 -54 L12 -40" stroke="${OL}" stroke-width="7" stroke-linecap="round"/>`;
+  const mouth = mood === 'scared'
+    ? `<path d="M-24 22 q8 -10 16 0 t16 0 t16 0" fill="none" stroke="${OL}" stroke-width="6" stroke-linecap="round"/>`
+    : `<path d="M-40 10 Q0 52 40 10 Z" fill="#5a1630" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/><path d="M-30 12 l8 10 l8 -10 l8 10 l8 -10 l8 10 l8 -10" fill="#fff" stroke="${OL}" stroke-width="2.5" stroke-linejoin="round"/>`;
+  return `<g transform="translate(0,${f1(wob)}) scale(${f1(1 / sq * 100) / 100},${f1(sq * 100) / 100})">
+  <path d="M-46 -78 L-62 -128 L-22 -92Z M46 -78 L62 -128 L22 -92Z" fill="#ffb3e1" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M-92 40 C-110 -40 -70 -104 0 -104 C70 -104 110 -40 92 40 C84 80 54 96 30 84 C18 104 -18 104 -30 84 C-54 96 -84 80 -92 40Z" fill="#9b5de5" stroke="${OL}" stroke-width="6" stroke-linejoin="round"/>
+  <ellipse cx="-50" cy="-60" rx="16" ry="9" fill="#c9a3ff" opacity=".8" transform="rotate(-30 -50 -60)"/>
+  <path d="M-92 10 q-30 -10 -34 -34" fill="none" stroke="${OL}" stroke-width="12" stroke-linecap="round"/><path d="M-92 10 q-30 -10 -34 -34" fill="none" stroke="#9b5de5" stroke-width="6" stroke-linecap="round"/>
+  <path d="M92 10 q30 -10 34 -34" fill="none" stroke="${OL}" stroke-width="12" stroke-linecap="round"/><path d="M92 10 q30 -10 34 -34" fill="none" stroke="#9b5de5" stroke-width="6" stroke-linecap="round"/>
+  ${eyes}${mouth}</g>`;
+}
+// ---------- 道具 ----------
+function trayProp(x, y, sc = 1) {
+  return `<g transform="translate(${f1(x)},${f1(y)}) scale(${sc})"><rect x="-80" y="-30" width="160" height="60" rx="14" fill="#cfd6e4" stroke="${OL}" stroke-width="5"/><circle cx="-40" cy="0" r="22" fill="#fff" stroke="${OL}" stroke-width="3"/><path d="M-56 0 q8 -12 16 -4 q8 -14 18 -2" fill="#5fbf5a" stroke="${OL}" stroke-width="3"/><circle cx="16" cy="0" r="22" fill="#fff" stroke="${OL}" stroke-width="3"/><path d="M4 8 q-4 -22 14 -22 q16 0 14 14 q-2 12 -16 12z" fill="#d98a3a" stroke="${OL}" stroke-width="3"/><rect x="48" y="-20" width="22" height="40" rx="6" fill="#fff" stroke="${OL}" stroke-width="3"/></g>`;
+}
+function bagProp(x, y, col = '#f4a261', sc = 1) {
+  return `<g transform="translate(${f1(x)},${f1(y)}) scale(${sc})"><path d="M-18 -30 q18 -26 36 0" fill="none" stroke="${OL}" stroke-width="6"/><path d="M-34 -30 h68 l6 72 h-80z" fill="${col}" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/><path d="M-10 -40 q4 -14 14 -6 q10 -12 14 4" fill="#5fbf5a" stroke="${OL}" stroke-width="3"/></g>`;
+}
+function eraserProp(x, y, rot = 0, sc = 1) {
+  return `<g transform="translate(${f1(x)},${f1(y)}) rotate(${f1(rot)}) scale(${sc})"><rect x="-26" y="-13" width="52" height="26" rx="6" fill="#fff" stroke="${OL}" stroke-width="4"/><rect x="-26" y="-13" width="24" height="26" rx="6" fill="#4fa3f7" stroke="${OL}" stroke-width="4"/></g>`;
+}
+function cupProp(x, y, sc = 1) {
+  return `<g transform="translate(${f1(x)},${f1(y)}) scale(${sc})"><path d="M-18 -26 h36 l-5 52 h-26z" fill="#e8f6ff" stroke="${OL}" stroke-width="4" stroke-linejoin="round"/><path d="M-15 -8 h30 l-3 32 h-24z" fill="#7cc8ff"/></g>`;
+}
+function bookProp(x, y, label = '作業', sc = 1) {
+  return `<g transform="translate(${f1(x)},${f1(y)}) scale(${sc})"><rect x="-56" y="10" width="112" height="22" rx="4" fill="#ff8a6b" stroke="${OL}" stroke-width="4"/><rect x="-52" y="-12" width="104" height="22" rx="4" fill="#ffd23f" stroke="${OL}" stroke-width="4"/><rect x="-58" y="-34" width="116" height="22" rx="4" fill="#7fb6ff" stroke="${OL}" stroke-width="4"/>${txt(label, 0, -16, 18, OL, { sw: 0 })}</g>`;
+}
+function bgHome(T, o = {}) {
+  let s = `<rect x="-500" y="-400" width="2280" height="1520" fill="#ffe4cc"/>`;
+  for (let x = -480; x < 1760; x += 64) s += `<rect x="${x}" y="-400" width="30" height="850" fill="#ffd9b8" opacity=".55"/>`;
+  s += `<rect x="-500" y="440" width="2280" height="16" fill="#d9a06b"/><rect x="-500" y="456" width="2280" height="400" fill="#c98b5a"/>`;
+  for (let x = -40; x < 1320; x += 130) s += `<line x1="${x}" y1="456" x2="${x - 70}" y2="760" stroke="#b67a4a" stroke-width="4"/>`;
+  s += `<ellipse cx="660" cy="640" rx="430" ry="70" fill="#e76f51" opacity=".55"/><ellipse cx="660" cy="640" rx="380" ry="54" fill="none" stroke="#fff3e0" stroke-width="5" stroke-dasharray="14 10" opacity=".7"/>`;
+  // door
+  s += `<rect x="60" y="150" width="200" height="300" rx="8" fill="#a8693d" stroke="${OL}" stroke-width="6"/><rect x="84" y="176" width="152" height="110" rx="6" fill="#bd7d4d" stroke="${OL}" stroke-width="3"/><rect x="84" y="306" width="152" height="120" rx="6" fill="#bd7d4d" stroke="${OL}" stroke-width="3"/><circle cx="230" cy="310" r="10" fill="#ffd23f" stroke="${OL}" stroke-width="3"/>`;
+  // window
+  const sky = o.day ? ['#8fd6ff', '#e3f7ff'] : ['#ff9e6d', '#7b5ea7'];
+  s += `<defs><linearGradient id="homeSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${sky[1]}"/><stop offset="1" stop-color="${sky[0]}"/></linearGradient></defs>`;
+  s += `<rect x="420" y="90" width="320" height="230" rx="10" fill="url(#homeSky)" stroke="${OL}" stroke-width="6"/>`;
+  if (!o.day) s += `<circle cx="660" cy="150" r="26" fill="#fff6c9"/><circle cx="672" cy="142" r="22" fill="#cdb4ec"/>`;
+  else s += cloud(560 + Math.sin(T * .3) * 30, 190, .5);
+  s += `<line x1="580" y1="90" x2="580" y2="320" stroke="${OL}" stroke-width="6"/><line x1="420" y1="205" x2="740" y2="205" stroke="${OL}" stroke-width="6"/><path d="M400 80 q40 120 0 260 h40 q-20 -130 0 -260z M760 80 q-40 120 0 260 h-40 q20 -130 0 -260z" fill="#ff8fab" stroke="${OL}" stroke-width="4"/>`;
+  // picture
+  s += `<rect x="830" y="110" width="150" height="110" rx="8" fill="#fff8ec" stroke="${OL}" stroke-width="6"/><circle cx="870" cy="160" r="16" fill="#ffd8b4" stroke="${OL}" stroke-width="3"/><circle cx="906" cy="166" r="12" fill="#ffd8b4" stroke="${OL}" stroke-width="3"/><circle cx="940" cy="160" r="16" fill="#ffd8b4" stroke="${OL}" stroke-width="3"/><path d="M850 205 q60 -26 120 0" fill="#7fc97f" stroke="${OL}" stroke-width="3"/>`;
+  // lamp
+  s += `<line x1="1210" y1="230" x2="1210" y2="450" stroke="${OL}" stroke-width="7"/><path d="M1170 230 h80 l-14 -56 h-52z" fill="#ffe28a" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/>${o.day ? '' : `<path d="M1170 230 L1120 420 H1300 L1250 230Z" fill="#fff3b0" opacity=".25"/>`}`;
+  // sofa
+  s += `<rect x="830" y="330" width="330" height="130" rx="30" fill="#4fae9a" stroke="${OL}" stroke-width="6"/><rect x="810" y="410" width="370" height="80" rx="24" fill="#5cc1ab" stroke="${OL}" stroke-width="6"/><rect x="800" y="380" width="56" height="120" rx="22" fill="#4fae9a" stroke="${OL}" stroke-width="6"/><rect x="1134" y="380" width="56" height="120" rx="22" fill="#4fae9a" stroke="${OL}" stroke-width="6"/><rect x="900" y="360" width="80" height="60" rx="18" fill="#ffd23f" stroke="${OL}" stroke-width="5"/>`;
+  return s;
+}
+function rainWin(T) {
+  let s = `<rect x="863" y="83" width="294" height="244" fill="#8e9bb5"/>`;
+  for (let i = 0; i < 18; i++) { const x = 870 + (i * 53) % 280, y = 90 + ((T * 260 + i * 41) % 230); s += `<line x1="${x}" y1="${f1(y)}" x2="${x - 6}" y2="${f1(y + 20)}" stroke="#e3f1ff" stroke-width="4" stroke-linecap="round"/>`; }
+  return s + cloud(930, 120, .45).replace('fill="#fff"', 'fill="#c3cad8"') + cloud(1080, 110, .4).replace('fill="#fff"', 'fill="#c3cad8"');
 }
 
 // ===== 《最後一名，也是勇敢的人》分場腳本 =====
@@ -757,6 +871,14 @@ function racers(S, T, o) {
 }
 
 
+const TITLE_LINES = ["最後一名，", "也是勇敢的人"];
+const META = {"title": "最後一名，也是勇敢的人", "quizTitle": "勇敢四步驟挑戰題", "skill": "勇敢四步驟", "cast": ["le", "an", "kai"], "noCheer": ["throw", "steps"], "fbLow": ["steps"]};
+const STEPS = [
+  { n: 1, t: '停一停', c: '#ff6b57', ic: 'stop', say: '先不要動、不要丟東西' },
+  { n: 2, t: '吸口氣', c: '#3fa9f5', ic: 'breath', say: '慢慢吸、慢慢吐，三次' },
+  { n: 3, t: '說心情', c: '#ff6fa8', ic: 'heart', say: '我很難過，因為我輸了' },
+  { n: 4, t: '說好話', c: '#2fbf8f', ic: 'thumb', say: '恭喜你！下次再加油！' },
+];
 const SCENES = [
   { name: '開場', tr: 'iris', beats: [
     { who: 'N', text: '今天，我們要看一個小故事。', d: 4.5, act: (t, T) => {
@@ -1054,6 +1176,97 @@ const SCENES = [
   ] },
 ];
 
+
+// ===== 題目 =====
+const Q = [
+  { type: 'yn', q: '阿樂跑最後一名，就生氣地丟帽子。這樣做好不好？', short: '生氣丟帽子，好不好？', opts: ['好', '不好'], ans: 1,
+    ok: '答對了！丟帽子會讓大家嚇一跳，阿樂自己也更難過。', no: '再想想：小安和阿凱看到阿樂丟帽子，心情怎麼樣？', scene: 'throw' },
+  { type: 'multi', q: '阿樂跑最後一名的時候，心情可能是什麼？要選兩個喔！', short: '輸的時候是什麼心情？', opts: ['難過', '生氣', '開心', '好笑'], ans: [0, 1],
+    ok: '答對了！輸了會難過、會生氣，這是正常的。', no: '提示：輸了的時候，心情通常不太好。要選兩個喔！', scene: 'sad' },
+  { type: 'choice', q: '阿樂丟帽子以後，小安和阿凱覺得怎麼樣？', short: '朋友有什麼感覺？', opts: ['嚇一跳，不開心', '很開心', '也想一起丟帽子'], ans: 0,
+    ok: '答對了！亂發脾氣，會讓朋友嚇一跳，也不開心。', no: '再看一次圖：小安和阿凱的臉是什麼表情？', scene: 'friends' },
+  { type: 'order', q: '把「勇敢四步驟」照順序排好。', short: '勇敢四步驟的順序', tiles: [2, 0, 3, 1],
+    ok: '太棒了！停一停、吸口氣、說心情、說好話。', no: '這一步還沒輪到喔！先想想，下一步要做什麼？', scene: 'steps' },
+  { type: 'choice', q: '「說心情」的時候，要怎麼說？', short: '說心情怎麼說？', opts: ['我很難過，因為我輸了。', '都是你害的！', '我再也不要玩了！'], ans: 0,
+    ok: '答對了！說出心情和原因，心裡會比較舒服。', no: '再想想：說心情是說出自己的感覺，不是怪別人喔。', scene: 'feel' },
+  { type: 'choice', q: '「說好話」的時候，可以對贏的人說什麼？', short: '說好話說什麼？', opts: ['你作弊！', '恭喜你！你好快！', '哼！我不理你。'], ans: 1,
+    ok: '答對了！恭喜別人，大家都會很開心。', no: '再想想：說什麼話，會讓聽的人覺得開心？', scene: 'praise' },
+  { type: 'choice', q: '畫畫比賽你沒有得獎，心裡好難過。第一步要做什麼？', short: '畫畫比賽沒得獎', opts: ['把畫撕掉', '停一停', '大哭大叫'], ans: 1,
+    ok: '答對了！勇敢四步驟，第一步就是停一停。', no: '提示：勇敢四步驟的第一步是什麼？', scene: 'art' },
+  { type: 'yn', q: '「跑最後一名，就是很丟臉。」這句話對不對？', short: '最後一名丟不丟臉？', opts: ['對', '不對'], ans: 1,
+    ok: '答對了！努力跑到最後，就是勇敢的人。', no: '再想想：阿樂跑到終點時，老師說了什麼？', scene: 'proud' },
+];
+
+// ---------- 情境插圖 ----------
+function easel(x, y, kind, ribbon) {
+  let pic = kind === 'sun'
+    ? `<circle cx="0" cy="-20" r="34" fill="#ffd23f" stroke="${OL}" stroke-width="4"/><path d="M-80 60 Q-40 10 0 50 Q40 10 80 60Z" fill="#6fd47f" stroke="${OL}" stroke-width="4"/>`
+    : `<path d="M-60 50 L-10 -30 L30 30 L50 0 L80 50Z" fill="#7fb6ff" stroke="${OL}" stroke-width="4" stroke-linejoin="round"/><circle cx="50" cy="-40" r="18" fill="#ff8a6b" stroke="${OL}" stroke-width="4"/>`;
+  let s = `<g transform="translate(${x},${y})"><path d="M-80 120 L-40 -100 M80 120 L40 -100 M0 120 L0 -100" stroke="#a5713f" stroke-width="12" stroke-linecap="round"/>
+  <rect x="-110" y="-110" width="220" height="180" rx="8" fill="#fffaf0" stroke="${OL}" stroke-width="6"/><g transform="translate(0,-25) scale(.9)">${pic}</g>`;
+  if (ribbon) s += `<g transform="translate(90,-100) rotate(12)"><path d="M-14 10 L-24 60 L-6 50 L0 66 L8 10Z" fill="#3fa9f5" stroke="${OL}" stroke-width="4" stroke-linejoin="round"/>${starPath(0, 0, 34, 26, 12, 0, '#ffd23f', 4)}${txt('1', 0, 11, 30, OL, { sw: 0 })}</g>`;
+  return s + `</g>`;
+}
+function QSCENE(name, t, T, st) {
+  const fb = st.fb, ft = st.ft, ok = fb === 'ok';
+  const cheer = (c, i = 0) => Object.assign(c, { expr: 'laugh', la: UP, ra: UP, jump: Math.abs(Math.sin(T * 6 + i)) * 22, palms: false, thumb: false });
+  let R;
+  switch (name) {
+    case 'throw': {
+      const le = lane('le', { x: 380, red: 1, expr: 'angry', hat: false, ra: [150, -40], la: [25, -10], fx: [F('fire', 1), F('vein', 1)] });
+      const hat = hatProp(380 + 120, 330 + Math.sin(T * 6) * 10, T * 120, .9);
+      R = { bg: 'field', chars: [lane('an', { x: 920, face: -1, lx: 0, expr: 'surprised', fx: [F('bang', 1)] }), lane('kai', { x: 1080, face: -1, lx: 0, expr: 'surprised', fx: [F('bang', 1)] }), le], front: [hat] };
+      if (ok) { le.fx = [F('q', 1)]; le.expr = 'awkward'; le.red = 0; }
+      break;
+    }
+    case 'sad': {
+      R = { bg: 'field', chars: [lane('an', { x: 1000, face: -1, expr: 'happy' }), lane('kai', { x: 1150, face: -1, expr: 'happy' }), lane('le', { x: 560, expr: 'teary', ly: .5, fx: [F('cloud', 1, .8)] })],
+        back: [finishBack(380, true)], front: [finishFront(380, true)] };
+      break;
+    }
+    case 'friends': {
+      R = { bg: 'field', chars: [lane('an', { x: 880, face: -1, lx: 0, expr: 'surprised', la: [40, 0], ra: [40, 0], fx: [F('bang', 1), F('sweat', 1)] }), lane('kai', { x: 1060, face: -1, lx: 0, expr: 'shocked', la: [40, 0], ra: [40, 0], fx: [F('bang', 1, '！！'), F('sweat', 1)] }),
+        lane('le', { x: 360, red: .8, expr: 'angry', hat: false, la: FIST, ra: FIST, fx: [F('steam', 1)] })], front: [hatProp(600, 615, 540, .9)],
+        cam: { x: 760, y: 400, z: 1.15 } };
+      break;
+    }
+    case 'steps': {
+      const n = st.ord || 0, g = n - 1;
+      const mk = (id, x, face) => {
+        const o = { x, y: 690, s: .95, face, expr: 'neutral' };
+        if (g < 0) Object.assign(o, { expr: 'surprised', fx: [F('q', 1)] });
+        if (g === 0) Object.assign(o, { palms: true, la: PALM, ra: PALM, expr: 'determined' });
+        if (g === 1) { const b = breathe(T % 2.2, 0, 2.2); Object.assign(o, { la: BELLY, ra: BELLY, belly: b.b, expr: 'calm', mouthO: !b.inn }); }
+        if (g === 2) Object.assign(o, { ra: CHEST, expr: 'calm' });
+        if (g === 3) Object.assign(o, { ra: THUMB, thumb: 1, expr: 'happy' });
+        return P(id, o);
+      };
+      R = { bg: 'stage', pal: 'cool', chars: [mk('le', 330, 1), mk('kai', 950, -1)], ui: g >= 0 ? [stepCard(g, 640, 175, pop(T - (st.ordT || 0), 0, .45), T, { sub: true })] : [] };
+      break;
+    }
+    case 'feel': {
+      R = { bg: 'stage', pal: 'cool', chars: [P('le', { x: 420, y: 690, s: .95, ra: CHEST, expr: 'sad', talk: true, fx: [F('blueheart', 1)] }), P('kai', { x: 860, y: 690, s: .95, face: -1, expr: 'happy', htilt: Math.sin(T * 3) * 6 })] };
+      break;
+    }
+    case 'praise': {
+      R = { bg: 'field', chars: [lane('an', { x: 880, face: -1, expr: 'shy', fx: [F('hearts', 1)] }), lane('kai', { x: 1120, face: -1, expr: 'happy' }), lane('le', { x: 640, ra: THUMB, thumb: 1, expr: 'happy' })],
+        back: [finishBack(380, true)], front: [finishFront(380, true)] };
+      break;
+    }
+    case 'art': {
+      R = { bg: 'class', chars: [P('an', { x: 980, y: 700, s: .85, face: -1, expr: 'laugh', la: UP, ra: UP, jump: Math.abs(Math.sin(T * 5)) * 16 }), P('le', { x: 300, y: 700, s: .85, expr: 'teary', ly: .4, fx: [F('cloud', 1, .7)] })],
+        back: [easel(760, 520, 'sun', true), easel(520, 520, 'hill', false)] };
+      break;
+    }
+    case 'proud': {
+      R = { bg: 'field', chars: [lane('an', { x: 960, face: -1, expr: 'happy', la: [30, -70], ra: [30, -70] }), lane('kai', { x: 1120, face: -1, expr: 'happy' }),
+        lane('le', { x: 640, expr: 'proud', sticker: true, ra: [140, -30], la: [25, -100], fx: [F('spark', 1)] })], back: [finishBack(380, true)], front: [finishFront(380, true)] };
+      break;
+    }
+  }
+  return R;
+}
+
 // ===== 播放器 =====
 const SPK = {
   N:   { name: '旁白', col: '#ffc83d', pitch: 1, rate: 1, role: 'n' },
@@ -1061,6 +1274,8 @@ const SPK = {
   an:  { name: '小安', col: '#ff6fa8', pitch: 1.55, rate: 1.05, role: 'c' },
   kai: { name: '阿凱', col: '#2fbf8f', pitch: 1.1, rate: 1, role: 'c' },
   t:   { name: '林老師', col: '#7fa6ff', pitch: .8, rate: .95, role: 'c' },
+  mom: { name: '媽媽', col: '#b79bff', pitch: 1.2, rate: .95, role: 'c' },
+  dad: { name: '爸爸', col: '#6fa8ff', pitch: .75, rate: .95, role: 'c' },
 };
 const svg = document.getElementById('svg');
 const subWho = document.getElementById('subWho'), subText = document.getElementById('subText'), subBox = document.getElementById('sub');
@@ -1070,8 +1285,8 @@ const hasSpeech = 'speechSynthesis' in window;
 let si = 0, bi = 0, bt = 0, st = 0, T = 0, playing = false, ended = false, S = { scroll: 0 }, lastSpeed = 0, frozenT = 0;
 let speaking = false, started = false, uttId = 0, poster = true;
 const opt = { voiceOn: hasSpeech, subs: true, rate: .85, vN: '', vC: '' };
-try { const sv = JSON.parse(localStorage.getItem('brave-video-opt') || '{}'); Object.assign(opt, sv); if (!hasSpeech) opt.voiceOn = false; } catch (e) {}
-const saveOpt = () => { try { localStorage.setItem('brave-video-opt', JSON.stringify(opt)); } catch (e) {} };
+try { const sv = JSON.parse(localStorage.getItem('theater-video-opt') || '{}'); Object.assign(opt, sv); if (!hasSpeech) opt.voiceOn = false; } catch (e) {}
+const saveOpt = () => { try { localStorage.setItem('theater-video-opt', JSON.stringify(opt)); } catch (e) {} };
 
 const total = SCENES.reduce((a, s) => a + s.beats.reduce((b, x) => b + x.d, 0), 0);
 const cur = () => SCENES[si].beats[bi];
@@ -1272,6 +1487,7 @@ document.getElementById('testC').onclick = () => speakText('我一定要拿第�
 window.__seek = (s, b, t) => { si = s; bi = b; bt = t; st = t; frozenT = T; showSub(); render(); };
 si = 0; bi = 1; bt = 1.5; st = 1.5; T = 3; showSub(); updateUI();
 requestAnimationFrame(loop);
+
 
 </script>
 

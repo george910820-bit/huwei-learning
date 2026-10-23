@@ -55,6 +55,7 @@ h1.qt{color:var(--ink)}
 .opts{display:grid;gap:12px}
 .opts.yn{grid-template-columns:1fr 1fr}
 .opts.feel{grid-template-columns:1fr 1fr}
+.opts.feel.txt .opt{font-size:clamp(1rem,2.3vw,1.2rem);min-height:96px;padding:14px 12px}
 .opts.ord{grid-template-columns:1fr 1fr}
 .opt{font:inherit;font-family:var(--f-round);font-size:clamp(1.15rem,2.6vw,1.45rem);color:var(--ink);text-align:left;display:flex;align-items:center;gap:14px;min-width:0;position:relative;
   background:#fff;border:4px solid var(--ink);border-radius:20px;padding:14px 18px;cursor:pointer;box-shadow:0 6px 0 var(--ink);
@@ -73,7 +74,7 @@ h1.qt{color:var(--ink)}
 .opt.picked{background:#fff3c4;outline:5px solid var(--sun);outline-offset:2px}
 .opt.picked .tick{display:grid}
 .tile{justify-content:center;background:color-mix(in srgb,var(--c) 22%,#fff);font-size:clamp(1.4rem,3.2vw,1.8rem)}
-.slots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.slots{display:grid;grid-template-columns:repeat(var(--n,4),minmax(0,1fr));gap:8px}
 .slot{border:4px dashed #b9aecb;border-radius:16px;min-height:92px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px;text-align:center}
 .sl{font-size:.9rem;color:var(--muted);font-weight:700}
 .sv{font-family:var(--f-round);font-size:clamp(1rem,2.4vw,1.3rem);min-height:1.4em}
@@ -132,7 +133,7 @@ h1.qt{color:var(--ink)}
 </head>
 <body>
 <div class="wrap">
-  <header><span class="brand">溝通小劇場・勇敢挑戰題</span>
+  <header><span class="brand">虎尾小劇場・勇敢四步驟挑戰題</span>
     <div class="prog"><span id="count"></span><div id="dots" aria-hidden="true"></div>
       <button class="tool" id="vbtn" aria-expanded="false" aria-controls="vpanel">語音設定</button><button class="tool" id="sound" aria-pressed="true">音效：開</button></div></header>
   <div class="vpanel" id="vpanel" hidden>
@@ -180,7 +181,9 @@ const CH = {
   le:  { name: '阿樂', skin: '#ffd8b4', hair: '#5a3416', shirt: '#ff8a3d', pants: '#2f62d6', shoe: '#e8463c', style: 'spiky', cap: '#e63946', ph: 0, blink: .3 },
   an:  { name: '小安', skin: '#ffe2c8', hair: '#3b2240', shirt: '#ff6fa8', pants: '#7c5ce0', shoe: '#7c5ce0', style: 'pony', ph: 1.1, blink: 1.5 },
   kai: { name: '阿凱', skin: '#f3c9a1', hair: '#1f2230', shirt: '#2fbf8f', pants: '#4d5468', shoe: '#2a2f45', style: 'neat', glasses: true, ph: 2.2, blink: 2.4 },
-  t:   { name: '林老師', skin: '#f5cda6', hair: '#2a2a33', shirt: '#3b6fe0', pants: '#2c4fae', shoe: '#ffffff', style: 'short', adult: true, ph: .6, blink: .9 },
+  t:   { name: '林老師', skin: '#f5cda6', hair: '#2a2a33', shirt: '#3b6fe0', pants: '#2c4fae', shoe: '#ffffff', style: 'short', adult: true, coach: true, ph: .6, blink: .9 },
+  mom: { name: '媽媽', skin: '#ffdcc0', hair: '#4a2a20', shirt: '#9b7bff', pants: '#5b4bb0', shoe: '#3a2f5a', style: 'bun', adult: true, skirt: '#5b4bb0', ph: 1.7, blink: 2.0 },
+  dad: { name: '爸爸', skin: '#f0c39a', hair: '#26242e', shirt: '#4f8fd8', pants: '#3d4252', shoe: '#2a2f45', style: 'dad', adult: true, mustache: true, ph: .4, blink: 1.2 },
 };
 function P(id, o) {
   return Object.assign({ id, x: 640, y: 680, s: .85, face: 1, expr: 'neutral', talk: false, lx: .25, ly: 0,
@@ -230,7 +233,7 @@ function armSVG(side, a, d, c) {
   <line x1="${f1(p.ex)}" y1="${f1(p.ey)}" x2="${f1(p.hx)}" y2="${f1(p.hy)}" stroke="${OL}" stroke-width="25" stroke-linecap="round"/>
   <line x1="${p.sx}" y1="${p.sy}" x2="${f1(p.ex)}" y2="${f1(p.ey)}" stroke="${sleeve}" stroke-width="23" stroke-linecap="round"/>
   <line x1="${f1(p.ex)}" y1="${f1(p.ey)}" x2="${f1(p.hx)}" y2="${f1(p.hy)}" stroke="${d.adult ? sleeve : d.skin}" stroke-width="16" stroke-linecap="round"/>`;
-  if (d.adult) s += `<line x1="${p.sx}" y1="${p.sy}" x2="${f1(p.ex)}" y2="${f1(p.ey)}" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".9"/>`;
+  if (d.coach) s += `<line x1="${p.sx}" y1="${p.sy}" x2="${f1(p.ex)}" y2="${f1(p.ey)}" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".9"/>`;
   const hx = f1(p.hx), hy = f1(p.hy);
   if (c.palms) {
     const ang = p.r2 * 180 / Math.PI + 180;
@@ -245,10 +248,11 @@ function armSVG(side, a, d, c) {
   return s;
 }
 function legSVG(side, ang, d) {
-  const col = d.adult ? d.pants : d.skin;
+  const col = d.adult && !d.skirt ? d.pants : d.skin;
   return `<g transform="translate(${side * 22},-104) rotate(${f1(ang)})"><rect x="-13" y="-6" width="26" height="96" rx="12" fill="${col}" stroke="${OL}" stroke-width="4.5"/>${d.adult ? '' : `<rect x="-13" y="64" width="26" height="16" fill="#fff" stroke="${OL}" stroke-width="3.5"/>`}<ellipse cx="9" cy="94" rx="25" ry="13" fill="${d.shoe}" stroke="${OL}" stroke-width="4.5"/></g>`;
 }
 function hairBackSVG(d, T) {
+  if (d.style === 'bun') return `<circle cx="0" cy="-394" r="38" fill="${d.hair}" stroke="${OL}" stroke-width="5"/><path d="M-98 -300 Q-112 -230 -90 -206 L-80 -262Z M98 -300 Q112 -230 90 -206 L80 -262Z" fill="${d.hair}" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/>`;
   if (d.style !== 'pony') return '';
   const sw = Math.sin(T * 5 + d.ph) * 9;
   return `<g transform="translate(-74,-352) rotate(${f1(sw - 18)})"><path d="M0 0 C-64 8 -96 86 -52 150 C-34 104 -6 56 0 0Z" fill="${d.hair}" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/></g>
@@ -267,6 +271,8 @@ function hairFrontSVG(d) {
     <path d="M-98 -300 Q-114 -246 -96 -214 L-84 -262Z M98 -300 Q114 -246 96 -214 L84 -262Z" fill="${d.hair}" ${st}/>
     <g transform="translate(52,-350) rotate(20)"><path d="M0 0 L-18 -11 L-18 11Z M0 0 L18 -11 L18 11Z" fill="#ffd23f" stroke="${OL}" stroke-width="3.5"/><circle r="6" fill="#ff9f1c" stroke="${OL}" stroke-width="3"/></g>`;
   }
+  if (d.style === 'bun') return `<path d="M-100 -262 C-112 -410 112 -410 100 -262 L92 -312 Q40 -350 -6 -322 Q-50 -330 -92 -312Z" fill="${d.hair}" ${st}/>`;
+  if (d.style === 'dad') return `<path d="M-96 -276 C-108 -404 108 -404 96 -276 L88 -322 Q30 -352 -20 -330 L-34 -344 Q-60 -336 -88 -322Z" fill="${d.hair}" ${st}/>`;
   if (d.style === 'neat') {
     return `<path d="M-98 -268 C-114 -408 114 -408 98 -268 L90 -318 Q46 -356 -6 -330 Q-54 -312 -92 -318Z" fill="${d.hair}" ${st}/>`;
   }
@@ -286,7 +292,7 @@ function hatProp(x, y, rot, sc = 1) {
 // ---------- 表情 ----------
 const BROW = { neutral: [0, 0], happy: [-.2, -6], laugh: [-.2, -8], proud: [-.4, -8], surprised: [-.2, -18], shocked: [0, -24],
   angry: [1.25, 6], determined: [.8, 2], sad: [-1, 0], teary: [-1.1, -2], cry: [-1.2, -4], worried: [-1, -4], calm: [0, -2],
-  dizzy: [-.5, -6], awkward: [-.6, -2], tired: [-.5, 2], shy: [-.3, -4] };
+  dizzy: [-.5, -6], awkward: [-.6, -2], tired: [-.5, 2], shy: [-.3, -4], yuck: [.5, 2], yawn: [-.6, -8], weary: [-.7, 2] };
 function eyeSVG(e, cx, cy, sd, blink, T, d) {
   const ix = -sd;
   const oval = `<ellipse cx="${f1(cx)}" cy="${f1(cy)}" rx="11" ry="15" fill="${OL}"/><circle cx="${f1(cx + 3)}" cy="${f1(cy - 5)}" r="4.2" fill="#fff"/>`;
@@ -294,7 +300,8 @@ function eyeSVG(e, cx, cy, sd, blink, T, d) {
   const closedDn = `<path d="M${f1(cx - 13)} ${f1(cy)} Q${f1(cx)} ${f1(cy + 11)} ${f1(cx + 13)} ${f1(cy)}" fill="none" stroke="${OL}" stroke-width="6" stroke-linecap="round"/>`;
   const lid = (outerY, innerY) => `<path d="M${f1(cx - ix * 17)} ${f1(cy - 24)} L${f1(cx + ix * 17)} ${f1(cy - 24)} L${f1(cx + ix * 17)} ${f1(cy + innerY)} L${f1(cx - ix * 17)} ${f1(cy + outerY)}Z" fill="${d.skin}"/>`;
   if (['happy', 'laugh', 'proud', 'shy'].includes(e)) return closedUp;
-  if (e === 'calm' || e === 'cry') return closedDn;
+  if (e === 'calm' || e === 'cry' || e === 'yawn') return closedDn;
+  if (e === 'yuck') return `<path d="M${f1(cx - ix * 12)} ${f1(cy - 10)} L${f1(cx + ix * 10)} ${f1(cy)} L${f1(cx - ix * 12)} ${f1(cy + 10)}" fill="none" stroke="${OL}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>`;
   if (e === 'awkward') return `<path d="M${f1(cx - 13)} ${f1(cy)} L${f1(cx + 13)} ${f1(cy)}" stroke="${OL}" stroke-width="6" stroke-linecap="round"/>`;
   if (e === 'dizzy') {
     let pth = ''; for (let i = 0; i <= 26; i++) { const a = i * .5 + T * 8 * sd, r = 1 + i * .55; pth += (i ? 'L' : 'M') + f1(cx + Math.cos(a) * r) + ' ' + f1(cy + Math.sin(a) * r); }
@@ -308,14 +315,14 @@ function eyeSVG(e, cx, cy, sd, blink, T, d) {
   if (e === 'angry') return oval + lid(-16, -2);
   if (e === 'determined') return oval + lid(-20, -9) + `<path d="M${f1(cx + 3)} ${f1(cy - 9)} l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z" fill="#fff"/>`;
   if (e === 'sad' || e === 'worried') return oval + lid(-4, -16);
-  if (e === 'tired') return oval + lid(-6, -6);
+  if (e === 'tired' || e === 'weary') return oval + lid(-6, -6);
   if (e === 'teary') return `<ellipse cx="${f1(cx)}" cy="${f1(cy)}" rx="13" ry="16" fill="${OL}"/><circle cx="${f1(cx + 3)}" cy="${f1(cy - 5)}" r="5.5" fill="#fff"/><circle cx="${f1(cx - 4)}" cy="${f1(cy + 5)}" r="3" fill="#fff"/><ellipse cx="${f1(cx)}" cy="${f1(cy + 13)}" rx="13" ry="5" fill="#7cc8ff" opacity=".95"/>` + lid(-4, -18);
   return oval;
 }
 function mouthSVG(e, talk, T, mx, my, c) {
   const dark = '#6b1d2a';
   const g = (inner) => `<g transform="translate(${f1(mx)},${f1(my)})">${inner}</g>`;
-  if (talk && !['laugh', 'shocked'].includes(e)) {
+  if (talk && !['laugh', 'shocked', 'yawn'].includes(e)) {
     const o = clamp(.25 + .75 * Math.abs(Math.sin(T * 13.3) * Math.sin(T * 7.1 + 1)));
     if (e === 'angry') return g(`<path d="M-28 -6 L28 -6 L19 ${f1(12 + 22 * o)} L-19 ${f1(12 + 22 * o)}Z" fill="${dark}" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/><rect x="-22" y="-5" width="44" height="7" fill="#fff"/>`);
     if (['sad', 'teary', 'cry', 'worried'].includes(e)) return g(`<path d="M-20 6 Q0 -6 20 6 Q14 ${f1(10 + 18 * o)} 0 ${f1(12 + 18 * o)} Q-14 ${f1(10 + 18 * o)} -20 6Z" fill="${dark}" stroke="${OL}" stroke-width="4.5"/>`);
@@ -331,10 +338,13 @@ function mouthSVG(e, talk, T, mx, my, c) {
     case 'shocked': return g(`<ellipse cx="0" cy="12" rx="17" ry="30" fill="${dark}" stroke="${OL}" stroke-width="4.5"/>`);
     case 'angry': case 'determined':
       return g(`<rect x="-24" y="-8" width="48" height="19" rx="7" fill="#fff" stroke="${OL}" stroke-width="4.5"/><path d="M-12 -8 V11 M0 -8 V11 M12 -8 V11 M-24 1.5 H24" stroke="${OL}" stroke-width="3"/>`);
+    case 'weary': return g(`<path d="M-14 6 Q0 0 14 6" fill="none" stroke="${OL}" stroke-width="5.5" stroke-linecap="round"/>`);
     case 'sad': return g(`<path d="M-18 10 Q0 -6 18 10" fill="none" stroke="${OL}" stroke-width="5.5" stroke-linecap="round"/>`);
     case 'teary': return g(`<path d="M-22 8 q5.5 -7 11 0 t11 0 t11 0 t11 0" fill="none" stroke="${OL}" stroke-width="5" stroke-linecap="round"/>`);
     case 'cry': return g(`<path d="M-30 0 Q0 -14 30 0 Q22 30 0 32 Q-22 30 -30 0Z" fill="${dark}" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/>`);
     case 'worried': case 'awkward': return g(`<path d="M-20 4 q5 -6 10 0 t10 0 t10 0 t10 0" fill="none" stroke="${OL}" stroke-width="5" stroke-linecap="round"/>`);
+    case 'yawn': return g(`<ellipse cx="0" cy="8" rx="20" ry="30" fill="${dark}" stroke="${OL}" stroke-width="4.5"/><ellipse cx="0" cy="26" rx="10" ry="6" fill="#ff7b8a"/>`);
+    case 'yuck':
     case 'dizzy': return g(`<path d="M-20 4 q5 -6 10 0 t10 0 t10 0 t10 0" fill="none" stroke="${OL}" stroke-width="5" stroke-linecap="round"/><path d="M6 6 Q8 26 18 22 Q22 12 16 5Z" fill="#ff7b8a" stroke="${OL}" stroke-width="3.5"/>`);
     case 'tired': return g(`<ellipse cx="0" cy="4" rx="15" ry="12" fill="${dark}" stroke="${OL}" stroke-width="4.5"/><path d="M-7 10 Q-8 30 0 32 Q8 30 7 10Z" fill="#ff7b8a" stroke="${OL}" stroke-width="3.5"/>`);
     case 'calm': return g(`<path d="M-14 0 Q0 10 14 0" fill="none" stroke="${OL}" stroke-width="5" stroke-linecap="round"/>`);
@@ -361,6 +371,7 @@ function faceSVG(c, d, T) {
     }
   }
   s += mouthSVG(c.expr, c.talk, T, lx * .8, -236 + ly, c);
+  if (d.mustache) s += `<path d="M${f1(lx * .8 - 30)} ${f1(-254 + ly)} Q${f1(lx * .8 - 14)} ${f1(-268 + ly)} ${f1(lx * .8)} ${f1(-256 + ly)} Q${f1(lx * .8 + 14)} ${f1(-268 + ly)} ${f1(lx * .8 + 30)} ${f1(-254 + ly)} Q${f1(lx * .8)} ${f1(-246 + ly)} ${f1(lx * .8 - 30)} ${f1(-254 + ly)}Z" fill="${d.hair}"/>`;
   return s;
 }
 
@@ -377,8 +388,10 @@ function charSVG(c, T) {
   o += `<g transform="translate(0,-150) scale(${f1(b * 100) / 100},${f1((1 + (b - 1) * .4) * 100) / 100}) translate(0,150)">`;
   o += `<path d="M-50 -206 Q-60 -150 -56 -100 L56 -100 Q60 -150 50 -206 Q0 -224 -50 -206Z" fill="${d.shirt}" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/>`;
   if (d.adult) {
-    o += `<path d="M-56 -124 L56 -124 L58 -96 L-58 -96Z" fill="${d.pants}" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/>`;
-    o += `<path d="M-6 -214 L-6 -126" stroke="#fff" stroke-width="5"/><path d="M-28 -212 Q0 -168 28 -212" fill="none" stroke="${OL}" stroke-width="3"/><rect x="-10" y="-176" width="22" height="13" rx="5" fill="#c0c7d6" stroke="${OL}" stroke-width="3.5"/>`;
+    if (d.skirt) o += `<path d="M-56 -126 L56 -126 L78 -58 L-78 -58Z" fill="${d.skirt}" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/>`;
+    else o += `<path d="M-56 -124 L56 -124 L58 -96 L-58 -96Z" fill="${d.pants}" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/>`;
+    if (d.coach) o += `<path d="M-6 -214 L-6 -126" stroke="#fff" stroke-width="5"/><path d="M-28 -212 Q0 -168 28 -212" fill="none" stroke="${OL}" stroke-width="3"/><rect x="-10" y="-176" width="22" height="13" rx="5" fill="#c0c7d6" stroke="${OL}" stroke-width="3.5"/>`;
+    else o += `<path d="M-22 -214 L0 -190 L22 -214" fill="#fff" stroke="${OL}" stroke-width="4" stroke-linejoin="round"/>`;
   } else {
     o += `<path d="M-56 -124 L56 -124 L60 -86 L6 -86 L0 -100 L-6 -86 L-60 -86Z" fill="${d.pants}" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/>`;
     o += `<path d="M-20 -214 L0 -194 L20 -214" fill="none" stroke="${OL}" stroke-width="4" stroke-linejoin="round"/>`;
@@ -594,6 +607,41 @@ function fxSVG(c, T) {
         s += thinkBubble(f.p, h.x + sd * 230 * c.s + (f.dx || 0), h.y - 210 * c.s, 40, h.x + sd * 60 * c.s, h.y - 110 * c.s, sc);
         break;
       }
+      case 'zip': {
+        const px = -26 + clamp(a / .8) * 52;
+        let teeth = ''; for (let k = -3; k <= 3; k++) teeth += `<rect x="${k * 8 - 2.5}" y="-6" width="5" height="12" rx="1.5" fill="#d7dbe6" stroke="${OL}" stroke-width="1.5"/>`;
+        s += `<g transform="translate(${f1(h.x + c.lx * 8 * c.s * c.face)},${f1(h.y + 54 * c.s)}) scale(${f1(c.s * sc * 100) / 100})"><rect x="-34" y="-5" width="68" height="10" rx="5" fill="#7a4b3a"/>${teeth}<g transform="translate(${f1(px)},2)"><rect x="-7" y="-4" width="14" height="22" rx="4" fill="#ffc83d" stroke="${OL}" stroke-width="3"/></g></g>`;
+        break;
+      }
+      case 'mag': {
+        const bob = Math.sin(T * 3) * 6;
+        s += `<g transform="translate(${f1(h.x + c.face * 48 * c.s)},${f1(h.y + (6 + bob) * c.s)}) scale(${f1(c.s * sc * 100) / 100}) rotate(${c.face * -25})"><rect x="-9" y="34" width="18" height="60" rx="7" fill="#a5713f" stroke="${OL}" stroke-width="5"/><circle r="44" fill="#dff3ff" fill-opacity=".55" stroke="${OL}" stroke-width="9"/><path d="M-22 -18 q10 -12 26 -8" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/></g>`;
+        break;
+      }
+      case 'yawn': {
+        const ph = (T * .7) % 1;
+        s += g(txt('哈～', 0, 0, 44, '#fff', { sw: 8 }), c.face * (120 + ph * 40), 40 - ph * 50, 1);
+        break;
+      }
+      case 'sigh': {
+        const ph = (T * .9) % 1;
+        s += `<g transform="translate(${f1(h.x + c.face * (80 + ph * 90) * c.s)},${f1(h.y + (60 - ph * 30) * c.s)}) scale(${f1(c.s * (0.6 + ph * .7) * 100) / 100})" opacity="${f1((1 - ph) * 100) / 100}"><path d="M-30 0 q0 -24 22 -20 q8 -18 28 -6 q22 -4 16 18 q8 18 -18 18 h-34 q-20 0 -14 -10z" fill="#e7ecf5" stroke="${OL}" stroke-width="4"/></g>`;
+        break;
+      }
+      case 'phone':
+        s += `<g transform="translate(${f1(h.x + c.face * 100 * c.s)},${f1(h.y + 4 * c.s)}) scale(${f1(c.s * 100) / 100}) rotate(${c.face * 12})"><rect x="-16" y="-36" width="32" height="64" rx="7" fill="#2f3550" stroke="${OL}" stroke-width="4"/><rect x="-11" y="-28" width="22" height="44" rx="3" fill="#9fd3ff"/><circle cx="${c.face * -24}" cy="30" r="15" fill="${CH[c.id].skin}" stroke="${OL}" stroke-width="4"/></g>`;
+        break;
+      case 'heat': {
+        let w = '';
+        for (let k = 0; k < 3; k++) { const ph = (T * .8 + k / 3) % 1; w += `<path d="M${-50 + k * 50} ${f1(-110 - ph * 70)} q10 -12 0 -24 t0 -24" fill="none" stroke="#ff7b54" stroke-width="7" stroke-linecap="round" opacity="${f1((1 - ph) * 100) / 100}"/>`; }
+        s += g(w); break;
+      }
+      case 'monster': {
+        const ms = f.p ?? .5;
+        if (ms <= .02) break;
+        s += `<g transform="translate(${f1(h.x - c.face * (110 + ms * 60) * c.s)},${f1(h.y + (40 - ms * 70) * c.s)}) scale(${f1(c.s * ms * 100) / 100})">${monsterSVG(T, f.mood || 'grin')}</g>`;
+        break;
+      }
       case 'say': {
         const sd = f.side || c.face;
         s += bubble(f.p, h.x + sd * (f.dx ?? 230) * c.s, h.y - (f.dy ?? 200) * c.s, f.size || 42, h.x + sd * 60 * c.s, h.y - 90 * c.s, { sc, spiky: f.spiky, fill: f.fill, color: f.color });
@@ -659,13 +707,13 @@ function bgField(T, sc) {
   for (let x = off4 - 140; x < 1600; x += 140) for (const yy of [598, 651, 702]) s += `<rect x="${f1(x)}" y="${yy}" width="44" height="5" rx="2.5" fill="#fff" opacity=".35"/>`;
   return s;
 }
-function bgClass(T) {
+function bgClass(T, o = {}) {
   let s = `<rect x="-500" y="-400" width="2280" height="1520" fill="#ffe7c2"/>`;
   s += `<rect x="-500" y="430" width="2280" height="20" fill="#e9b97c"/><rect x="-500" y="450" width="2280" height="400" fill="#f5c98f"/>`;
   for (let x = -40; x < 1320; x += 110) s += `<line x1="${x}" y1="450" x2="${x - 60}" y2="760" stroke="#e3ad6c" stroke-width="4"/>`;
   s += `<rect x="150" y="80" width="560" height="250" rx="10" fill="#b77a45" stroke="${OL}" stroke-width="5"/><rect x="168" y="96" width="524" height="218" fill="#2f5d4a"/>`;
-  s += txt('下課時間', 330, 190, 54, '#f4f7ef', { sw: 0, w: 700 }) + `<g opacity=".85">${starPath(560, 170, 30, 13, 5, -90, 'none', 0).replace('fill="none"', 'fill="none" stroke="#ffe680" stroke-width="5"')}</g><circle cx="610" cy="250" r="26" fill="none" stroke="#ffd0e0" stroke-width="5"/><path d="M598 246 h3 M617 246 h3 M600 258 q10 8 20 0" stroke="#ffd0e0" stroke-width="5" fill="none" stroke-linecap="round"/>`;
-  s += `<rect x="860" y="80" width="300" height="250" rx="10" fill="url(#win)" stroke="${OL}" stroke-width="6"/>${cloud(960 + Math.sin(T * .3) * 30, 170, .55)}<line x1="1010" y1="80" x2="1010" y2="330" stroke="${OL}" stroke-width="6"/><line x1="860" y1="205" x2="1160" y2="205" stroke="${OL}" stroke-width="6"/>`;
+  s += txt(o.board || '下課時間', 330, 190, 54, '#f4f7ef', { sw: 0, w: 700 }) + `<g opacity=".85">${starPath(560, 170, 30, 13, 5, -90, 'none', 0).replace('fill="none"', 'fill="none" stroke="#ffe680" stroke-width="5"')}</g><circle cx="610" cy="250" r="26" fill="none" stroke="#ffd0e0" stroke-width="5"/><path d="M598 246 h3 M617 246 h3 M600 258 q10 8 20 0" stroke="#ffd0e0" stroke-width="5" fill="none" stroke-linecap="round"/>`;
+  s += `<rect x="860" y="80" width="300" height="250" rx="10" fill="url(#win)" stroke="${OL}" stroke-width="6"/>${o.rain ? '' : cloud(960 + Math.sin(T * .3) * 30, 170, .55)}${o.rain ? rainWin(T) : ''}${o.hot ? `<circle cx="1090" cy="130" r="34" fill="#ffb703" stroke="${OL}" stroke-width="4"/>` : ''}<line x1="1010" y1="80" x2="1010" y2="330" stroke="${OL}" stroke-width="6"/><line x1="860" y1="205" x2="1160" y2="205" stroke="${OL}" stroke-width="6"/>`;
   s += `<circle cx="780" cy="70" r="34" fill="#fff" stroke="${OL}" stroke-width="5"/><line x1="780" y1="70" x2="780" y2="48" stroke="${OL}" stroke-width="4" stroke-linecap="round"/><line x1="780" y1="70" x2="${f1(780 + Math.cos(T * .8) * 18)}" y2="${f1(70 + Math.sin(T * .8) * 18)}" stroke="#e8463c" stroke-width="4" stroke-linecap="round"/>`;
   const cols = ['#ff6b57', '#ffc83d', '#37c99b', '#3fa9f5', '#ff6fa8'];
   let flags = `<path d="M-20 28 Q640 70 1300 28" fill="none" stroke="${OL}" stroke-width="3"/>`;
@@ -674,29 +722,34 @@ function bgClass(T) {
 }
 function drawBG(R, T, S) {
   if (R.bg === 'field') return bgField(T, S.scroll);
-  if (R.bg === 'class') return bgClass(T);
+  if (R.bg === 'class') return bgClass(T, R.bgo || {});
+  if (R.bg === 'home') return bgHome(T, R.bgo || {});
   return bgStage(T, PAL[R.pal || 'warm']);
 }
 
-// ---------- 勇敢四步驟 ----------
-const STEPS = [
-  { n: 1, t: '停一停', c: '#ff6b57', say: '先不要動、不要丟東西' },
-  { n: 2, t: '吸口氣', c: '#3fa9f5', say: '慢慢吸、慢慢吐，三次' },
-  { n: 3, t: '說心情', c: '#ff6fa8', say: '我很難過，因為我輸了' },
-  { n: 4, t: '說好話', c: '#2fbf8f', say: '恭喜你！下次再加油！' },
-];
-function stepIcon(i, T) {
-  if (i === 0) {
-    let d = ''; for (let k = 0; k < 8; k++) { const a = (k * 45 + 22.5) * Math.PI / 180; d += (k ? 'L' : 'M') + f1(Math.cos(a) * 52) + ' ' + f1(Math.sin(a) * 52); }
-    return `<path d="${d}Z" fill="#e8343a" stroke="${OL}" stroke-width="6" stroke-linejoin="round"/><path d="${d}Z" fill="none" stroke="#fff" stroke-width="4" transform="scale(.82)"/>${txt('停', 0, 17, 48, '#fff', { sw: 0 })}`;
-  }
-  if (i === 1) {
-    const b = 1 + Math.sin(T * 3) * .08;
-    return `<g transform="scale(${f1(b * 100) / 100})"><circle r="50" fill="#e4f4ff" stroke="${OL}" stroke-width="6"/><path d="M-32 -12 q16 -14 32 0 t32 0" fill="none" stroke="#3fa9f5" stroke-width="8" stroke-linecap="round"/><path d="M-32 6 q16 -14 32 0 t26 0" fill="none" stroke="#3fa9f5" stroke-width="8" stroke-linecap="round"/><path d="M-26 24 q14 -12 28 0" fill="none" stroke="#3fa9f5" stroke-width="8" stroke-linecap="round"/></g>`;
-  }
-  if (i === 2) return `${heartPath(0, 4, 44, '#ff6fa8', 6)}<circle cx="-14" cy="-4" r="5" fill="${OL}"/><circle cx="14" cy="-4" r="5" fill="${OL}"/><path d="M-10 12 Q0 20 10 12" fill="none" stroke="${OL}" stroke-width="4" stroke-linecap="round"/>`;
-  return `<g transform="rotate(${f1(Math.sin(T * 4) * 8)})"><rect x="-34" y="-8" width="58" height="52" rx="16" fill="#ffd8b4" stroke="${OL}" stroke-width="6"/><rect x="-14" y="-52" width="22" height="52" rx="11" fill="#ffd8b4" stroke="${OL}" stroke-width="6"/><path d="M-30 12 h40 M-30 28 h40" stroke="${OL}" stroke-width="4" stroke-linecap="round"/><rect x="24" y="0" width="16" height="44" rx="6" fill="#2fbf8f" stroke="${OL}" stroke-width="5"/></g>`;
-}
+// ---------- 步驟圖示 ----------
+const ICON = {
+  stop: T => { let d = ''; for (let k = 0; k < 8; k++) { const a = (k * 45 + 22.5) * Math.PI / 180; d += (k ? 'L' : 'M') + f1(Math.cos(a) * 52) + ' ' + f1(Math.sin(a) * 52); }
+    return `<path d="${d}Z" fill="#e8343a" stroke="${OL}" stroke-width="6" stroke-linejoin="round"/><path d="${d}Z" fill="none" stroke="#fff" stroke-width="4" transform="scale(.82)"/>${txt('停', 0, 17, 48, '#fff', { sw: 0 })}`; },
+  breath: T => { const b = 1 + Math.sin(T * 3) * .08;
+    return `<g transform="scale(${f1(b * 100) / 100})"><circle r="50" fill="#e4f4ff" stroke="${OL}" stroke-width="6"/><path d="M-32 -12 q16 -14 32 0 t32 0" fill="none" stroke="#3fa9f5" stroke-width="8" stroke-linecap="round"/><path d="M-32 6 q16 -14 32 0 t26 0" fill="none" stroke="#3fa9f5" stroke-width="8" stroke-linecap="round"/><path d="M-26 24 q14 -12 28 0" fill="none" stroke="#3fa9f5" stroke-width="8" stroke-linecap="round"/></g>`; },
+  heart: T => `${heartPath(0, 4, 44, '#ff6fa8', 6)}<circle cx="-14" cy="-4" r="5" fill="${OL}"/><circle cx="14" cy="-4" r="5" fill="${OL}"/><path d="M-10 12 Q0 20 10 12" fill="none" stroke="${OL}" stroke-width="4" stroke-linecap="round"/>`,
+  thumb: T => `<g transform="rotate(${f1(Math.sin(T * 4) * 8)})"><rect x="-34" y="-8" width="58" height="52" rx="16" fill="#ffd8b4" stroke="${OL}" stroke-width="6"/><rect x="-14" y="-52" width="22" height="52" rx="11" fill="#ffd8b4" stroke="${OL}" stroke-width="6"/><path d="M-30 12 h40 M-30 28 h40" stroke="${OL}" stroke-width="4" stroke-linecap="round"/><rect x="24" y="0" width="16" height="44" rx="6" fill="#2fbf8f" stroke="${OL}" stroke-width="5"/></g>`,
+  zip: T => { let t2 = ''; for (let k = -3; k <= 3; k++) t2 += `<rect x="${k * 11 - 3}" y="-8" width="6" height="16" rx="2" fill="#b8bfd0" stroke="${OL}" stroke-width="2"/>`;
+    const px = -30 + ((T * .6) % 1) * 60;
+    return `<circle r="50" fill="#ffe0e6" stroke="${OL}" stroke-width="6"/><rect x="-40" y="-6" width="80" height="12" rx="6" fill="#7a4b3a"/>${t2}<g transform="translate(${f1(px)},0)"><rect x="-9" y="-6" width="18" height="30" rx="5" fill="#ffc83d" stroke="${OL}" stroke-width="4"/></g>`; },
+  mag: T => `<g transform="rotate(${f1(-20 + Math.sin(T * 3) * 10)})"><rect x="-8" y="26" width="16" height="44" rx="6" fill="#a5713f" stroke="${OL}" stroke-width="5"/><circle cx="0" cy="-8" r="38" fill="#dff3ff" stroke="${OL}" stroke-width="8"/><path d="M-18 -22 q10 -10 22 -6" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round"/></g>`,
+  bulb: T => { let r = ''; for (let k = 0; k < 7; k++) { const a = (-180 + k * 30) * Math.PI / 180, L = 60 + Math.sin(T * 8 + k) * 6; r += `<line x1="${f1(Math.cos(a) * 44)}" y1="${f1(Math.sin(a) * 44 - 6)}" x2="${f1(Math.cos(a) * L)}" y2="${f1(Math.sin(a) * L - 6)}" stroke="#ffb703" stroke-width="7" stroke-linecap="round"/>`; }
+    return r + `<circle cx="0" cy="-6" r="34" fill="#fff36b" stroke="${OL}" stroke-width="6"/><rect x="-14" y="26" width="28" height="20" rx="5" fill="#b8bfd0" stroke="${OL}" stroke-width="5"/>`; },
+  eye: T => { const bl = (T % 3) < .15; return `<path d="M-52 0 Q0 -46 52 0 Q0 46 -52 0Z" fill="#fff" stroke="${OL}" stroke-width="6"/>${bl ? `<path d="M-40 0 H40" stroke="${OL}" stroke-width="6"/>` : `<circle r="20" fill="#3fa9f5" stroke="${OL}" stroke-width="5"/><circle r="9" fill="${OL}"/><circle cx="6" cy="-6" r="4" fill="#fff"/>`}`; },
+  think: T => `<g fill="#fff" stroke="${OL}" stroke-width="6"><circle cx="-34" cy="18" r="8"/><circle cx="-20" cy="4" r="11"/></g><path d="M-14 -8 C-30 -30 -6 -52 14 -42 C30 -58 56 -40 46 -20 C62 -4 44 18 26 10 C14 24 -10 18 -14 -8Z" fill="#fff" stroke="${OL}" stroke-width="6" stroke-linejoin="round"/>${txt('？', 18, -6, 40, '#9b7bff', { sw: 0 })}`,
+  ask: T => `<path d="M-46 -34 h92 a12 12 0 0 1 12 12 v44 a12 12 0 0 1 -12 12 h-50 l-24 20 v-20 h-18 a12 12 0 0 1 -12 -12 v-44 a12 12 0 0 1 12 -12Z" fill="#fff" stroke="${OL}" stroke-width="6" stroke-linejoin="round"/>${txt('？', 0, 14, 48, '#ff6b57', { sw: 0 })}`,
+  help: T => `<g transform="translate(0,${f1(Math.sin(T * 3) * 4)})"><path d="M-40 6 q0 30 40 30 q40 0 40 -30Z" fill="#ffd8b4" stroke="${OL}" stroke-width="6" stroke-linejoin="round"/>${heartPath(0, -18, 24, '#ff5d8f', 5)}</g>`,
+  name: T => `<rect x="-52" y="-34" width="104" height="68" rx="14" fill="#fff" stroke="${OL}" stroke-width="6"/><rect x="-52" y="-34" width="104" height="22" rx="10" fill="#ff6b57"/><path d="M-52 -14 H52" stroke="${OL}" stroke-width="5"/>${txt('阿凱', 0, 22, 30, OL, { sw: 0 })}`,
+  talk: T => `<path d="M-46 -34 h92 a12 12 0 0 1 12 12 v44 a12 12 0 0 1 -12 12 h-50 l-24 20 v-20 h-18 a12 12 0 0 1 -12 -12 v-44 a12 12 0 0 1 12 -12Z" fill="#e4f4ff" stroke="${OL}" stroke-width="6" stroke-linejoin="round"/><path d="M-30 -12 h60 M-30 6 h40" stroke="#3fa9f5" stroke-width="8" stroke-linecap="round"/>`,
+  wish: T => `<g transform="rotate(${f1(T * 30 % 360)})">${starPath(0, 0, 50, 22, 5, -90, '#ffd23f', 6)}</g>`,
+};
+function stepIcon(i, T) { return (ICON[STEPS[i].ic] || ICON.wish)(T); }
 function stepCard(i, cx, cy, sc, T, o = {}) {
   if (sc <= .01) return '';
   const st = STEPS[i], w = o.w || 700, h = o.h || 170;
@@ -710,7 +763,7 @@ function stepCard(i, cx, cy, sc, T, o = {}) {
 }
 function chips(active, T, done = -1) {
   let s = '';
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < STEPS.length; i++) {
     const st = STEPS[i], on = i === active, x = 30 + i * 176, y = 26, sc = on ? 1 + Math.sin(T * 6) * .03 : 1;
     const fill = on ? st.c : (i <= done ? '#fffaf0' : 'rgba(255,250,240,.75)');
     s += `<g transform="translate(${x + 80},${y + 30}) scale(${f1(sc * 100) / 100})"><rect x="-80" y="-30" width="160" height="60" rx="30" fill="${fill}" stroke="${OL}" stroke-width="5"/><circle cx="-48" cy="0" r="20" fill="${on ? '#fff' : st.c}" stroke="${OL}" stroke-width="4"/>${txt(st.n, -48, 10, 28, on ? st.c : '#fff', { sw: 0 })}${txt(st.t, 14, 11, 30, on ? '#fff' : OL, { sw: 0 })}</g>`;
@@ -718,7 +771,7 @@ function chips(active, T, done = -1) {
   return s;
 }
 function titleSVG(t, T, y1 = 190, y2 = 318, sc = 1) {
-  const l1 = [...'最後一名，'], l2 = [...'也是勇敢的人'];
+  const l1 = [...TITLE_LINES[0]], l2 = [...TITLE_LINES[1]];
   let s = `<g transform="translate(640,0) scale(${sc}) translate(-640,0)">`;
   const line = (arr, y, size, fill, t0) => {
     const w = arr.length * size;
@@ -732,6 +785,68 @@ function titleSVG(t, T, y1 = 190, y2 = 318, sc = 1) {
   line(l1, y1, 104, '#fffaf0', .2);
   line(l2, y2, 124, '#ff6b57', .55);
   return s + '</g>';
+}
+
+// ---------- 抱怨小怪獸 ----------
+function monsterSVG(T, mood = 'grin') {
+  const wob = Math.sin(T * 4) * 6, sq = 1 + Math.sin(T * 4) * .04;
+  const eyes = mood === 'scared'
+    ? `<circle cx="-30" cy="-30" r="18" fill="#fff" stroke="${OL}" stroke-width="5"/><circle cx="30" cy="-30" r="18" fill="#fff" stroke="${OL}" stroke-width="5"/><circle cx="-30" cy="-28" r="6" fill="${OL}"/><circle cx="30" cy="-28" r="6" fill="${OL}"/><path d="M-48 -56 L-16 -48 M48 -56 L16 -48" stroke="${OL}" stroke-width="6" stroke-linecap="round"/>`
+    : `<circle cx="-30" cy="-28" r="16" fill="#fff36b" stroke="${OL}" stroke-width="5"/><circle cx="30" cy="-28" r="16" fill="#fff36b" stroke="${OL}" stroke-width="5"/><circle cx="-26" cy="-26" r="7" fill="${OL}"/><circle cx="34" cy="-26" r="7" fill="${OL}"/><path d="M-50 -54 L-12 -40 M50 -54 L12 -40" stroke="${OL}" stroke-width="7" stroke-linecap="round"/>`;
+  const mouth = mood === 'scared'
+    ? `<path d="M-24 22 q8 -10 16 0 t16 0 t16 0" fill="none" stroke="${OL}" stroke-width="6" stroke-linecap="round"/>`
+    : `<path d="M-40 10 Q0 52 40 10 Z" fill="#5a1630" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/><path d="M-30 12 l8 10 l8 -10 l8 10 l8 -10 l8 10 l8 -10" fill="#fff" stroke="${OL}" stroke-width="2.5" stroke-linejoin="round"/>`;
+  return `<g transform="translate(0,${f1(wob)}) scale(${f1(1 / sq * 100) / 100},${f1(sq * 100) / 100})">
+  <path d="M-46 -78 L-62 -128 L-22 -92Z M46 -78 L62 -128 L22 -92Z" fill="#ffb3e1" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M-92 40 C-110 -40 -70 -104 0 -104 C70 -104 110 -40 92 40 C84 80 54 96 30 84 C18 104 -18 104 -30 84 C-54 96 -84 80 -92 40Z" fill="#9b5de5" stroke="${OL}" stroke-width="6" stroke-linejoin="round"/>
+  <ellipse cx="-50" cy="-60" rx="16" ry="9" fill="#c9a3ff" opacity=".8" transform="rotate(-30 -50 -60)"/>
+  <path d="M-92 10 q-30 -10 -34 -34" fill="none" stroke="${OL}" stroke-width="12" stroke-linecap="round"/><path d="M-92 10 q-30 -10 -34 -34" fill="none" stroke="#9b5de5" stroke-width="6" stroke-linecap="round"/>
+  <path d="M92 10 q30 -10 34 -34" fill="none" stroke="${OL}" stroke-width="12" stroke-linecap="round"/><path d="M92 10 q30 -10 34 -34" fill="none" stroke="#9b5de5" stroke-width="6" stroke-linecap="round"/>
+  ${eyes}${mouth}</g>`;
+}
+// ---------- 道具 ----------
+function trayProp(x, y, sc = 1) {
+  return `<g transform="translate(${f1(x)},${f1(y)}) scale(${sc})"><rect x="-80" y="-30" width="160" height="60" rx="14" fill="#cfd6e4" stroke="${OL}" stroke-width="5"/><circle cx="-40" cy="0" r="22" fill="#fff" stroke="${OL}" stroke-width="3"/><path d="M-56 0 q8 -12 16 -4 q8 -14 18 -2" fill="#5fbf5a" stroke="${OL}" stroke-width="3"/><circle cx="16" cy="0" r="22" fill="#fff" stroke="${OL}" stroke-width="3"/><path d="M4 8 q-4 -22 14 -22 q16 0 14 14 q-2 12 -16 12z" fill="#d98a3a" stroke="${OL}" stroke-width="3"/><rect x="48" y="-20" width="22" height="40" rx="6" fill="#fff" stroke="${OL}" stroke-width="3"/></g>`;
+}
+function bagProp(x, y, col = '#f4a261', sc = 1) {
+  return `<g transform="translate(${f1(x)},${f1(y)}) scale(${sc})"><path d="M-18 -30 q18 -26 36 0" fill="none" stroke="${OL}" stroke-width="6"/><path d="M-34 -30 h68 l6 72 h-80z" fill="${col}" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/><path d="M-10 -40 q4 -14 14 -6 q10 -12 14 4" fill="#5fbf5a" stroke="${OL}" stroke-width="3"/></g>`;
+}
+function eraserProp(x, y, rot = 0, sc = 1) {
+  return `<g transform="translate(${f1(x)},${f1(y)}) rotate(${f1(rot)}) scale(${sc})"><rect x="-26" y="-13" width="52" height="26" rx="6" fill="#fff" stroke="${OL}" stroke-width="4"/><rect x="-26" y="-13" width="24" height="26" rx="6" fill="#4fa3f7" stroke="${OL}" stroke-width="4"/></g>`;
+}
+function cupProp(x, y, sc = 1) {
+  return `<g transform="translate(${f1(x)},${f1(y)}) scale(${sc})"><path d="M-18 -26 h36 l-5 52 h-26z" fill="#e8f6ff" stroke="${OL}" stroke-width="4" stroke-linejoin="round"/><path d="M-15 -8 h30 l-3 32 h-24z" fill="#7cc8ff"/></g>`;
+}
+function bookProp(x, y, label = '作業', sc = 1) {
+  return `<g transform="translate(${f1(x)},${f1(y)}) scale(${sc})"><rect x="-56" y="10" width="112" height="22" rx="4" fill="#ff8a6b" stroke="${OL}" stroke-width="4"/><rect x="-52" y="-12" width="104" height="22" rx="4" fill="#ffd23f" stroke="${OL}" stroke-width="4"/><rect x="-58" y="-34" width="116" height="22" rx="4" fill="#7fb6ff" stroke="${OL}" stroke-width="4"/>${txt(label, 0, -16, 18, OL, { sw: 0 })}</g>`;
+}
+function bgHome(T, o = {}) {
+  let s = `<rect x="-500" y="-400" width="2280" height="1520" fill="#ffe4cc"/>`;
+  for (let x = -480; x < 1760; x += 64) s += `<rect x="${x}" y="-400" width="30" height="850" fill="#ffd9b8" opacity=".55"/>`;
+  s += `<rect x="-500" y="440" width="2280" height="16" fill="#d9a06b"/><rect x="-500" y="456" width="2280" height="400" fill="#c98b5a"/>`;
+  for (let x = -40; x < 1320; x += 130) s += `<line x1="${x}" y1="456" x2="${x - 70}" y2="760" stroke="#b67a4a" stroke-width="4"/>`;
+  s += `<ellipse cx="660" cy="640" rx="430" ry="70" fill="#e76f51" opacity=".55"/><ellipse cx="660" cy="640" rx="380" ry="54" fill="none" stroke="#fff3e0" stroke-width="5" stroke-dasharray="14 10" opacity=".7"/>`;
+  // door
+  s += `<rect x="60" y="150" width="200" height="300" rx="8" fill="#a8693d" stroke="${OL}" stroke-width="6"/><rect x="84" y="176" width="152" height="110" rx="6" fill="#bd7d4d" stroke="${OL}" stroke-width="3"/><rect x="84" y="306" width="152" height="120" rx="6" fill="#bd7d4d" stroke="${OL}" stroke-width="3"/><circle cx="230" cy="310" r="10" fill="#ffd23f" stroke="${OL}" stroke-width="3"/>`;
+  // window
+  const sky = o.day ? ['#8fd6ff', '#e3f7ff'] : ['#ff9e6d', '#7b5ea7'];
+  s += `<defs><linearGradient id="homeSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${sky[1]}"/><stop offset="1" stop-color="${sky[0]}"/></linearGradient></defs>`;
+  s += `<rect x="420" y="90" width="320" height="230" rx="10" fill="url(#homeSky)" stroke="${OL}" stroke-width="6"/>`;
+  if (!o.day) s += `<circle cx="660" cy="150" r="26" fill="#fff6c9"/><circle cx="672" cy="142" r="22" fill="#cdb4ec"/>`;
+  else s += cloud(560 + Math.sin(T * .3) * 30, 190, .5);
+  s += `<line x1="580" y1="90" x2="580" y2="320" stroke="${OL}" stroke-width="6"/><line x1="420" y1="205" x2="740" y2="205" stroke="${OL}" stroke-width="6"/><path d="M400 80 q40 120 0 260 h40 q-20 -130 0 -260z M760 80 q-40 120 0 260 h-40 q20 -130 0 -260z" fill="#ff8fab" stroke="${OL}" stroke-width="4"/>`;
+  // picture
+  s += `<rect x="830" y="110" width="150" height="110" rx="8" fill="#fff8ec" stroke="${OL}" stroke-width="6"/><circle cx="870" cy="160" r="16" fill="#ffd8b4" stroke="${OL}" stroke-width="3"/><circle cx="906" cy="166" r="12" fill="#ffd8b4" stroke="${OL}" stroke-width="3"/><circle cx="940" cy="160" r="16" fill="#ffd8b4" stroke="${OL}" stroke-width="3"/><path d="M850 205 q60 -26 120 0" fill="#7fc97f" stroke="${OL}" stroke-width="3"/>`;
+  // lamp
+  s += `<line x1="1210" y1="230" x2="1210" y2="450" stroke="${OL}" stroke-width="7"/><path d="M1170 230 h80 l-14 -56 h-52z" fill="#ffe28a" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/>${o.day ? '' : `<path d="M1170 230 L1120 420 H1300 L1250 230Z" fill="#fff3b0" opacity=".25"/>`}`;
+  // sofa
+  s += `<rect x="830" y="330" width="330" height="130" rx="30" fill="#4fae9a" stroke="${OL}" stroke-width="6"/><rect x="810" y="410" width="370" height="80" rx="24" fill="#5cc1ab" stroke="${OL}" stroke-width="6"/><rect x="800" y="380" width="56" height="120" rx="22" fill="#4fae9a" stroke="${OL}" stroke-width="6"/><rect x="1134" y="380" width="56" height="120" rx="22" fill="#4fae9a" stroke="${OL}" stroke-width="6"/><rect x="900" y="360" width="80" height="60" rx="18" fill="#ffd23f" stroke="${OL}" stroke-width="5"/>`;
+  return s;
+}
+function rainWin(T) {
+  let s = `<rect x="863" y="83" width="294" height="244" fill="#8e9bb5"/>`;
+  for (let i = 0; i < 18; i++) { const x = 870 + (i * 53) % 280, y = 90 + ((T * 260 + i * 41) % 230); s += `<line x1="${x}" y1="${f1(y)}" x2="${x - 6}" y2="${f1(y + 20)}" stroke="#e3f1ff" stroke-width="4" stroke-linecap="round"/>`; }
+  return s + cloud(930, 120, .45).replace('fill="#fff"', 'fill="#c3cad8"') + cloud(1080, 110, .4).replace('fill="#fff"', 'fill="#c3cad8"');
 }
 
 // ===== 《最後一名，也是勇敢的人》分場腳本 =====
@@ -799,7 +914,313 @@ function racers(S, T, o) {
 }
 
 
-// ===== 勇敢挑戰題 =====
+const TITLE_LINES = ["最後一名，", "也是勇敢的人"];
+const META = {"title": "最後一名，也是勇敢的人", "quizTitle": "勇敢四步驟挑戰題", "skill": "勇敢四步驟", "cast": ["le", "an", "kai"], "noCheer": ["throw", "steps"], "fbLow": ["steps"]};
+const STEPS = [
+  { n: 1, t: '停一停', c: '#ff6b57', ic: 'stop', say: '先不要動、不要丟東西' },
+  { n: 2, t: '吸口氣', c: '#3fa9f5', ic: 'breath', say: '慢慢吸、慢慢吐，三次' },
+  { n: 3, t: '說心情', c: '#ff6fa8', ic: 'heart', say: '我很難過，因為我輸了' },
+  { n: 4, t: '說好話', c: '#2fbf8f', ic: 'thumb', say: '恭喜你！下次再加油！' },
+];
+const SCENES = [
+  { name: '開場', tr: 'iris', beats: [
+    { who: 'N', text: '今天，我們要看一個小故事。', d: 4.5, act: (t, T) => {
+      const ids = ['le', 'an', 'kai'], xs = [360, 640, 920], fc = [1, 1, -1];
+      const chars = ids.map((id, i) => {
+        const at = .9 + i * .22, u = (t - (at + .62)) / .3, sq = u > 0 && u < 1 ? Math.sin(u * Math.PI) * .2 : 0;
+        const landed = t > at + .62;
+        return P(id, { x: xs[i], y: kf(t, [[at, 1150], [at + .42, 630, 'out'], [at + .62, 700, 'in']]), s: .75, face: fc[i], sy: 1 - sq, sx: 1 + sq * .7,
+          expr: landed ? 'happy' : 'surprised', lx: 0, la: id === 'an' && landed ? UP : [12, 0], ra: landed ? (id === 'an' ? UP : wave(T)) : [12, 0] });
+      });
+      return { bg: 'stage', pal: 'warm', chars, ui: [titleSVG(t, T)] };
+    } },
+    { who: 'N', text: '故事的名字叫做：最後一名，也是勇敢的人！', d: 6, act: (t, T) => {
+      const ids = ['le', 'an', 'kai'], xs = [360, 640, 920], fc = [1, 1, -1];
+      const chars = ids.map((id, i) => P(id, { x: xs[i], y: 700, s: .75, face: fc[i], lx: 0, jump: Math.max(0, Math.sin(T * 5 + i * 2)) * 34,
+        expr: i === 1 ? 'laugh' : 'happy', la: id === 'an' ? UP : [12, 0], ra: id === 'an' ? UP : wave(T + i), fx: id === 'le' ? [F('spark', t)] : [] }));
+      return { bg: 'stage', pal: 'warm', chars, ui: [titleSVG(9, T), confetti(t - .3, 1)] };
+    } },
+  ] },
+  { name: '比賽開始', tr: 'wipe', beats: [
+    { who: 'N', text: '今天體育課要賽跑，大家都想拿第一名！', d: 5, act: (t, T, S) => {
+      const chars = [
+        lane('an', { x: 480, expr: 'happy', la: [150, -20 + Math.sin(T * 3) * 15], ra: [150, -20 - Math.sin(T * 3) * 15], tilt: Math.sin(T * 2) * 6 }),
+        lane('kai', { x: 350, expr: 'happy', la: [95, -20], ra: [95, -20], tilt: Math.sin(T * 2 + 1) * 9 }),
+        lane('le', { x: 215, jump: Math.abs(Math.sin(T * 7)) * 14, expr: t < 2.2 ? 'happy' : 'determined', la: [25, -90], ra: t > 2.2 ? [140, -30 + Math.sin(T * 10) * 15] : [25, -90], fx: t > 2.2 ? [F('spark', t - 2.2)] : [] }),
+        P('t', { x: 1000, y: 552, s: 1, face: -1, expr: 'happy', lx: .4 }),
+      ];
+      return { bg: 'field', chars, back: [startLine(0)] };
+    } },
+    { who: 'le', text: '我一定要拿第一名！', d: 3.5, act: (t, T) => {
+      const chars = [
+        lane('an', { x: 480, expr: 'happy', la: [150, -20], ra: [150, -20], tilt: Math.sin(T * 2) * 6 }),
+        lane('kai', { x: 350, expr: 'happy', la: [95, -20], ra: [95, -20], tilt: Math.sin(T * 2 + 1) * 9 }),
+        lane('le', { x: 215, jump: Math.abs(Math.sin(T * 9)) * 10, expr: 'determined', la: [25, -110], ra: [140, -30 + Math.sin(T * 14) * 12], fx: [F('aura', t, '#ffb02e'), F('fire', t - .3), F('spark', t)] }),
+        P('t', { x: 1000, y: 552, s: 1, face: -1, expr: 'happy' }),
+      ];
+      const cam = { x: kf(t, [[0, 640], [.5, 300, 'out']]), y: kf(t, [[0, 360], [.5, 450, 'out']]), z: kf(t, [[0, 1], [.5, 1.7, 'out']]) };
+      return { bg: 'field', chars, back: [startLine(0)], cam };
+    } },
+    { who: 't', text: '預備——跑！', d: 3, act: (t, T, S) => {
+      const go = t > 1.7, sc = S.scroll;
+      const crouch = between(t, .5, 1.7);
+      const k = clamp((t - 1.7) / 1.2);
+      const mk = (id, x0, x1) => lane(id, go ? { x: lerp(x0, x1, EZ.out(k)), run: 2.6, expr: 'determined' } : { x: x0, tilt: crouch ? 12 : 0, sy: crouch ? .9 : 1, la: [30, -80], ra: [30, -80], expr: crouch ? 'determined' : 'happy' });
+      const chars = [mk('an', 480, 640), mk('le', 215, 480), mk('kai', 350, 430),
+        P('t', { x: 1000 - sc, y: 552, s: 1, face: -1, expr: 'determined', flag: true, ra: go ? [kf(t, [[1.7, 150], [1.95, 40]]), 0] : [150, -10] })];
+      const cam = { x: kf(t, [[0, 300], [.6, 640]]), y: kf(t, [[0, 450], [.6, 360]]), z: kf(t, [[0, 1.7], [.6, 1]]) };
+      const back = [startLine(sc)];
+      if (go) chars.slice(0, 3).forEach(c => back.push(dust(c, T)));
+      return { bg: 'field', chars, back, cam, speed: go ? kf(t, [[1.7, 0], [2.6, 520]]) : 0,
+        ui: [comic('嗶——！', 900 - (go ? sc * .3 : 0), 200, 70, '#fff', go ? pop(t, 1.7) * (1 - fade(t, 2.6, 3)) : 0, -8, '#ffd23f')] };
+    } },
+    { who: 'N', text: '大家用力往前跑。', d: 4, act: (t, T, S) => {
+      const chars = [lane('an', { x: kf(t, [[0, 640], [4, 700]]), run: 2.6, expr: 'determined' }), lane('le', { x: kf(t, [[0, 480], [4, 520]]), run: 2.6, expr: 'determined' }), lane('kai', { x: kf(t, [[0, 430], [4, 400]]), run: 2.6, expr: 'happy' }),
+        P('t', { x: 1000 - S.scroll, y: 552, s: 1, face: -1, expr: 'happy' })];
+      return { bg: 'field', chars, back: [startLine(S.scroll), ...chars.slice(0, 3).map(c => dust(c, T))], speed: 520, ui: [speedLines(T)] };
+    } },
+    { who: 'N', text: '小安越跑越快，阿樂越跑越慢。', d: 5, act: (t, T, S) => {
+      const chars = [lane('an', { x: kf(t, [[0, 700], [5, 980]]), run: 2.9, expr: 'happy' }),
+        lane('le', { x: kf(t, [[0, 520], [5, 420]]), run: 2.0, expr: t < 2.5 ? 'tired' : 'dizzy', tilt: -6, fx: [F('sweats', t), ...(t > 2.5 ? [F('dizzy', t - 2.5)] : [])] }),
+        lane('kai', { x: kf(t, [[0, 400], [5, 360]]), run: 2.6, expr: 'happy' })];
+      return { bg: 'field', chars, back: chars.map(c => dust(c, T)), speed: 520, ui: [speedLines(T, 10)] };
+    } },
+    { who: 'le', noTalk: true, text: '（阿樂心裡想）我追不到了⋯⋯', say: '我追不到了。', d: 4, act: (t, T) => {
+      const chars = [lane('an', { x: kf(t, [[0, 980], [4, 1100]]), run: 2.9, expr: 'happy' }),
+        lane('le', { x: kf(t, [[0, 420], [4, 330]]), run: 1.7, expr: 'worried', gloom: fade(t, 0, 1), tilt: -4, ly: .4, fx: [F('sweat', t), F('think', t - .2, '我追不到了⋯⋯', { side: 1 })] }),
+        lane('kai', { x: kf(t, [[0, 360], [4, 780]]), run: 3.1, expr: 'happy' })];
+      return { bg: 'field', chars, back: chars.map(c => dust(c, T)), speed: 480 };
+    } },
+  ] },
+  { name: '阿樂生氣了', tr: 'flash', beats: [
+    { who: 'N', text: '阿樂覺得好生氣。', d: 3.5, act: (t, T) => {
+      const sh = t > .6 ? Math.sin(T * 70) * 4 : 0;
+      const chars = [lane('an', { x: kf(t, [[0, 960], [3.5, 1500]]), run: 2.9, expr: 'happy' }), lane('kai', { x: kf(t, [[0, 760], [3.5, 1450]]), run: 2.9, expr: 'happy' }),
+        lane('le', { x: 360, shakeX: sh, legs: [-12, 12], la: [20, -10], ra: [20, -10], red: fade(t, .3, 2.2), expr: 'angry', fx: [F('vein', t - .6), F('steam', t - 1.2)] })];
+      const cam = { x: kf(t, [[0, 640], [.8, 420, 'out']]), y: kf(t, [[0, 360], [.8, 460, 'out']]), z: kf(t, [[0, 1], [.8, 1.45, 'out']]), shake: t > 1.2 ? 4 : 0 };
+      return { bg: 'field', chars, cam };
+    } },
+    { who: 'le', text: '不公平！我不玩了！', d: 4, act: (t, T) => {
+      const le = lane('le', { x: 360, red: 1, expr: 'angry', hat: t < 1.5, fx: [F('fire', t), F('vein', 1), F('steam', 1),
+        F('say', t - .1, t < 2.1 ? '不公平！' : '我不玩了！', { spiky: true, size: 52, dx: 250, dy: 200, fill: '#fff36b', side: t < 2.1 ? 1 : -1 })] });
+      if (t < 1.2) { le.jump = Math.abs(Math.sin(t * 9)) * 24; le.legs = [Math.sin(t * 18) * 14, -Math.sin(t * 18) * 14]; le.la = [20, -10]; le.ra = [20, -10]; }
+      else if (t < 1.5) { le.ra = [150, -40]; le.la = [25, -10]; le.tilt = -8; }
+      else { le.ra = [kf(t, [[1.5, 150], [1.7, 55]]), 0]; le.la = [25, -10]; le.tilt = kf(t, [[1.5, -8], [1.75, 10]]); }
+      const front = [];
+      if (t >= 1.5) {
+        const u = clamp((t - 1.5) / .9), h0 = headWorld(le);
+        front.push(hatProp(lerp(h0.x, 640, u), lerp(h0.y - 40, 615, u) - Math.sin(u * Math.PI) * 220, u * 540, .9));
+      }
+      const cam = { x: 440, y: 460, z: 1.45, shake: t < 1.2 ? 14 : between(t, 1.5, 1.9) ? 22 : 5 };
+      return { bg: 'field', chars: [le], front, cam };
+    } },
+    { who: 'N', text: '小安和阿凱嚇了一跳。', d: 4, act: (t, T) => {
+      const sp = (at, tt) => tt > at ? Math.sin(clamp((tt - at) / .45) * Math.PI) * 40 : 0;
+      const mk = (id, x0, x1, at) => lane(id, t < at ? { x: kf(t, [[0, x0], [at, x1, 'out']]), face: -1, walk: 1.8, expr: 'happy' }
+        : { x: x1, face: -1, lx: 0, jump: sp(at, t), expr: t < 2.9 ? 'surprised' : 'awkward', la: [40, 0], ra: [40, 0], fx: [F('bang', t - at), ...(t > 2.9 ? [F('sweat', t - 2.9)] : [])] });
+      const chars = [mk('an', 1450, 1000, 1.5), mk('kai', 1500, 1140, 1.6),
+        lane('le', { x: 360, red: .8, expr: 'angry', hat: false, la: FIST, ra: FIST, fx: [F('steam', 1), F('vein', 1)] })];
+      const cam = { x: kf(t, [[0, 440], [.7, 640]]), y: kf(t, [[0, 460], [.7, 360]]), z: kf(t, [[0, 1.45], [.7, 1]]) };
+      return { bg: 'field', chars, front: [hatProp(640, 615, 540, .9)], cam };
+    } },
+    { who: 'N', text: '阿樂這樣做，大家開心嗎？', d: 5, freeze: true, act: (t, T) => {
+      const chars = [lane('an', { x: 1000, face: -1, lx: 0, expr: 'awkward', la: [40, 0], ra: [40, 0], fx: [F('sweat', 1)] }), lane('kai', { x: 1140, face: -1, lx: 0, expr: 'awkward', la: [40, 0], ra: [40, 0], fx: [F('sweat', 1)] }),
+        lane('le', { x: 360, red: .8, expr: 'angry', hat: false, la: FIST, ra: FIST })];
+      return { bg: 'field', chars, front: [hatProp(640, 615, 540, .9)], gray: fade(t, 0, .4),
+        ui: [comic('？', 720, 200, 190, '#3fa9f5', pop(t, .5, .5), Math.sin(T * 3) * 8, '#fffaf0'), comic('大家開心嗎？', 720, 390, 64, '#fff', pop(t, 1.4))] };
+    } },
+    { who: 'N', text: '阿樂生氣了，可是事情沒有變好。阿樂反而更難過了。', d: 7, act: (t, T) => {
+      const chars = [lane('an', { x: kf(t, [[0, 1000], [1, 1040]]), face: -1, lx: 0, expr: 'worried' }), lane('kai', { x: kf(t, [[0, 1140], [1, 1180]]), face: -1, lx: 0, expr: 'worried' }),
+        lane('le', { x: 360, red: 1 - fade(t, 0, 1.5), hat: false, sy: kf(t, [[0, 1], [1.5, .87]]), ly: kf(t, [[0, 0], [1.5, 1]]), lx: 0, expr: t < 3.6 ? 'sad' : 'cry', gloom: fade(t, .8, 2), la: [5, 0], ra: [5, 0], fx: [F('cloud', t - .8)] })];
+      return { bg: 'field', chars, front: [hatProp(640, 615, 540, .9)], gray: 1 - fade(t, 0, .5) };
+    } },
+  ] },
+  { name: '勇敢四步驟', tr: 'none', beats: [
+    { who: 'N', text: '我們把時間倒回去，再試一次！', d: 4, act: (t, T) => {
+      const u = EZ.io(clamp(t / 3));
+      const le = lane('le', { x: 360, sy: lerp(.87, 1, u), ly: lerp(1, 0, u), expr: u < .6 ? 'sad' : 'neutral', hat: t > 1.8 });
+      const front = [];
+      if (t <= 1.8) { const v = clamp((t - .6) / 1.2), h0 = headWorld(le); front.push(hatProp(lerp(640, h0.x, v), lerp(615, h0.y - 40, v) - Math.sin(v * Math.PI) * 220, 540 * (1 - v), .9)); }
+      const chars = [le, lane('an', { x: lerp(1040, 420, u), face: 1, walk: u < 1 ? -2.4 : 0, expr: 'neutral' }), lane('kai', { x: lerp(1180, 330, u), face: 1, walk: u < 1 ? -2.4 : 0, expr: 'neutral' })];
+      return { bg: 'field', chars, front, gray: .55, speed: t < 3 ? -380 : 0, ui: [rewindFX(t, T)] };
+    } },
+    { who: 'kai', text: '阿樂，輸了會難過，沒關係。', d: 4.5, act: (t, T) => {
+      const chars = [P('le', { x: 440, y: 690, s: .95, expr: 'sad', lx: .5, gloom: 1 - fade(t, 0, 3) }),
+        P('kai', { x: 660, y: 690, s: .95, face: -1, expr: 'happy', htilt: -6, ra: [86 + Math.sin(T * 8) * 5, -8] })];
+      return { bg: 'stage', pal: 'cool', chars, ui: [flashIn(t)] };
+    } },
+    { who: 'kai', text: '我們來試試看「勇敢四步驟」！', d: 4, act: (t, T) => {
+      const chars = [P('le', { x: 440, y: 690, s: .95, expr: t < 2 ? 'surprised' : 'happy', lx: .5 }),
+        P('kai', { x: 660, y: 690, s: .95, face: -1, expr: 'happy', ra: [130, -40], finger: 1, fx: [F('bulb', t - .2)] })];
+      return { bg: 'stage', pal: 'cool', chars, ui: [comic('勇敢四步驟', 640, 130, 84, '#fff', pop(t, .6, .5), Math.sin(T * 2) * 3, '#ffc83d')] };
+    } },
+    { who: 'N', text: '第一步，停一停。雙手往前比，停！', d: 5, act: (t, T) => {
+      const on = t > 1.4;
+      const mk = (id, x0, x1, face) => P(id, { x: kf(t, [[0, x0], [.6, x1]]), y: 690, s: .95, face, walk: t < .6 ? 2 : 0, palms: on, la: on ? PALM : [12, 0], ra: on ? PALM : [12, 0], expr: on ? 'determined' : 'happy' });
+      return { bg: 'stage', pal: 'cool', chars: [mk('le', 440, 330, 1), mk('kai', 660, 950, -1)],
+        ui: [stepCard(0, 640, 175, pop(t, .2, .5), T, { sub: true }), comic('停！', 640, 460, 120, '#fff', pop(t, 2.4), -6, '#ff6b57')] };
+    } },
+    { who: 'N', text: '第二步，吸口氣。慢慢吸，慢慢吐。一，二，三。', d: 7.5, act: (t, T) => {
+      const br = breathe(t, .6, 2.2);
+      const mk = (id, x, face) => P(id, { x, y: 690, s: .95, face, la: BELLY, ra: BELLY, belly: br.b, expr: 'calm', mouthO: br.on && !br.inn, fx: br.on ? [F('breath', 1, br.inn ? 'in' : 'out')] : [] });
+      const ui = [stepCard(1, 640, 175, pop(t, .2, .5), T, { sub: true })];
+      if (br.k >= 0) ui.push(comic(String(br.k + 1), 640, 430, 120, '#fff', pop(t, .6 + br.k * 2.2), 0, '#3fa9f5'));
+      return { bg: 'stage', pal: 'cool', chars: [mk('le', 330, 1), mk('kai', 950, -1)], ui };
+    } },
+    { who: 'N', text: '第三步，說心情。', d: 3, act: (t, T) => {
+      const mk = (id, x, face) => P(id, { x, y: 690, s: .95, face, ra: CHEST, expr: 'calm' });
+      return { bg: 'stage', pal: 'cool', chars: [mk('le', 330, 1), mk('kai', 950, -1)], ui: [stepCard(2, 640, 175, pop(t, .2, .5), T, { sub: true })] };
+    } },
+    { who: 'le', text: '我很難過，因為我輸了。', d: 4, act: (t, T) => {
+      return { bg: 'stage', pal: 'cool', chars: [P('le', { x: 330, y: 690, s: .95, ra: CHEST, expr: 'sad', fx: [F('blueheart', t - .3)] }), P('kai', { x: 950, y: 690, s: .95, face: -1, expr: 'happy', htilt: Math.sin(T * 6) * 6 })],
+        ui: [stepCard(2, 640, 175, 1, T, { sub: true })] };
+    } },
+    { who: 'N', text: '第四步，說好話。', d: 3, act: (t, T) => {
+      const mk = (id, x, face) => P(id, { x, y: 690, s: .95, face, ra: THUMB, thumb: 1, expr: 'happy' });
+      return { bg: 'stage', pal: 'cool', chars: [mk('le', 330, 1), mk('kai', 950, -1)], ui: [stepCard(3, 640, 175, pop(t, .2, .5), T, { sub: true })] };
+    } },
+    { who: 'le', text: '恭喜你！我有努力，下次再加油！', d: 5, act: (t, T) => {
+      const late = t > 2.6;
+      return { bg: 'stage', pal: 'cool', chars: [
+        P('le', { x: 330, y: 690, s: .95, ra: late ? [140, -30] : THUMB, thumb: late ? false : 1, la: late ? [25, -100] : [12, 0], jump: late ? Math.abs(Math.sin(T * 6)) * 20 : 0, expr: late ? 'proud' : 'happy', fx: [F('spark', t)] }),
+        P('kai', { x: 950, y: 690, s: .95, face: -1, expr: 'laugh', la: UP, ra: UP, jump: Math.abs(Math.sin(T * 6 + 1)) * 16 })],
+        ui: [stepCard(3, 640, 175, 1, T, { sub: true })] };
+    } },
+  ] },
+  { name: '再比一次', tr: 'iris', beats: [
+    { who: 'N', text: '再比一次。阿樂還是跑在後面。', d: 5, act: (t, T) => {
+      const chars = [lane('an', { x: 960, run: 2.7, expr: 'determined' }), lane('kai', { x: 640, run: 2.7, expr: 'happy' }), lane('le', { x: 420, run: 2.1, expr: 'tired', tilt: -5, fx: [F('sweats', t)] })];
+      return { bg: 'field', chars, back: chars.map(c => dust(c, T)), speed: 520, ui: [speedLines(T, 12)] };
+    } },
+    { who: 'le', text: '我要跑到終點！', d: 3.5, act: (t, T) => {
+      const chars = [lane('an', { x: 960, run: 2.7, expr: 'determined' }), lane('kai', { x: 640, run: 2.7, expr: 'happy' }), lane('le', { x: 420, run: 3.3, tilt: 6, expr: 'determined', fx: [F('aura', t, '#ff9f1c'), F('spark', t)] })];
+      const cam = { x: kf(t, [[0, 640], [.5, 460, 'out']]), y: kf(t, [[0, 360], [.5, 450, 'out']]), z: kf(t, [[0, 1], [.5, 1.6, 'out']]) };
+      return { bg: 'field', chars, back: chars.map(c => dust(c, T)), speed: 560, cam, ui: [speedLines(T, 18)] };
+    } },
+    { who: 'N', text: '阿樂沒有停下來，一直跑，一直跑！', d: 4.5, act: (t, T) => {
+      const fx = kf(t, [[0, 1550], [3.8, 620, 'lin']]);
+      const an = lane('an', { x: kf(t, [[0, 960], [2.8, 1000]]), run: 2.7, expr: 'happy' });
+      const chars = [an, lane('kai', { x: kf(t, [[0, 640], [4.2, 1180]]), run: 2.7, expr: 'happy' }), lane('le', { x: kf(t, [[0, 420], [4.2, 700]]), run: 3.3, tilt: 6, expr: 'determined', fx: [F('spark', 1)] })];
+      const broken = an.x > fx;
+      const cam = { x: kf(t, [[0, 460], [.6, 640]]), y: kf(t, [[0, 450], [.6, 360]]), z: kf(t, [[0, 1.6], [.6, 1]]) };
+      return { bg: 'field', chars, back: [finishBack(fx, broken), ...chars.map(c => dust(c, T))], front: [finishFront(fx, broken)], speed: t < 3.8 ? 560 : 0, cam,
+        ui: [t < 3.8 ? speedLines(T, 12) : '', comic('到了！', 940, 230, 76, '#fff', pop(t, 3.7) * (1 - fade(t, 4.4, 4.5)), 6, '#ffd23f')] };
+    } },
+    { who: 'N', text: '阿樂跑到終點了！可是，他是最後一名。', d: 5.5, act: (t, T) => {
+      const stopped = t > .8;
+      const le = lane('le', { x: kf(t, [[0, 700], [.8, 760, 'out']]), run: stopped ? 0 : 3, sy: stopped ? 1 + Math.sin(T * 10) * .03 : 1, expr: t < 2 ? 'tired' : 'teary', ly: t > 2 ? .5 : 0,
+        fx: t > 2.8 ? [F('cloud', t - 2.8, .75)] : [] });
+      const chars = [lane('an', { x: 1000, face: -1, expr: 'laugh', la: UP, ra: UP, jump: Math.abs(Math.sin(T * 6)) * 26 }), lane('kai', { x: 1180, face: -1, expr: 'happy' }), le];
+      return { bg: 'field', chars, back: [finishBack(620, true)], front: [finishFront(620, true)],
+        ui: [comic('最後一名⋯', 760, 210, 58, '#bfe0ff', pop(t, 2.2), -4)] };
+    } },
+    { who: 'N', text: '阿樂想起勇敢四步驟。停一停，吸口氣。', d: 6, act: (t, T) => {
+      const st = between(t, .4, 2.6), br = breathe(t, 2.8, 1.6);
+      const le = lane('le', { x: 760, palms: st, la: st ? PALM : br.on ? BELLY : [12, 0], ra: st ? PALM : br.on ? BELLY : [12, 0], belly: br.b, mouthO: br.on && !br.inn, expr: st ? 'determined' : br.on ? 'calm' : 'teary',
+        fx: [F('cloud', 9, Math.max(0, .75 - fade(t, 2.8, 5.5) * .75)), ...(br.on ? [F('breath', 1, br.inn ? 'in' : 'out')] : [])].filter(f => f.k !== 'cloud' || f.p > .05) });
+      const chars = [lane('an', { x: 1000, face: -1, expr: 'happy' }), lane('kai', { x: 1180, face: -1, expr: 'happy' }), le];
+      return { bg: 'field', chars, back: [finishBack(620, true)], front: [finishFront(620, true)], ui: [chips(t < 2.7 ? 0 : 1, T)] };
+    } },
+    { who: 'le', text: '我很難過，因為我跑最後一名。', d: 4, act: (t, T) => {
+      const chars = [lane('an', { x: 1000, face: -1, expr: 'happy', lx: 0 }), lane('kai', { x: 1180, face: -1, expr: 'happy' }), lane('le', { x: 760, ra: CHEST, expr: 'sad', fx: [F('blueheart', t - .3)] })];
+      return { bg: 'field', chars, back: [finishBack(620, true)], front: [finishFront(620, true)], ui: [chips(2, T, 1)] };
+    } },
+    { who: 'le', text: '小安，恭喜你！你好快！', d: 4, act: (t, T) => {
+      const walking = t < 1.3;
+      const chars = [lane('an', { x: 1000, face: -1, expr: t > 2 ? 'shy' : 'happy', fx: t > 2 ? [F('hearts', t - 2)] : [] }), lane('kai', { x: 1180, face: -1, expr: 'happy' }),
+        lane('le', { x: kf(t, [[0, 760], [1.3, 850]]), walk: walking ? 1.8 : 0, ra: walking ? [12, 0] : THUMB, thumb: walking ? false : 1, expr: 'happy' })];
+      return { bg: 'field', chars, back: [finishBack(620, true)], front: [finishFront(620, true)], ui: [chips(3, T, 2)] };
+    } },
+    { who: 'le', text: '我有跑完，下次再加油！', d: 4, act: (t, T) => {
+      const chars = [lane('an', { x: 1000, face: -1, expr: 'happy', la: [30, -70], ra: [30, -70] }), lane('kai', { x: 1180, face: -1, expr: 'happy' }),
+        lane('le', { x: 850, ra: [140, -30], la: [25, -100], expr: 'proud', jump: Math.abs(Math.sin(T * 5)) * 14, fx: [F('spark', t)] })];
+      return { bg: 'field', chars, back: [finishBack(620, true)], front: [finishFront(620, true)], ui: [chips(3, T, 3)] };
+    } },
+    { who: 't', text: '阿樂跑到最後，好勇敢！給你一張勇敢貼紙！', d: 6, act: (t, T) => {
+      const arrive = t > 1.9, cheer = t > 3.2;
+      const le = lane('le', { x: 850, face: -1, expr: cheer ? 'laugh' : 'surprised', sticker: t > 3.1, la: cheer ? UP : [12, 0], ra: cheer ? UP : [12, 0], jump: cheer ? Math.abs(Math.sin(T * 6)) * 26 : 0, fx: cheer ? [F('spark', t - 3.2)] : [] });
+      const tc = P('t', { x: kf(t, [[0, -180], [1.9, 470, 'out']]), y: 640, s: 1, walk: arrive ? 0 : 1.6, expr: 'happy', ra: arrive ? [110, -10] : [12, 0] });
+      const chars = [lane('an', { x: 1000, face: -1, expr: cheer ? 'laugh' : 'happy', la: cheer ? UP : [12, 0], ra: cheer ? UP : [12, 0], jump: cheer ? Math.abs(Math.sin(T * 6 + 1)) * 24 : 0 }),
+        lane('kai', { x: 1180, face: -1, expr: cheer ? 'laugh' : 'happy', la: cheer ? UP : [12, 0], ra: cheer ? UP : [12, 0], jump: cheer ? Math.abs(Math.sin(T * 6 + 2)) * 24 : 0 }), le, tc];
+      const front = [];
+      if (between(t, 1.9, 3.1)) {
+        const hw = handWorld(tc, 1, T), u = clamp((t - 2.2) / .9), tx = le.x + 22 * le.s, ty = le.y - 160 * le.s;
+        const x = lerp(hw.x, tx, EZ.io(u)), y = lerp(hw.y, ty, EZ.io(u)) - Math.sin(u * Math.PI) * 160;
+        front.push(`<g transform="translate(${f1(x)},${f1(y)}) rotate(${f1(u * 360)}) scale(.75)">${starPath(0, 0, 40, 18, 5, -90, '#ffd23f')}${txt('勇', 0, 12, 30, OL, { sw: 0 })}</g>`);
+      }
+      return { bg: 'field', chars, back: [finishBack(620, true)], front: [finishFront(620, true), ...front],
+        ui: [confetti(t - 3.2, 2), comic('好勇敢！', 1040, 170, 80, '#fff', pop(t, 3.3), 6, '#ff6b57')] };
+    } },
+  ] },
+  { name: '玩遊戲', tr: 'wipe', beats: [
+    { who: 'N', text: '下課了，大家一起玩遊戲。', d: 4, act: (t, T) => {
+      const tab = [35 + Math.sin(T * 3) * 6, -60];
+      const chars = [P('an', { x: 400, y: 650, s: .9, expr: 'happy', la: tab, ra: tab }), P('kai', { x: 640, y: 650, s: .9, lx: 0, expr: 'happy', la: tab, ra: tab }), P('le', { x: 880, y: 650, s: .9, face: -1, expr: 'happy', hat: true, la: tab, ra: tab })];
+      return { bg: 'class', chars, front: [table(), cards(t, { 1: 1, 3: 1.6, 4: 2.3, 6: 3 })] };
+    } },
+    { who: 'an', text: '耶！我贏了！', d: 3.2, act: (t, T) => {
+      const chars = [P('an', { x: 400, y: 650, s: .9, expr: 'laugh', la: UP, ra: UP, jump: t < 2.4 ? Math.abs(Math.sin(t * 8)) * 40 : 0, fx: [F('spark', t)] }),
+        P('kai', { x: 640, y: 650, s: .9, lx: -.4, expr: 'surprised', la: [35, -60], ra: [35, -60] }), P('le', { x: 880, y: 650, s: .9, face: -1, expr: 'surprised', la: [35, -60], ra: [35, -60] })];
+      return { bg: 'class', chars, front: [table(), cards(t, { 0: -1, 1: -1, 2: -1, 3: -1, 4: -1, 5: -1, 6: -1, 7: -1 }, { 1: .3, 3: .4, 6: .5 })], ui: [comic('耶！', 400, 160, 100, '#fff', pop(t, .2), -8, '#ffc83d')] };
+    } },
+    { who: 'N', text: '這次阿凱輸了。他也覺得好難過。', d: 4.5, act: (t, T) => {
+      const chars = [P('an', { x: 400, y: 650, s: .9, expr: 'happy', la: [35, -60], ra: [35, -60] }),
+        P('kai', { x: 640, y: 650, s: .9, lx: 0, ly: .6, expr: t < 1.5 ? 'sad' : 'teary', gloom: fade(t, .5, 1.5), fx: [F('cloud', t - 1, .7)] }),
+        P('le', { x: 880, y: 650, s: .9, face: -1, expr: 'worried', la: [35, -60], ra: [35, -60] })];
+      return { bg: 'class', chars, front: [table(), cards(9, { 0: -1, 2: -1, 4: -1, 5: -1, 7: -1 })] };
+    } },
+    { who: 'kai', text: '停一停，吸口氣。我很難過，因為我輸了。', d: 6, act: (t, T) => {
+      const ph = t < 1.8 ? 0 : t < 3.8 ? 1 : 2, br = breathe(t, 1.8, 1);
+      const kai = P('kai', { x: 640, y: 650, s: .9, lx: 0, palms: ph === 0, la: ph === 0 ? PALM : ph === 1 ? BELLY : [12, 0], ra: ph === 0 ? PALM : ph === 1 ? BELLY : CHEST, belly: ph === 1 ? br.b : 1,
+        expr: ph === 0 ? 'determined' : ph === 1 ? 'calm' : 'sad', mouthO: ph === 1 && br.on && !br.inn, fx: ph === 2 ? [F('blueheart', t - 3.8)] : [] });
+      const chars = [P('an', { x: 400, y: 650, s: .9, expr: 'neutral', lx: .6, la: [35, -60], ra: [35, -60] }), kai, P('le', { x: 880, y: 650, s: .9, face: -1, expr: 'neutral', la: [35, -60], ra: [35, -60] })];
+      return { bg: 'class', chars, front: [table(), cards(9, { 0: -1, 2: -1, 4: -1, 5: -1, 7: -1 })], ui: [chips(ph, T, ph - 1)] };
+    } },
+    { who: 'kai', text: '小安，恭喜你！我們再玩一次！', d: 4.5, act: (t, T) => {
+      const yay = t > 1.9;
+      const chars = [P('an', { x: 400, y: 650, s: .9, expr: yay ? 'laugh' : 'shy', la: yay ? UP : [35, -60], ra: yay ? UP : [35, -60], jump: yay ? Math.abs(Math.sin(T * 6)) * 24 : 0 }),
+        P('kai', { x: 640, y: 650, s: .9, face: -1, expr: yay ? 'laugh' : 'happy', ra: yay ? UP : THUMB, la: yay ? UP : [12, 0], thumb: yay ? false : 1, jump: yay ? Math.abs(Math.sin(T * 6 + 1)) * 24 : 0, fx: yay ? [F('hearts', t - 1.9)] : [] }),
+        P('le', { x: 880, y: 650, s: .9, face: -1, expr: yay ? 'laugh' : 'happy', la: yay ? UP : [35, -60], ra: yay ? UP : [35, -60], jump: yay ? Math.abs(Math.sin(T * 6 + 2)) * 24 : 0 })];
+      return { bg: 'class', chars, front: [table(), cards(t, { 0: 1.9, 2: 2.1, 4: 2.3, 5: 2.5, 7: 2.7 })], ui: [chips(3, T, 3), comic('再玩一次！', 640, 170, 70, '#fff', pop(t, 2), 4, '#37c99b')] };
+    } },
+  ] },
+  { name: '一起念口訣', tr: 'wipe', beats: [
+    { who: 'N', text: '我們一起念口訣！', d: 3.2, act: (t, T) => {
+      const chars = [P('le', { x: 380, y: 690, s: .9, expr: 'happy', ra: wave(T) }), P('an', { x: 640, y: 690, s: .9, lx: 0, expr: 'happy', ra: wave(T + 1) }), P('kai', { x: 900, y: 690, s: .9, face: -1, expr: 'happy', ra: wave(T + 2) })];
+      return { bg: 'stage', pal: 'pink', chars, ui: [comic('一起念口訣！', 640, 160, 88, '#fff', pop(t, .3), Math.sin(T * 2) * 3, '#ff6b57')] };
+    } },
+    { who: 'N', text: '停一停，吸口氣，說心情，說好話！', d: 6, act: (t, T) => {
+      const at = [.3, 1.6, 2.9, 4.2];
+      let g = -1; at.forEach((a, i) => { if (t >= a) g = i; });
+      const gest = (id, x, face, extra) => {
+        const o = { x, y: 690, s: .9, face, expr: 'happy' };
+        if (g === 0) Object.assign(o, { palms: true, la: PALM, ra: PALM, expr: 'determined' });
+        if (g === 1) Object.assign(o, { la: BELLY, ra: BELLY, belly: 1 + .15 * Math.abs(Math.sin((t - 1.6) * 2.4)), expr: 'calm' });
+        if (g === 2) Object.assign(o, { ra: CHEST, expr: 'calm' });
+        if (g === 3) Object.assign(o, { ra: THUMB, thumb: 1, expr: 'happy' });
+        return P(id, Object.assign(o, extra));
+      };
+      const ui = [];
+      at.forEach((a, i) => ui.push(stepCard(i, 640 + (i - 1.5) * 306, 150, pop(t, a, .45) * (i === g ? .56 : .5), T, { w: 560, h: 170, iconSc: .85 })));
+      return { bg: 'stage', pal: 'pink', chars: [gest('le', 380, 1), gest('an', 640, 1, { lx: 0 }), gest('kai', 900, -1)], ui };
+    } },
+    { who: 'N', text: '最後一名也很棒，我有努力到最後！', d: 5, act: (t, T) => {
+      const ch = (id, x, face, i) => P(id, { x, y: 690, s: .9, face, lx: id === 'an' ? 0 : .25, expr: i === 0 ? 'proud' : 'laugh', la: UP, ra: UP, jump: Math.abs(Math.sin(T * 6 + i)) * 28, fx: i === 0 ? [F('spark', t)] : [] });
+      return { bg: 'stage', pal: 'pink', chars: [ch('le', 380, 1, 0), ch('an', 640, 1, 1), ch('kai', 900, -1, 2)],
+        ui: [comic('最後一名也很棒，', 640, 130, 78, '#fffaf0', pop(t, .2)), comic('我有努力到最後！', 640, 240, 88, '#ff6b57', pop(t, 1.1), -2), confetti(t, 3)] };
+    } },
+    { who: 'N', text: '下次輸了，你也可以試試看！', d: 5, act: (t, T) => {
+      const chars = [P('le', { x: 380, y: 690, s: .9, expr: 'happy', ra: wave(T), sticker: true }), P('an', { x: 640, y: 690, s: .9, lx: 0, expr: 'happy', ra: wave(T + 1) }), P('kai', { x: 900, y: 690, s: .9, face: -1, expr: 'happy', ra: wave(T + 2) })];
+      const st = pop(t, 2.6, .35);
+      return { bg: 'stage', pal: 'pink', chars,
+        ui: [titleSVG(9, T, 120, 222, .78), comic('下次輸了，你也可以試試看！', 640, 300, 44, '#fff', pop(t, .5)),
+          st > 0 ? `<g transform="translate(1150,500) rotate(-14) scale(${f1(st * 100) / 100})"><circle r="78" fill="none" stroke="#e8343a" stroke-width="10"/><circle r="64" fill="#e8343a" opacity=".12"/>${txt('完', 0, 26, 76, '#e8343a', { sw: 0 })}</g>` : ''] };
+    } },
+  ] },
+];
+
+
+// ===== 題目 =====
 const Q = [
   { type: 'yn', q: '阿樂跑最後一名，就生氣地丟帽子。這樣做好不好？', short: '生氣丟帽子，好不好？', opts: ['好', '不好'], ans: 1,
     ok: '答對了！丟帽子會讓大家嚇一跳，阿樂自己也更難過。', no: '再想想：小安和阿凱看到阿樂丟帽子，心情怎麼樣？', scene: 'throw' },
@@ -829,17 +1250,11 @@ function easel(x, y, kind, ribbon) {
   if (ribbon) s += `<g transform="translate(90,-100) rotate(12)"><path d="M-14 10 L-24 60 L-6 50 L0 66 L8 10Z" fill="#3fa9f5" stroke="${OL}" stroke-width="4" stroke-linejoin="round"/>${starPath(0, 0, 34, 26, 12, 0, '#ffd23f', 4)}${txt('1', 0, 11, 30, OL, { sw: 0 })}</g>`;
   return s + `</g>`;
 }
-function scene(name, t, T, st) {
+function QSCENE(name, t, T, st) {
   const fb = st.fb, ft = st.ft, ok = fb === 'ok';
   const cheer = (c, i = 0) => Object.assign(c, { expr: 'laugh', la: UP, ra: UP, jump: Math.abs(Math.sin(T * 6 + i)) * 22, palms: false, thumb: false });
   let R;
   switch (name) {
-    case 'start': {
-      const ids = ['le', 'an', 'kai'], xs = [360, 640, 920], fc = [1, 1, -1];
-      R = { bg: 'stage', pal: 'warm', chars: ids.map((id, i) => P(id, { x: xs[i], y: 700, s: .8, face: fc[i], lx: 0, expr: 'happy', jump: Math.max(0, Math.sin(T * 4 + i * 2)) * 24, ra: wave(T + i) })),
-        ui: [comic('勇敢挑戰題', 640, 170, 110, '#fffaf0', 1, Math.sin(T * 2) * 2, '#ff6b57')] };
-      break;
-    }
     case 'throw': {
       const le = lane('le', { x: 380, red: 1, expr: 'angry', hat: false, ra: [150, -40], la: [25, -10], fx: [F('fire', 1), F('vein', 1)] });
       const hat = hatProp(380 + 120, 330 + Math.sin(T * 6) * 10, T * 120, .9);
@@ -891,20 +1306,31 @@ function scene(name, t, T, st) {
         lane('le', { x: 640, expr: 'proud', sticker: true, ra: [140, -30], la: [25, -100], fx: [F('spark', 1)] })], back: [finishBack(380, true)], front: [finishFront(380, true)] };
       break;
     }
-    case 'end': {
-      const ids = ['le', 'an', 'kai'], xs = [380, 640, 900], fc = [1, 1, -1];
-      R = { bg: 'stage', pal: 'pink', chars: ids.map((id, i) => P(id, { x: xs[i], y: 700, s: .85, face: fc[i], lx: 0, sticker: id === 'le', expr: i ? 'laugh' : 'proud', la: UP, ra: UP, jump: Math.abs(Math.sin(T * 6 + i)) * 26 })),
-        ui: [comic('挑戰完成！', 640, 170, 104, '#fffaf0', pop(t, .2), Math.sin(T * 2) * 3, '#ffc83d'), confetti(t, 5)] };
-      break;
-    }
   }
+  return R;
+}
+
+// ---------- 題目情境（共用：開始、結束、回饋） ----------
+function scene(name, t, T, st) {
+  const fb = st.fb, ft = st.ft;
+  const cheer = (c, i = 0) => Object.assign(c, { expr: 'laugh', la: UP, ra: UP, jump: Math.abs(Math.sin(T * 6 + i)) * 22, palms: false, thumb: false });
+  const cast = META.cast || ['le', 'an', 'kai'];
+  let R;
+  if (name === 'start' || name === 'end') {
+    const xs = cast.length === 3 ? [360, 640, 920] : [440, 840], fc = cast.map((_, i) => i === cast.length - 1 ? -1 : 1);
+    const end = name === 'end';
+    R = { bg: 'stage', pal: end ? 'pink' : 'warm', chars: cast.map((id, i) => P(id, { x: xs[i], y: 700, s: CH[id].adult ? .86 : .76, face: fc[i], lx: 0, expr: end ? 'laugh' : 'happy',
+        la: end ? UP : [12, 0], ra: end ? UP : wave(T + i), jump: end ? Math.abs(Math.sin(T * 6 + i)) * 26 : Math.max(0, Math.sin(T * 4 + i * 2)) * 24 })),
+      ui: [end ? comic('挑戰完成！', 640, 170, 104, '#fffaf0', pop(t, .2), Math.sin(T * 2) * 3, '#ffc83d') : comic(META.quizTitle, 640, 170, 96, '#fffaf0', 1, Math.sin(T * 2) * 2, '#ff6b57'), end ? confetti(t, 5) : ''] };
+  } else R = QSCENE(name, t, T, st);
   R.ui = R.ui || [];
+  const noCheer = META.noCheer || [];
+  const fy = (META.fbLow || []).includes(name) ? 440 : 150;
   if (fb === 'ok' && name !== 'end') {
-    R.chars.forEach((c, i) => { if (name !== 'throw' && name !== 'steps') cheer(c, i); });
-    const fy = name === 'steps' ? 440 : 150;
+    R.chars.forEach((c, i) => { if (!noCheer.includes(name)) cheer(c, i); });
     R.ui.push(comic('答對了！', 640, fy, 96, '#fff', pop(ft, 0, .45), -4, '#37c99b'), confetti(ft, 7, 50));
   }
-  if (fb === 'no') R.ui.push(comic('再想想', 640, name === 'steps' ? 440 : 150, 80, '#fff', pop(ft, 0, .4) * (1 - fade(ft, 1.6, 1.9)), 4, '#ff9f1c'));
+  if (fb === 'no') R.ui.push(comic('再想想', 640, fy, 80, '#fff', pop(ft, 0, .4) * (1 - fade(ft, 1.6, 1.9)), 4, '#ff9f1c'));
   return R;
 }
 
@@ -915,8 +1341,8 @@ const st = { i: -1, fb: null, ft: 0, ord: 0, ordT: 0, t0: 0 };
 const tries = Q.map(() => 0), firstOk = Q.map(() => null);
 let T = 0, order = Q.map((_, i) => i), name = '';
 const opt = { voice: '', rate: .85, auto: true, snd: true };
-try { Object.assign(opt, JSON.parse(localStorage.getItem('brave-quiz-opt') || '{}')); } catch (e) {}
-const saveOpt = () => { try { localStorage.setItem('brave-quiz-opt', JSON.stringify(opt)); } catch (e) {} };
+try { Object.assign(opt, JSON.parse(localStorage.getItem('theater-quiz-opt') || '{}')); } catch (e) {}
+const saveOpt = () => { try { localStorage.setItem('theater-quiz-opt', JSON.stringify(opt)); } catch (e) {} };
 if (!hasSpeech) document.documentElement.classList.add('nospeech');
 
 function renderScene() {
@@ -995,7 +1421,7 @@ function miniFace(kind, col) {
     happy: '<path d="M17 35 q10 12 20 0z" fill="#6b1d2a" stroke="#2b2036" stroke-width="3" stroke-linejoin="round"/>', laugh: '<path d="M15 34 q12 16 24 0z" fill="#6b1d2a" stroke="#2b2036" stroke-width="3" stroke-linejoin="round"/>' }[kind];
   return `<svg viewBox="0 0 54 54" width="54" height="54" aria-hidden="true"><circle cx="27" cy="27" r="24" fill="${col}" stroke="#2b2036" stroke-width="3.5"/>${eyes}${mouth}${kind === 'sad' ? '<path d="M38 30 q3 6 0 8 q-3 -2 0 -8z" fill="#6ec6ff"/>' : ''}</svg>`;
 }
-const YN = { '好': 'ok', '對': 'ok', '不好': 'no', '不對': 'no' };
+const YN = { '好': 'ok', '對': 'ok', '是': 'ok', '不好': 'no', '不對': 'no', '不是': 'no' };
 function dotsHTML() {
   return order.map((qi, k) => `<span class="dot ${k < st.i ? 'done' : k === st.i ? 'now' : ''}"></span>`).join('');
 }
@@ -1007,7 +1433,7 @@ function wipe(fn) {
 }
 function showStart() {
   st.i = -1; st.t0 = T; st.fb = null;
-  panel.innerHTML = `<div class="qrow"><h1 class="qt" id="qt"><span class="sent">看完影片《最後一名，也是勇敢的人》，</span><span class="sent">來回答 8 個問題！</span></h1><button class="speak" id="spk" aria-label="念給我聽">${SPEAKER}</button></div>
+  panel.innerHTML = `<div class="qrow"><h1 class="qt" id="qt"><span class="sent">看完影片《${META.title}》，</span><span class="sent">來回答 ${Q.length} 個問題！</span></h1><button class="speak" id="spk" aria-label="念給我聽">${SPEAKER}</button></div>
   <ul class="rules"><li><b class="n s1">1</b><span>按喇叭，可以聽題目。</span></li><li><b class="n s2">2</b><span>選答案。答錯沒關係，可以再試一次。</span></li><li><b class="n s3">3</b><span>做完會看到自己的成績。</span></li></ul>
   <label class="namerow" for="nm">名字（可以不填）<input id="nm" type="text" maxlength="12" autocomplete="off" placeholder="例如：小明" value="${name.replace(/"/g, '')}"></label>
   <button class="big" id="go">開始挑戰</button>`;
@@ -1032,8 +1458,8 @@ function showQ(k) {
   let h = `<div class="qrow"><h2 class="qt" id="qt">${q.q.split(/(?<=[。？！])/).filter(Boolean).map(s => `<span class="sent">${s}</span>`).join('')}</h2><button class="speak" id="spk" aria-label="念題目">${SPEAKER}</button></div>`;
   if (q.type === 'yn') h += `<div class="opts yn">${q.opts.map((o, i) => `<button class="opt" data-i="${i}"><span class="yn-ic ${YN[o]}" aria-hidden="true">${YN[o] === 'ok' ? '○' : '✕'}</span><span class="ot">${o}</span></button>`).join('')}</div>`;
   if (q.type === 'choice') h += `<div class="opts list">${q.opts.map((o, i) => `<button class="opt c${i}" data-i="${i}"><span class="badge">${i + 1}</span><span class="ot">${o}</span></button>`).join('')}</div>`;
-  if (q.type === 'multi') h += `<div class="opts feel">${q.opts.map((o, i) => `<button class="opt" data-i="${i}" aria-pressed="false">${miniFace(FEEL[o][1], FEEL[o][0])}<span class="ot">${o}</span><span class="tick" aria-hidden="true">✓</span></button>`).join('')}</div><button class="big ghost" id="check" disabled>選好了，對答案</button>`;
-  if (q.type === 'order') h += `<div class="slots">${[0, 1, 2, 3].map(i => `<div class="slot" data-s="${i}"><span class="sl">第 ${i + 1} 步</span><span class="sv"></span></div>`).join('')}</div>
+  if (q.type === 'multi') h += `<div class="opts feel${q.opts.some(o => !FEEL[o]) ? ' txt' : ''}">${q.opts.map((o, i) => `<button class="opt" data-i="${i}" aria-pressed="false">${FEEL[o] ? miniFace(FEEL[o][1], FEEL[o][0]) : ''}<span class="ot">${o}</span><span class="tick" aria-hidden="true">✓</span></button>`).join('')}</div><button class="big ghost" id="check" disabled>選好了，對答案</button>`;
+  if (q.type === 'order') h += `<div class="slots" style="--n:${STEPS.length}">${STEPS.map((_, i) => i).map(i => `<div class="slot" data-s="${i}"><span class="sl">第 ${i + 1} 步</span><span class="sv"></span></div>`).join('')}</div>
     <div class="opts ord">${q.tiles.map(i => `<button class="opt tile" data-i="${i}" style="--c:${STEPS[i].c}">${STEPS[i].t}</button>`).join('')}</div>`;
   h += `<div class="fb" id="fb" role="status"></div>`;
   panel.innerHTML = h;
@@ -1068,7 +1494,7 @@ function showQ(k) {
         slot.classList.add('filled'); slot.style.setProperty('--c', STEPS[i].c); slot.querySelector('.sv').textContent = STEPS[i].t;
         b.classList.add('used'); st.ord++; st.ordT = T; beep('tap');
         if (hasSpeech && opt.auto) readSeq([{ text: `第${i + 1}步，${STEPS[i].t}` }]);
-        if (st.ord === 4) answer(true, null, btns);
+        if (st.ord === STEPS.length) answer(true, null, btns);
       } else {
         tries[order[st.i]]++;
         b.classList.add('shake'); setTimeout(() => b.classList.remove('shake'), 450);
@@ -1108,7 +1534,7 @@ function showEnd() {
   const rows = order.map((i, k) => `<li><span class="no">${k + 1}</span><span class="qs">${Q[i].short}</span>${tries[i] === 1 ? '<span class="res one">一次就答對</span>' : `<span class="res more">試了 ${tries[i]} 次</span>`}</li>`).join('');
   const wrong = order.filter(i => tries[i] > 1);
   panel.innerHTML = `<div class="qrow"><h2 class="qt" id="qt"><span class="sent">${name ? name + '，' : ''}你完成挑戰了！</span><span class="sent">一次就答對 ${n1} 題，共 ${order.length} 題。</span></h2><button class="speak" id="spk" aria-label="念成績">${SPEAKER}</button></div>
-  <div class="meta"><span>${name ? '名字：' + name : '名字：（沒有填）'}</span><span>日期：${date}</span><span>主題：勇敢四步驟</span></div>
+  <div class="meta"><span>${name ? '名字：' + name : '名字：（沒有填）'}</span><span>日期：${date}</span><span>主題：${META.skill}</span></div>
   <div class="stars" aria-label="一次答對 ${n1} 題">${order.map((i) => `<span class="star ${tries[i] === 1 ? 'on' : ''}">★</span>`).join('')}</div>
   <ol class="report">${rows}</ol>
   <p class="note">老師可以截圖這一頁，當作評量紀錄。</p>
@@ -1148,6 +1574,7 @@ document.getElementById('vtest').onclick = () => readSeq([{ text: '大家好，�
 window.__goto = k => { if (k < 0) showStart(); else showQ(k); };
 showStart();
 requestAnimationFrame(loop);
+
 
 </script>
 
