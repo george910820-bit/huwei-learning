@@ -86,6 +86,14 @@ h1.qt{color:var(--ink)}
 .opt.dim{opacity:.4}
 .opt.reading{background:#fff3b0;outline:5px solid var(--coral);outline-offset:3px}
 .opt.shake{animation:shake .45s}
+.spotbar{display:flex;align-items:center;gap:10px;font-family:var(--f-round);font-size:1.3rem;background:#fff3c4;border:3px dashed #ff9f1c;border-radius:16px;padding:10px 16px}
+.spotlist{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.spotlist li{display:flex;align-items:center;gap:12px;background:var(--soft);border-radius:14px;padding:10px 14px;font-size:1.15rem;font-family:var(--f-round)}
+.spotlist .no{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#c9c2d6;color:#fff;flex:none}
+.spotlist li.got{background:#ffe3e0;animation:boing .5s cubic-bezier(.3,1.8,.5,1)}
+.spotlist li.got .no{background:#e8343a}
+.spotlist .lb{color:var(--muted)} .spotlist li.got .lb{color:var(--ink)}
+.stage svg{cursor:crosshair}
 .fb{display:none;border-radius:18px;padding:14px 18px;font-size:1.2rem;line-height:1.6;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .fb.show{display:flex;animation:slideup .35s cubic-bezier(.3,1.5,.5,1)}
 .fb p{margin:0;min-width:0;flex:1 1 240px}
@@ -936,6 +944,52 @@ function racers(S, T, o) {
 }
 
 
+// ===== 倒帶找問題（錯誤劇本） =====
+// ERR = { frame: T => 場景R, marks: [{ x, y, r, label, lx?, ly? }] }
+function spotlightSVG(marks, op = .55) {
+  if (op <= 0) return '';
+  const holes = marks.map(m => `<circle cx="${m.x}" cy="${m.y}" r="${f1(m.r * 1.5)}" fill="#000"/>`).join('');
+  return `<defs><radialGradient id="spotG"><stop offset=".7" stop-color="#000"/><stop offset="1" stop-color="#fff"/></radialGradient><mask id="spotM"><rect x="-10" y="-10" width="1300" height="740" fill="#fff"/>${holes.replace(/fill="#000"/g, 'fill="url(#spotG)"')}</mask></defs><rect x="-10" y="-10" width="1300" height="740" fill="#14102a" opacity="${f1(op * 100) / 100}" mask="url(#spotM)"/>`;
+}
+function errMarkSVG(m, i, sc, T, showLabel = true) {
+  if (sc <= .01) return '';
+  const lx = m.lx ?? m.x, ly = m.ly ?? (m.y + m.r + 44);
+  const tw2 = tw(m.label, 32) + 36;
+  return `<g><g transform="translate(${m.x},${m.y}) scale(${f1(sc * 100) / 100})"><circle r="${m.r}" fill="none" stroke="#fff" stroke-width="13"/><circle r="${m.r}" fill="none" stroke="#e8343a" stroke-width="8" stroke-dasharray="22 12" transform="rotate(${f1(T * 40)})"/>
+  <g transform="translate(${f1(m.r * .72)},${f1(-m.r * .72)})"><circle r="26" fill="#e8343a" stroke="#fff" stroke-width="5"/>${txt(String(i + 1), 0, 12, 34, '#fff', { sw: 0 })}</g></g>
+  ${showLabel ? `<g transform="translate(${lx},${ly}) scale(${f1(Math.min(1, sc) * 100) / 100})"><rect x="${f1(-tw2 / 2)}" y="-26" width="${f1(tw2)}" height="52" rx="26" fill="#e8343a" stroke="#fff" stroke-width="4"/>${txt(m.label, 0, 11, 32, '#fff', { sw: 0 })}</g>` : ''}</g>`;
+}
+function magnifierSVG(x, y, sc = 1) {
+  return `<g transform="translate(${f1(x)},${f1(y)}) scale(${sc}) rotate(-30)"><rect x="-11" y="52" width="22" height="78" rx="9" fill="#a5713f" stroke="${OL}" stroke-width="6"/><circle r="60" fill="#dff3ff" fill-opacity=".35" stroke="${OL}" stroke-width="12"/><circle r="60" fill="none" stroke="#ffc83d" stroke-width="5"/><path d="M-30 -24 q12 -16 34 -10" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round"/></g>`;
+}
+// 產生「倒帶找問題」一整段影片
+function findScene(ERR, who = '阿樂') {
+  const M = ERR.marks, n = M.length, cn = ['一', '二', '三', '四'];
+  const per = 2.8, d3 = 1.6 + n * per + 1;
+  const listText = `有${cn[n - 1]}個地方怪怪的。` + M.map((m, i) => `第${cn[i]}，${m.label}。`).join('');
+  return { name: '倒帶找問題', tr: 'flash', beats: [
+    { who: 'N', text: '我們倒帶回去，再看一次。', d: 4, act: (t, T) => { const R = ERR.frame(T); R.ui = [...(R.ui || []), rewindFX(t, T)]; R.gray = .4; return R; } },
+    { who: 'N', text: `找一找：${who}哪裡怪怪的？`, d: 6, act: (t, T) => {
+      const R = ERR.frame(T), k = clamp((t - 1.5) / 3.6);
+      const mi = Math.min(n - 1, Math.floor(k * n)), a = M[mi], b = M[Math.min(n - 1, mi + 1)], u = (k * n) % 1;
+      R.ui = [...(R.ui || []), `<rect x="0" y="0" width="1280" height="720" fill="#14102a" opacity="${f1(fade(t, 0, .6) * 30) / 100}"/>`,
+        comic('哪裡怪怪的？', 640, 100, 76, '#fff', pop(t, .3), -3, '#ff9f1c'), t > 1.2 ? magnifierSVG(lerp(a.x, b.x, EZ.io(u)) + Math.sin(T * 3) * 20, lerp(a.y, b.y, EZ.io(u)) + Math.cos(T * 3) * 14, pop(t, 1.2) * .9) : '',
+        flashIn(t, .35)];
+      return R;
+    } },
+    { who: 'N', text: listText, d: d3, act: (t, T) => {
+      const R = ERR.frame(T);
+      R.ui = [...(R.ui || []), spotlightSVG(M.filter((_, i) => t > 1.2 + i * per), .5 * fade(t, .8, 1.4)), ...M.map((m, i) => errMarkSVG(m, i, pop(t, 1.2 + i * per, .45), T))];
+      return R;
+    } },
+    { who: 'N', text: '這些地方，我們來學怎麼做會更好！', d: 4, act: (t, T) => {
+      const R = ERR.frame(T);
+      R.ui = [...(R.ui || []), spotlightSVG(M, .5), ...M.map((m, i) => errMarkSVG(m, i, 1, T)), comic('學學看怎麼做！', 640, 100, 70, '#fff', pop(t, .6), -3, '#37c99b')];
+      return R;
+    } },
+  ] };
+}
+
 const TITLE_LINES = ["不批評，", "我會找優點"];
 const META = {"title": "不批評，我會找優點", "quizTitle": "不批評挑戰題", "skill": "不批評三步驟", "cast": ["an", "le", "kai"], "noCheer": ["thorn", "hurt", "steps", "ball"], "fbLow": ["steps", "meta"]};
 // ===== 不批評，我會找優點 =====
@@ -1099,10 +1153,28 @@ const SCENES = [
   ] },
 ];
 
+// ===== 倒帶找問題 =====
+const ERR = (() => {
+  const mk = T => ({
+    an: ck('an', { x: 260, expr: 'teary', ly: .4, ra: [70, 20], fx: [F('crack', 1)] }),
+    le: ck('le', { x: 760, face: -1, lx: 0, expr: 'laugh', la: [30, -70], ra: [30, -70], jump: Math.abs(Math.sin(T * 7)) * 8 }),
+    kai: ck('kai', { x: 1070, face: -1, lx: 0, expr: 'laugh', la: [30, -70], ra: [30, -70], jump: Math.abs(Math.sin(T * 7 + 1)) * 8 }),
+  });
+  const hl = headWorld(mk(0).le), hk = headWorld(mk(0).kai);
+  const marks = [
+    { x: f1(hl.x), y: f1(hl.y), r: 92, label: '對著小安大笑', ly: f1(hl.y - 140) },
+    { x: 480, y: 250, r: 96, label: '說「好醜喔」', ly: 350 },
+    { x: f1(hk.x), y: f1(hk.y), r: 92, label: '阿凱也跟著笑', ly: f1(hk.y - 140) },
+  ];
+  return { marks, frame: T => { const k = mk(T); return { bg: 'class', bgo: B2, chars: [k.an, k.le, k.kai], front: [table(), holdArt(k.an, T)], ui: [comic('好醜喔！', 480, 250, 52, '#fff', 1, -5, '#9b7bff')] }; } };
+})();
+SCENES.splice(3, 0, findScene(ERR));
+
 // ===== 挑戰題 =====
 const Q = [
   { type: 'yn', q: '阿樂說「好醜喔！像小寶寶畫的！」這是批評嗎？', short: '這是批評嗎？', opts: ['是', '不是'], ans: 0,
     ok: '答對了！說別人不好、笑別人，就是批評。', no: '再想想：小安聽到這句話，會開心嗎？', scene: 'thorn' },
+  { type: 'spot', q: '倒帶找一找：阿樂和阿凱哪裡做得不好？點一點畫面，找出 3 個地方！', short: '倒帶找問題', ok: '答對了！大笑、說好醜、跟著笑，都會讓小安難過。', no: '再找找看：看看誰在笑、說了什麼話？', scene: 'spot' },
   { type: 'choice', q: '小安聽到批評的話，覺得怎麼樣？', short: '小安的感覺', opts: ['好難過', '好開心', '好得意'], ans: 0,
     ok: '答對了！小安難過得把畫揉掉了。', no: '再看一次圖：小安的臉是什麼表情？', scene: 'hurt' },
   { type: 'choice', q: '在故事裡，批評的話像什麼？', short: '批評的話像什麼？', opts: ['刺', '花', '糖果'], ans: 0,
@@ -1148,10 +1220,15 @@ function scene(name, t, T, st) {
     R = { bg: 'stage', pal: end ? 'pink' : 'warm', chars: cast.map((id, i) => P(id, { x: xs[i], y: 700, s: CH[id].adult ? .86 : .76, face: fc[i], lx: 0, expr: end ? 'laugh' : 'happy',
         la: end ? UP : [12, 0], ra: end ? UP : wave(T + i), jump: end ? Math.abs(Math.sin(T * 6 + i)) * 26 : Math.max(0, Math.sin(T * 4 + i * 2)) * 24 })),
       ui: [end ? comic('挑戰完成！', 640, 170, 104, '#fffaf0', pop(t, .2), Math.sin(T * 2) * 3, '#ffc83d') : comic(META.quizTitle, 640, 170, 96, '#fffaf0', 1, Math.sin(T * 2) * 2, '#ff6b57'), end ? confetti(t, 5) : ''] };
+  } else if (name === 'spot') {
+    R = ERR.frame(T); const M = ERR.marks, found = st.found || [];
+    R.ui = [...(R.ui || []), spotlightSVG(M.filter((_, i) => found.includes(i)), found.length === M.length ? .45 : 0), ...M.map((m, i) => found.includes(i) ? errMarkSVG(m, i, pop(T - (st.foundT[i] || 0), 0, .45), T) : '')];
+    if (st.miss && T - st.miss.t < .9) { const u = (T - st.miss.t) / .9; R.ui.push(`<g transform="translate(${f1(st.miss.x)},${f1(st.miss.y)}) scale(${f1((1 - u * .3) * 100) / 100})" opacity="${f1((1 - u) * 100) / 100}"><path d="M-26 -26 L26 26 M26 -26 L-26 26" stroke="#fff" stroke-width="18" stroke-linecap="round"/><path d="M-26 -26 L26 26 M26 -26 L-26 26" stroke="#8a90a6" stroke-width="10" stroke-linecap="round"/></g>`); }
+    if (!found.length) R.ui.push(`<g opacity="${f1((.6 + Math.sin(T * 4) * .4) * 100) / 100}">${txt('點一點畫面！', 640, 690, 40, '#fff', { sw: 8 })}</g>`);
   } else R = QSCENE(name, t, T, st);
   R.ui = R.ui || [];
-  const noCheer = META.noCheer || [];
-  const fy = (META.fbLow || []).includes(name) ? 440 : 150;
+  const noCheer = [...(META.noCheer || []), 'spot'];
+  const fy = name === 'spot' ? 610 : (META.fbLow || []).includes(name) ? 440 : 150;
   if (fb === 'ok' && name !== 'end') {
     R.chars.forEach((c, i) => { if (!noCheer.includes(name)) cheer(c, i); });
     R.ui.push(comic('答對了！', 640, fy, 96, '#fff', pop(ft, 0, .45), -4, '#37c99b'), confetti(ft, 7, 50));
@@ -1285,6 +1362,7 @@ function showQ(k) {
   if (q.type === 'yn') h += `<div class="opts yn">${q.opts.map((o, i) => `<button class="opt" data-i="${i}"><span class="yn-ic ${YN[o]}" aria-hidden="true">${YN[o] === 'ok' ? '○' : '✕'}</span><span class="ot">${o}</span></button>`).join('')}</div>`;
   if (q.type === 'choice') h += `<div class="opts list">${q.opts.map((o, i) => `<button class="opt c${i}" data-i="${i}"><span class="badge">${i + 1}</span><span class="ot">${o}</span></button>`).join('')}</div>`;
   if (q.type === 'multi') h += `<div class="opts feel${q.opts.some(o => !FEEL[o]) ? ' txt' : ''}">${q.opts.map((o, i) => `<button class="opt" data-i="${i}" aria-pressed="false">${FEEL[o] ? miniFace(FEEL[o][1], FEEL[o][0]) : ''}<span class="ot">${o}</span><span class="tick" aria-hidden="true">✓</span></button>`).join('')}</div><button class="big ghost" id="check" disabled>選好了，對答案</button>`;
+  if (q.type === 'spot') h += `<div class="spotbar"><span class="spoticon" aria-hidden="true">🔍</span><span id="spotcount">找到 0 / ${ERR.marks.length} 個</span></div><ol class="spotlist" id="spotlist">${ERR.marks.map((m, i) => `<li data-i="${i}"><span class="no">${i + 1}</span><span class="lb">？？？</span></li>`).join('')}</ol>`;
   if (q.type === 'order') h += `<div class="slots" style="--n:${STEPS.length}">${STEPS.map((_, i) => i).map(i => `<div class="slot" data-s="${i}"><span class="sl">第 ${i + 1} 步</span><span class="sv"></span></div>`).join('')}</div>
     <div class="opts ord">${q.tiles.map(i => `<button class="opt tile" data-i="${i}" style="--c:${STEPS[i].c}">${STEPS[i].t}</button>`).join('')}</div>`;
   h += `<div class="fb" id="fb" role="status"></div>`;
@@ -1311,6 +1389,24 @@ function showQ(k) {
       else btns.forEach(b => { if (b.classList.contains('picked') && !q.ans.includes(+b.dataset.i)) { b.classList.add('shake'); setTimeout(() => b.classList.remove('shake'), 450); } });
     };
   }
+  if (q.type === 'spot') {
+    st.found = []; st.foundT = []; st.miss = null;
+    svg.onclick = e => {
+      if (Q[order[st.i]] !== q || st.fb === 'ok') return;
+      const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+      const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      const hit = ERR.marks.findIndex((m, i) => !st.found.includes(i) && Math.hypot(p.x - m.x, p.y - m.y) < m.r * 1.3);
+      if (hit >= 0) {
+        st.found.push(hit); st.foundT[hit] = T; beep('tap');
+        const li = panel.querySelector(`#spotlist li[data-i="${hit}"]`); li.classList.add('got'); li.querySelector('.lb').textContent = ERR.marks[hit].label;
+        document.getElementById('spotcount').textContent = `找到 ${st.found.length} / ${ERR.marks.length} 個`;
+        if (st.found.length === ERR.marks.length) answer(true, null, btns);
+        else if (hasSpeech) readSeq([{ el: li, text: ERR.marks[hit].label }]);
+      } else if (!ERR.marks.some((m, i) => st.found.includes(i) && Math.hypot(p.x - m.x, p.y - m.y) < m.r * 1.3)) {
+        st.miss = { x: p.x, y: p.y, t: T }; tries[order[st.i]]++; st.fb = 'no'; st.ftStart = T; beep('no'); showFb(false, q.no);
+      }
+    };
+  } else svg.onclick = null;
   if (q.type === 'order') {
     btns.forEach(b => b.onclick = () => {
       if (st.fb === 'ok') return;
@@ -1340,8 +1436,8 @@ function showFb(good, text) {
 function answer(good, b, btns) {
   const qi = order[st.i], q = Q[qi];
   if (st.fb === 'ok') return;
-  if (q.type !== 'order') tries[qi]++;
-  if (q.type === 'order' && good) tries[qi]++;
+  if (q.type !== 'order' && q.type !== 'spot') tries[qi]++;
+  if ((q.type === 'order' || q.type === 'spot') && good) tries[qi]++;
   if (firstOk[qi] === null) firstOk[qi] = good && tries[qi] === 1;
   st.fb = good ? 'ok' : 'no'; st.ftStart = T;
   beep(good ? 'ok' : 'no');

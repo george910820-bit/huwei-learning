@@ -893,6 +893,52 @@ function racers(S, T, o) {
 }
 
 
+// ===== 倒帶找問題（錯誤劇本） =====
+// ERR = { frame: T => 場景R, marks: [{ x, y, r, label, lx?, ly? }] }
+function spotlightSVG(marks, op = .55) {
+  if (op <= 0) return '';
+  const holes = marks.map(m => `<circle cx="${m.x}" cy="${m.y}" r="${f1(m.r * 1.5)}" fill="#000"/>`).join('');
+  return `<defs><radialGradient id="spotG"><stop offset=".7" stop-color="#000"/><stop offset="1" stop-color="#fff"/></radialGradient><mask id="spotM"><rect x="-10" y="-10" width="1300" height="740" fill="#fff"/>${holes.replace(/fill="#000"/g, 'fill="url(#spotG)"')}</mask></defs><rect x="-10" y="-10" width="1300" height="740" fill="#14102a" opacity="${f1(op * 100) / 100}" mask="url(#spotM)"/>`;
+}
+function errMarkSVG(m, i, sc, T, showLabel = true) {
+  if (sc <= .01) return '';
+  const lx = m.lx ?? m.x, ly = m.ly ?? (m.y + m.r + 44);
+  const tw2 = tw(m.label, 32) + 36;
+  return `<g><g transform="translate(${m.x},${m.y}) scale(${f1(sc * 100) / 100})"><circle r="${m.r}" fill="none" stroke="#fff" stroke-width="13"/><circle r="${m.r}" fill="none" stroke="#e8343a" stroke-width="8" stroke-dasharray="22 12" transform="rotate(${f1(T * 40)})"/>
+  <g transform="translate(${f1(m.r * .72)},${f1(-m.r * .72)})"><circle r="26" fill="#e8343a" stroke="#fff" stroke-width="5"/>${txt(String(i + 1), 0, 12, 34, '#fff', { sw: 0 })}</g></g>
+  ${showLabel ? `<g transform="translate(${lx},${ly}) scale(${f1(Math.min(1, sc) * 100) / 100})"><rect x="${f1(-tw2 / 2)}" y="-26" width="${f1(tw2)}" height="52" rx="26" fill="#e8343a" stroke="#fff" stroke-width="4"/>${txt(m.label, 0, 11, 32, '#fff', { sw: 0 })}</g>` : ''}</g>`;
+}
+function magnifierSVG(x, y, sc = 1) {
+  return `<g transform="translate(${f1(x)},${f1(y)}) scale(${sc}) rotate(-30)"><rect x="-11" y="52" width="22" height="78" rx="9" fill="#a5713f" stroke="${OL}" stroke-width="6"/><circle r="60" fill="#dff3ff" fill-opacity=".35" stroke="${OL}" stroke-width="12"/><circle r="60" fill="none" stroke="#ffc83d" stroke-width="5"/><path d="M-30 -24 q12 -16 34 -10" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round"/></g>`;
+}
+// 產生「倒帶找問題」一整段影片
+function findScene(ERR, who = '阿樂') {
+  const M = ERR.marks, n = M.length, cn = ['一', '二', '三', '四'];
+  const per = 2.8, d3 = 1.6 + n * per + 1;
+  const listText = `有${cn[n - 1]}個地方怪怪的。` + M.map((m, i) => `第${cn[i]}，${m.label}。`).join('');
+  return { name: '倒帶找問題', tr: 'flash', beats: [
+    { who: 'N', text: '我們倒帶回去，再看一次。', d: 4, act: (t, T) => { const R = ERR.frame(T); R.ui = [...(R.ui || []), rewindFX(t, T)]; R.gray = .4; return R; } },
+    { who: 'N', text: `找一找：${who}哪裡怪怪的？`, d: 6, act: (t, T) => {
+      const R = ERR.frame(T), k = clamp((t - 1.5) / 3.6);
+      const mi = Math.min(n - 1, Math.floor(k * n)), a = M[mi], b = M[Math.min(n - 1, mi + 1)], u = (k * n) % 1;
+      R.ui = [...(R.ui || []), `<rect x="0" y="0" width="1280" height="720" fill="#14102a" opacity="${f1(fade(t, 0, .6) * 30) / 100}"/>`,
+        comic('哪裡怪怪的？', 640, 100, 76, '#fff', pop(t, .3), -3, '#ff9f1c'), t > 1.2 ? magnifierSVG(lerp(a.x, b.x, EZ.io(u)) + Math.sin(T * 3) * 20, lerp(a.y, b.y, EZ.io(u)) + Math.cos(T * 3) * 14, pop(t, 1.2) * .9) : '',
+        flashIn(t, .35)];
+      return R;
+    } },
+    { who: 'N', text: listText, d: d3, act: (t, T) => {
+      const R = ERR.frame(T);
+      R.ui = [...(R.ui || []), spotlightSVG(M.filter((_, i) => t > 1.2 + i * per), .5 * fade(t, .8, 1.4)), ...M.map((m, i) => errMarkSVG(m, i, pop(t, 1.2 + i * per, .45), T))];
+      return R;
+    } },
+    { who: 'N', text: '這些地方，我們來學怎麼做會更好！', d: 4, act: (t, T) => {
+      const R = ERR.frame(T);
+      R.ui = [...(R.ui || []), spotlightSVG(M, .5), ...M.map((m, i) => errMarkSVG(m, i, 1, T)), comic('學學看怎麼做！', 640, 100, 70, '#fff', pop(t, .6), -3, '#37c99b')];
+      return R;
+    } },
+  ] };
+}
+
 const TITLE_LINES = ["我的委屈，", "我會說出來"];
 const META = {"title": "我的委屈，我會說出來", "quizTitle": "說出委屈挑戰題", "skill": "說出委屈四步驟", "cast": ["an", "le", "kai"], "noCheer": ["blame", "balloon", "burst", "steps", "late"], "fbLow": ["steps"]};
 // ===== 我的委屈，我會說出來 =====
@@ -1060,10 +1106,29 @@ const SCENES = [
   ] },
 ];
 
+// ===== 倒帶找問題 =====
+const ERR = (() => {
+  const mk = T => ({
+    an: wk('an', { x: 280, expr: 'shocked', fx: [F('bang', 1)] }),
+    le: wk('le', { x: 640, lx: 0, red: 1, expr: 'angry', talk: true, ra: [60, 0], la: FIST, fx: [F('steam', 1)] }),
+  });
+  const c = mk(0), h = headWorld(c.le);
+  const by = h.y - 200;
+  const marks = [
+    { x: f1(h.x), y: f1(by), r: 78, label: '委屈一直不說', lx: f1(h.x + 250), ly: f1(by) },
+    { x: f1(h.x), y: f1(h.y), r: 90, label: '生氣大叫', lx: f1(h.x + 230), ly: f1(h.y) },
+    { x: 1090, y: 450, r: 80, label: '丟東西', ly: 330 },
+  ];
+  const shards = T => { let s = ''; for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4 + .3, rr = 58 + (i % 2) * 14; s += `<path d="M${f1(h.x + Math.cos(a) * rr)} ${f1(by + Math.sin(a) * rr)} l${f1(Math.cos(a + 1) * 22)} ${f1(Math.sin(a + 1) * 22)} l${f1(Math.cos(a) * 18)} ${f1(Math.sin(a) * 18)}z" fill="#8fa3c7" stroke="${OL}" stroke-width="3"/>`; } return s + comic('砰！', h.x, by, 56, '#fff', 1, -8, '#8fa3c7'); };
+  return { marks, frame: T => { const k = mk(T); return { bg: 'class', bgo: board, chars: [k.an, k.le], front: [table(), picture(300, 595, 1), bottle(400, 610, 90), crayon(1060, 440, T * 300), crayon(1120, 470, -T * 260, '#3fa9f5'), shards(T)] }; } };
+})();
+SCENES.splice(3, 0, findScene(ERR));
+
 // ===== 挑戰題 =====
 const Q = [
   { type: 'choice', q: '小安以為是阿樂弄倒水壺。阿樂心裡是什麼感覺？', short: '阿樂是什麼感覺？', opts: ['好委屈', '好開心', '好好笑'], ans: 0,
     ok: '答對了！被誤會的時候，會覺得好委屈。', no: '再看一次圖：阿樂明明沒有做，卻被說是他。', scene: 'blame' },
+  { type: 'spot', q: '倒帶找一找：阿樂哪裡做得不好？點一點畫面，找出 3 個地方！', short: '倒帶找問題', ok: '答對了！委屈不說、大叫、丟東西，都不是好方法。', no: '再找找看：看看阿樂的頭上、臉，還有飛出去的東西。', scene: 'spot' },
   { type: 'yn', q: '阿樂很委屈，可是都不說，只把委屈放在心裡。這樣好不好？', short: '委屈不說，好不好？', opts: ['好', '不好'], ans: 1,
     ok: '答對了！委屈放在心裡，委屈氣球會越來越大。', no: '再看一次圖：阿樂頭上的委屈氣球怎麼了？', scene: 'balloon' },
   { type: 'choice', q: '委屈一直放在心裡，後來怎麼了？', short: '委屈不說的結果', opts: ['阿樂忍不住大叫、丟東西', '委屈自己不見了', '大家都知道真相'], ans: 0,

@@ -599,6 +599,23 @@ function fxSVG(c, T) {
         s += `<g transform="translate(${f1(h.x - c.face * (110 + ms * 60) * c.s)},${f1(h.y + (40 - ms * 70) * c.s)}) scale(${f1(c.s * ms * 100) / 100})">${monsterSVG(T, f.mood || 'grin')}</g>`;
         break;
       }
+      case 'balloon': {
+        const bs = f.p ?? .6; if (bs <= .02) break;
+        const wob = Math.sin(T * 3) * 6, r = 96 * bs;
+        s += `<g transform="translate(${f1(h.x + wob * c.s)},${f1(h.y - (150 + r) * c.s)}) scale(${f1(c.s * 100) / 100})"><path d="M0 ${f1(r)} q-10 ${f1(30 + 40 * bs)} 0 ${f1(60 + 40 * bs)}" fill="none" stroke="${OL}" stroke-width="3"/><ellipse rx="${f1(r * .92)}" ry="${f1(r)}" fill="#8fa3c7" stroke="${OL}" stroke-width="5"/><ellipse cx="${f1(-r * .35)}" cy="${f1(-r * .4)}" rx="${f1(r * .18)}" ry="${f1(r * .28)}" fill="#fff" opacity=".6"/><path d="M-8 ${f1(r - 2)} l8 10 l8 -10z" fill="#8fa3c7" stroke="${OL}" stroke-width="3"/>${txt('委屈', 0, f1(r * .16), f1(Math.max(20, 44 * bs)), '#fff', { sw: 6 })}</g>`;
+        break;
+      }
+      case 'mega': {
+        const pl = 1 + Math.sin(T * 10) * .08;
+        let ln = ''; for (let k = -1; k <= 1; k++) ln += `<line x1="70" y1="${k * 26}" x2="${f1(96 + Math.sin(T * 12 + k) * 8)}" y2="${k * 40}" stroke="#ff6b57" stroke-width="7" stroke-linecap="round"/>`;
+        s += `<g transform="translate(${f1(h.x + c.face * 96 * c.s)},${f1(h.y + 46 * c.s)}) scale(${f1(c.s * c.face * pl * 100) / 100},${f1(c.s * pl * 100) / 100})"><path d="M0 -10 L60 -40 L60 40 L0 10Z" fill="#ffc83d" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/><rect x="-14" y="-12" width="16" height="24" rx="4" fill="#ff8a3d" stroke="${OL}" stroke-width="4"/>${ln}</g>`;
+        break;
+      }
+      case 'crack': {
+        const pl = 1 + Math.sin(T * 5) * .05;
+        s += `<g transform="translate(${f1(c.x + c.face * 120 * c.s)},${f1(c.y - 300 * c.s)}) scale(${f1(c.s * sc * pl * 100) / 100})">${heartPath(0, 0, 40, '#ff8fab', 5)}<path d="M-4 -16 l10 14 l-12 10 l10 14" fill="none" stroke="${OL}" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/></g>`;
+        break;
+      }
       case 'say': {
         const sd = f.side || c.face;
         s += bubble(f.p, h.x + sd * (f.dx ?? 230) * c.s, h.y - (f.dy ?? 200) * c.s, f.size || 42, h.x + sd * 60 * c.s, h.y - 90 * c.s, { sc, spiky: f.spiky, fill: f.fill, color: f.color });
@@ -705,6 +722,11 @@ const ICON = {
   name: T => `<rect x="-52" y="-34" width="104" height="68" rx="14" fill="#fff" stroke="${OL}" stroke-width="6"/><rect x="-52" y="-34" width="104" height="22" rx="10" fill="#ff6b57"/><path d="M-52 -14 H52" stroke="${OL}" stroke-width="5"/>${txt('阿凱', 0, 22, 30, OL, { sw: 0 })}`,
   talk: T => `<path d="M-46 -34 h92 a12 12 0 0 1 12 12 v44 a12 12 0 0 1 -12 12 h-50 l-24 20 v-20 h-18 a12 12 0 0 1 -12 -12 v-44 a12 12 0 0 1 12 -12Z" fill="#e4f4ff" stroke="${OL}" stroke-width="6" stroke-linejoin="round"/><path d="M-30 -12 h60 M-30 6 h40" stroke="#3fa9f5" stroke-width="8" stroke-linecap="round"/>`,
   wish: T => `<g transform="rotate(${f1(T * 30 % 360)})">${starPath(0, 0, 50, 22, 5, -90, '#ffd23f', 6)}</g>`,
+  ear: T => `<g transform="rotate(${f1(Math.sin(T * 3) * 6)})"><path d="M-6 -50 C34 -54 50 -20 34 8 C24 26 12 22 8 40 C4 56 -22 56 -24 38" fill="#ffd8b4" stroke="${OL}" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/><path d="M-4 -26 C16 -30 24 -12 14 2 C8 10 0 8 0 20" fill="none" stroke="${OL}" stroke-width="5" stroke-linecap="round"/></g><path d="M-44 -24 q-10 24 0 48 M-58 -34 q-16 34 0 68" fill="none" stroke="#3fa9f5" stroke-width="6" stroke-linecap="round" opacity="${f1((.5 + Math.sin(T * 5) * .5) * 100) / 100}"/>`,
+  meter: T => { const lv = 1 + Math.floor((T * .8) % 3); return [0, 1, 2].map(i => `<rect x="${-46 + i * 32}" y="${20 - i * 22}" width="26" height="${22 + i * 22}" rx="6" fill="${i < lv ? ['#2fbf8f', '#ffc83d', '#ff6b57'][i] : '#e7e2ef'}" stroke="${OL}" stroke-width="5"/>`).join('') + `<path d="M-50 44 H50" stroke="${OL}" stroke-width="5" stroke-linecap="round"/>`; },
+  hand: T => `<g transform="translate(0,${f1(Math.sin(T * 5) * 4)}) rotate(${f1(Math.sin(T * 5) * 8)})">${[-24, -8, 8, 24].map((x, i) => `<rect x="${x - 7}" y="${-52 + Math.abs(i - 1.5) * 6}" width="14" height="44" rx="7" fill="#ffd8b4" stroke="${OL}" stroke-width="5"/>`).join('')}<rect x="-32" y="-18" width="64" height="58" rx="20" fill="#ffd8b4" stroke="${OL}" stroke-width="6"/><rect x="26" y="-8" width="14" height="34" rx="7" fill="#ffd8b4" stroke="${OL}" stroke-width="5" transform="rotate(-35 33 9)"/></g>`,
+  pencil: T => `<g transform="rotate(${f1(-35 + Math.sin(T * 6) * 8)})"><rect x="-12" y="-52" width="24" height="76" fill="#ffc83d" stroke="${OL}" stroke-width="5"/><rect x="-12" y="-62" width="24" height="14" rx="4" fill="#ff8fab" stroke="${OL}" stroke-width="5"/><path d="M-12 24 L0 52 L12 24Z" fill="#ffd8b4" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/><path d="M-4 42 L0 52 L4 42Z" fill="${OL}"/></g><path d="M-46 46 q12 -10 24 0 t24 0" fill="none" stroke="#3fa9f5" stroke-width="5" stroke-linecap="round"/>`,
+  flower: T => `<g transform="rotate(${f1(T * 20 % 360)})">${[0, 1, 2, 3, 4].map(i => `<ellipse cx="0" cy="-26" rx="16" ry="24" fill="#ff8fab" stroke="${OL}" stroke-width="4" transform="rotate(${i * 72})"/>`).join('')}</g><circle r="16" fill="#ffd23f" stroke="${OL}" stroke-width="4"/>`,
 };
 function stepIcon(i, T) { return (ICON[STEPS[i].ic] || ICON.wish)(T); }
 function stepCard(i, cx, cy, sc, T, o = {}) {
@@ -870,6 +892,52 @@ function racers(S, T, o) {
   return ['an', 'le', 'kai'].map(id => lane(id, o[id] || {}));
 }
 
+
+// ===== 倒帶找問題（錯誤劇本） =====
+// ERR = { frame: T => 場景R, marks: [{ x, y, r, label, lx?, ly? }] }
+function spotlightSVG(marks, op = .55) {
+  if (op <= 0) return '';
+  const holes = marks.map(m => `<circle cx="${m.x}" cy="${m.y}" r="${f1(m.r * 1.5)}" fill="#000"/>`).join('');
+  return `<defs><radialGradient id="spotG"><stop offset=".7" stop-color="#000"/><stop offset="1" stop-color="#fff"/></radialGradient><mask id="spotM"><rect x="-10" y="-10" width="1300" height="740" fill="#fff"/>${holes.replace(/fill="#000"/g, 'fill="url(#spotG)"')}</mask></defs><rect x="-10" y="-10" width="1300" height="740" fill="#14102a" opacity="${f1(op * 100) / 100}" mask="url(#spotM)"/>`;
+}
+function errMarkSVG(m, i, sc, T, showLabel = true) {
+  if (sc <= .01) return '';
+  const lx = m.lx ?? m.x, ly = m.ly ?? (m.y + m.r + 44);
+  const tw2 = tw(m.label, 32) + 36;
+  return `<g><g transform="translate(${m.x},${m.y}) scale(${f1(sc * 100) / 100})"><circle r="${m.r}" fill="none" stroke="#fff" stroke-width="13"/><circle r="${m.r}" fill="none" stroke="#e8343a" stroke-width="8" stroke-dasharray="22 12" transform="rotate(${f1(T * 40)})"/>
+  <g transform="translate(${f1(m.r * .72)},${f1(-m.r * .72)})"><circle r="26" fill="#e8343a" stroke="#fff" stroke-width="5"/>${txt(String(i + 1), 0, 12, 34, '#fff', { sw: 0 })}</g></g>
+  ${showLabel ? `<g transform="translate(${lx},${ly}) scale(${f1(Math.min(1, sc) * 100) / 100})"><rect x="${f1(-tw2 / 2)}" y="-26" width="${f1(tw2)}" height="52" rx="26" fill="#e8343a" stroke="#fff" stroke-width="4"/>${txt(m.label, 0, 11, 32, '#fff', { sw: 0 })}</g>` : ''}</g>`;
+}
+function magnifierSVG(x, y, sc = 1) {
+  return `<g transform="translate(${f1(x)},${f1(y)}) scale(${sc}) rotate(-30)"><rect x="-11" y="52" width="22" height="78" rx="9" fill="#a5713f" stroke="${OL}" stroke-width="6"/><circle r="60" fill="#dff3ff" fill-opacity=".35" stroke="${OL}" stroke-width="12"/><circle r="60" fill="none" stroke="#ffc83d" stroke-width="5"/><path d="M-30 -24 q12 -16 34 -10" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round"/></g>`;
+}
+// 產生「倒帶找問題」一整段影片
+function findScene(ERR, who = '阿樂') {
+  const M = ERR.marks, n = M.length, cn = ['一', '二', '三', '四'];
+  const per = 2.8, d3 = 1.6 + n * per + 1;
+  const listText = `有${cn[n - 1]}個地方怪怪的。` + M.map((m, i) => `第${cn[i]}，${m.label}。`).join('');
+  return { name: '倒帶找問題', tr: 'flash', beats: [
+    { who: 'N', text: '我們倒帶回去，再看一次。', d: 4, act: (t, T) => { const R = ERR.frame(T); R.ui = [...(R.ui || []), rewindFX(t, T)]; R.gray = .4; return R; } },
+    { who: 'N', text: `找一找：${who}哪裡怪怪的？`, d: 6, act: (t, T) => {
+      const R = ERR.frame(T), k = clamp((t - 1.5) / 3.6);
+      const mi = Math.min(n - 1, Math.floor(k * n)), a = M[mi], b = M[Math.min(n - 1, mi + 1)], u = (k * n) % 1;
+      R.ui = [...(R.ui || []), `<rect x="0" y="0" width="1280" height="720" fill="#14102a" opacity="${f1(fade(t, 0, .6) * 30) / 100}"/>`,
+        comic('哪裡怪怪的？', 640, 100, 76, '#fff', pop(t, .3), -3, '#ff9f1c'), t > 1.2 ? magnifierSVG(lerp(a.x, b.x, EZ.io(u)) + Math.sin(T * 3) * 20, lerp(a.y, b.y, EZ.io(u)) + Math.cos(T * 3) * 14, pop(t, 1.2) * .9) : '',
+        flashIn(t, .35)];
+      return R;
+    } },
+    { who: 'N', text: listText, d: d3, act: (t, T) => {
+      const R = ERR.frame(T);
+      R.ui = [...(R.ui || []), spotlightSVG(M.filter((_, i) => t > 1.2 + i * per), .5 * fade(t, .8, 1.4)), ...M.map((m, i) => errMarkSVG(m, i, pop(t, 1.2 + i * per, .45), T))];
+      return R;
+    } },
+    { who: 'N', text: '這些地方，我們來學怎麼做會更好！', d: 4, act: (t, T) => {
+      const R = ERR.frame(T);
+      R.ui = [...(R.ui || []), spotlightSVG(M, .5), ...M.map((m, i) => errMarkSVG(m, i, 1, T)), comic('學學看怎麼做！', 640, 100, 70, '#fff', pop(t, .6), -3, '#37c99b')];
+      return R;
+    } },
+  ] };
+}
 
 const TITLE_LINES = ["好好說，", "大家都聽得懂"];
 const META = {"title": "好好說，大家都聽得懂", "quizTitle": "好好說挑戰題", "skill": "好好說四步驟", "cast": ["an", "le", "kai"], "noCheer": ["shout", "fight", "steps", "line"], "fbLow": ["steps"]};
@@ -1067,10 +1135,29 @@ const SCENES = [
   ] },
 ];
 
+// ===== 倒帶找問題 =====
+const ERR = (() => {
+  const mk = T => ({
+    an: sk('an', { x: 200, expr: 'shocked' }),
+    le: sk('le', { x: 600, lx: .5, red: .9, expr: 'angry', talk: true, ra: [90, 10], palms: true, la: [150, -30], tilt: 10 }),
+    kai: sk('kai', { x: 860, face: -1, expr: 'dizzy', tilt: -14, ra: [40, -60] }),
+  });
+  const c = mk(0); charSVG(c.le, 0);
+  const h = headWorld(c.le), push = handWorld(c.le, 1, 0), grab = handWorld(c.le, -1, 0);
+  const marks = [
+    { x: f1(h.x), y: f1(h.y), r: 90, label: '大喊「你很討厭」', lx: f1(h.x + 170), ly: f1(h.y - 150) },
+    { x: f1(grab.x), y: f1(grab.y), r: 56, label: '用力搶回來', lx: f1(grab.x - 40), ly: f1(grab.y - 95) },
+    { x: f1(push.x + 10), y: f1(push.y), r: 60, label: '推阿凱', lx: f1(push.x + 160), ly: f1(push.y + 10) },
+  ];
+  return { marks, frame: T => { const k = mk(T); const g = handWorld(k.le, -1, T); return { bg: 'class', bgo: { board: '美勞課' }, chars: [k.an, k.le, k.kai], front: [desk(T, false), eraserProp(g.x, g.y)] }; } };
+})();
+SCENES.splice(3, 0, findScene(ERR));
+
 // ===== 挑戰題 =====
 const Q = [
   { type: 'yn', q: '阿樂大喊「你很討厭耶！」，還推了阿凱。這樣好不好？', short: '大叫又推人，好不好？', opts: ['好', '不好'], ans: 1,
     ok: '答對了！大叫和推人，會讓事情變得更糟。', no: '再想想：阿凱被推以後，心情怎麼樣？', scene: 'shout' },
+  { type: 'spot', q: '倒帶找一找：阿樂哪裡做得不好？點一點畫面，找出 3 個地方！', short: '倒帶找問題', ok: '答對了！大喊、搶東西、推人，都不是好方法。', no: '再找找看：看看阿樂的嘴巴和兩隻手。', scene: 'spot' },
   { type: 'choice', q: '阿樂大叫又推人，結果怎麼樣？', short: '大叫推人的結果', opts: ['兩個人都生氣，吵起來', '阿凱馬上道歉', '大家都很開心'], ans: 0,
     ok: '答對了！兩個人都生氣，還吵了起來。', no: '再看一次圖：阿樂和阿凱的臉是什麼表情？', scene: 'fight' },
   { type: 'order', q: '把「好好說四步驟」照順序排好。', short: '四步驟的順序', tiles: [1, 3, 0, 2],
