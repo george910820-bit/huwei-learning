@@ -1297,7 +1297,7 @@ function miniFace(kind, col) {
     happy: '<path d="M17 35 q10 12 20 0z" fill="#6b1d2a" stroke="#2b2036" stroke-width="3" stroke-linejoin="round"/>', laugh: '<path d="M15 34 q12 16 24 0z" fill="#6b1d2a" stroke="#2b2036" stroke-width="3" stroke-linejoin="round"/>' }[kind];
   return `<svg viewBox="0 0 54 54" width="54" height="54" aria-hidden="true"><circle cx="27" cy="27" r="24" fill="${col}" stroke="#2b2036" stroke-width="3.5"/>${eyes}${mouth}${kind === 'sad' ? '<path d="M38 30 q3 6 0 8 q-3 -2 0 -8z" fill="#6ec6ff"/>' : ''}</svg>`;
 }
-const YN = { '好': 'ok', '對': 'ok', '是': 'ok', '不好': 'no', '不對': 'no', '不是': 'no' };
+const YN = { '好': 'ok', '對': 'ok', '是': 'ok', '有': 'ok', '會': 'ok', '不好': 'no', '不對': 'no', '不是': 'no', '沒有': 'no', '不會': 'no' };
 function dotsHTML() {
   return order.map((qi, k) => `<span class="dot ${k < st.i ? 'done' : k === st.i ? 'now' : ''}"></span>`).join('');
 }
@@ -1332,7 +1332,7 @@ function showQ(k) {
   document.getElementById('count').textContent = `第 ${k + 1} 題 / 共 ${order.length} 題`;
   document.getElementById('dots').innerHTML = dotsHTML();
   let h = `<div class="qrow"><h2 class="qt" id="qt">${q.q.split(/(?<=[。？！])/).filter(Boolean).map(s => `<span class="sent">${s}</span>`).join('')}</h2><button class="speak" id="spk" aria-label="念題目">${SPEAKER}</button></div>`;
-  if (q.type === 'yn') h += `<div class="opts yn">${q.opts.map((o, i) => `<button class="opt" data-i="${i}"><span class="yn-ic ${YN[o]}" aria-hidden="true">${YN[o] === 'ok' ? '○' : '✕'}</span><span class="ot">${o}</span></button>`).join('')}</div>`;
+  if (q.type === 'yn') h += `<div class="opts yn">${q.opts.map((o, i) => `<button class="opt" data-i="${i}"><span class="yn-ic ${YN[o]}" aria-hidden="true">${YN[o] === 'ok' ? '✓' : '✕'}</span><span class="ot">${o}</span></button>`).join('')}</div>`;
   if (q.type === 'choice') h += `<div class="opts list">${q.opts.map((o, i) => `<button class="opt c${i}" data-i="${i}"><span class="badge">${i + 1}</span><span class="ot">${o}</span></button>`).join('')}</div>`;
   if (q.type === 'multi') h += `<div class="opts feel${q.opts.some(o => !FEEL[o]) ? ' txt' : ''}">${q.opts.map((o, i) => `<button class="opt" data-i="${i}" aria-pressed="false">${FEEL[o] ? miniFace(FEEL[o][1], FEEL[o][0]) : ''}<span class="ot">${o}</span><span class="tick" aria-hidden="true">✓</span></button>`).join('')}</div><button class="big ghost" id="check" disabled>選好了，對答案</button>`;
   if (q.type === 'spot') h += `<div class="spotbar"><span class="spoticon" aria-hidden="true">🔍</span><span id="spotcount">找到 0 / ${ERR.marks.length} 個</span></div><ol class="spotlist" id="spotlist">${ERR.marks.map((m, i) => `<li data-i="${i}"><span class="no">${i + 1}</span><span class="lb">？？？</span></li>`).join('')}</ol>`;
