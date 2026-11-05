@@ -7,51 +7,159 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@500;700;900&display=swap">
 <style>
-:root{--night:#1d2340;--deck:#272f57;--line:#3c4679;--paper:#fffaf0;--sun:#ffc83d;--coral:#ff6b57;--ink:#2b2036;--muted:#b5bce0}
+:root{--night:#F5C176;--card:#fff8ec;--line:#e2a654;--paper:#fffaf0;--text:#3b2a1a;--sun:#ffc83d;--coral:#e8553f;--mint:#2f9e74;--grape:#7b5cc4;--ink:#2b2036;--muted:#7a5a36}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-html,body{height:100%}
-body{margin:0;background:var(--night);color:var(--paper);font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif;display:flex;flex-direction:column}
+html,body{min-height:100%}
+body{margin:0;background:var(--night);color:var(--text);font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif}
+a{color:inherit}
+.hf{font-family:'Huninn','Noto Sans TC',sans-serif;font-weight:400}
+/* ---------- 摘要頁 ---------- */
+#home{max-width:1100px;margin:0 auto;padding:14px 16px 40px}
+.topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.home{color:var(--text);text-decoration:none;font-size:.95rem;font-weight:700}
+.home:hover{text-decoration:underline}
+.tag{background:var(--grape);color:#fff;padding:3px 12px;border-radius:999px;font-size:.9rem}
+.card{background:var(--card);border:2px solid var(--line);box-shadow:0 4px 0 rgba(150,90,20,.18);border-radius:20px;padding:22px 24px}
+.hero{display:grid;grid-template-columns:1fr minmax(220px,38%);gap:22px;align-items:center}
+.ep{color:var(--muted);font-size:.95rem;margin:0 0 6px}
+.hero h1{margin:0 0 12px;font-size:clamp(1.8rem,4.4vw,2.6rem);line-height:1.2}
+.chant{display:inline-block;background:#fde6c3;border:2px solid var(--line);color:#a8431f;border-radius:14px;padding:8px 16px;font-size:clamp(1.05rem,2.4vw,1.3rem);margin-bottom:14px}
+.story{line-height:1.85;margin:0 0 14px;color:var(--text);font-size:1.02rem}
+.meta{display:flex;flex-wrap:wrap;gap:6px 20px;font-size:.92rem;color:var(--muted)}
+.meta b{color:var(--text);margin-right:4px}
+.cover{width:100%;border-radius:16px;border:3px solid var(--line);display:block}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.kicker{font-size:.85rem;color:var(--muted);margin:0 0 4px}
+.card h2{margin:0 0 6px;font-size:1.4rem}
+.card p.d{margin:0 0 14px;color:#5a4330;line-height:1.7;font-size:.97rem}
+.btn{display:inline-flex;align-items:center;gap:8px;font:inherit;font-family:'Huninn','Noto Sans TC',sans-serif;font-size:1.08rem;color:#fff;background:var(--coral);border:0;border-radius:12px;padding:10px 18px;text-decoration:none;cursor:pointer}
+.btn:hover{filter:brightness(1.07)}
+.btn:focus-visible,.sm:focus-visible{outline:4px solid #3fa9f5;outline-offset:2px}
+.btn.c{background:var(--coral)}.btn.m{background:var(--mint)}.btn.p{background:var(--grape)}
+.chap{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:5px;font-size:.93rem}
+.chap li{display:flex;gap:12px}
+.chap time{color:#c2410c;font-variant-numeric:tabular-nums;min-width:3.2em;font-weight:700}
+.ws{display:grid;gap:10px;margin-top:4px}
+.wsrow{display:flex;align-items:center;gap:12px;border:2px solid var(--line);border-radius:14px;padding:10px 12px}
+.wsrow .L{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:var(--night);color:var(--ink);font-weight:900;flex:none}
+.wsrow .t{flex:1;min-width:0}.wsrow .t b{display:block}.wsrow .t small{color:var(--muted)}
+.sm{font-size:.85rem;color:var(--text);background:#fff;border:2px solid var(--line);border-radius:9px;padding:5px 10px;text-decoration:none;white-space:nowrap}
+.sm:hover{border-color:var(--coral)}
+.none{color:var(--muted);font-size:.95rem;line-height:1.7}
+.goal{margin-top:16px;background:#fff1ea;border:2px solid var(--coral);border-radius:16px;padding:14px 20px}
+.goal .kicker{color:var(--coral);font-weight:700;font-size:.95rem}
+.goal p{margin:0;font-weight:700;line-height:1.7}
+@media (max-width:760px){.hero{grid-template-columns:1fr}.cover{order:-1}.grid{grid-template-columns:1fr}.card{padding:18px}}
+/* ---------- 教材分頁 ---------- */
+#viewer{display:flex;flex-direction:column;min-height:100vh}
 header{padding:12px 16px 0;max-width:1320px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:10px}
 .top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.home{color:var(--muted);text-decoration:none;font-size:.95rem}
-.home:hover{color:var(--paper)}
-.tag{font-family:'Huninn','Noto Sans TC',sans-serif;background:#a98be0;color:var(--ink);padding:3px 12px;border-radius:999px;font-size:.9rem}
-h1{margin:0;font-family:'Huninn','Noto Sans TC',sans-serif;font-weight:400;font-size:clamp(1.3rem,3vw,1.8rem)}
+header h1{margin:0;font-size:clamp(1.3rem,3vw,1.8rem)}
 .tabs{display:flex;gap:8px;flex-wrap:wrap}
-.tab{font:inherit;font-family:'Huninn','Noto Sans TC',sans-serif;font-size:1.1rem;color:var(--paper);background:transparent;border:3px solid var(--line);border-bottom:0;border-radius:16px 16px 0 0;padding:9px 20px;cursor:pointer;display:flex;align-items:center;gap:8px}
-.tab span{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--line);font-size:.9rem}
-.tab[aria-selected="true"]{background:var(--paper);color:var(--ink);border-color:var(--paper)}
+.tab{font:inherit;font-family:'Huninn','Noto Sans TC',sans-serif;font-size:1.1rem;color:var(--text);background:rgba(255,255,255,.45);border:3px solid var(--line);border-bottom:0;border-radius:16px 16px 0 0;padding:9px 20px;cursor:pointer;display:flex;align-items:center;gap:8px}
+.tab span{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--line);color:#fff;font-size:.9rem}
+.tab[aria-selected="true"]{background:#fff;color:var(--ink);border-color:#fff}
 .tab[aria-selected="true"] span{background:var(--coral);color:#fff}
 .tab:focus-visible{outline:4px solid #3fa9f5;outline-offset:2px}
-.open{margin-left:auto;align-self:center;color:var(--muted);font-size:.95rem}
-main{flex:1;display:flex;min-height:0;border-top:3px solid var(--paper)}
-iframe{flex:1;width:100%;border:0;min-height:calc(100vh - 120px);background:var(--night)}
+.open{margin-left:auto;align-self:center;color:var(--text);font-size:.95rem}
+main{flex:1;display:flex;min-height:0;border-top:3px solid #fff}
+iframe{flex:1;width:100%;border:0;min-height:calc(100vh - 120px);background:#1d2340}
 </style>
 </head>
 <body>
-<header>
-  <div class="top"><a class="home" href="../../">← 回遊戲大廳</a><span class="tag">特需・溝通技巧</span><h1>不批評，我會找優點</h1></div>
-  <div class="tabs" role="tablist">
-    <button class="tab" role="tab" id="t-video" data-f="video.html" aria-selected="true"><span>1</span>動畫短片</button>
-    <button class="tab" role="tab" id="t-quiz" data-f="quiz.html" aria-selected="false"><span>2</span>挑戰題</button>
-    <button class="tab" role="tab" id="t-slides" data-f="slides.html" aria-selected="false"><span>3</span>教學簡報</button>
-    <a class="open" id="open" href="video.html" target="_blank" rel="noopener">在新分頁開啟</a>
+<!-- 摘要頁 -->
+<div id="home">
+  <div class="topbar"><a class="home" href="../../">← 回遊戲大廳</a><span class="tag hf">特需・社會技巧</span></div>
+  <section class="card hero">
+    <div>
+      <p class="ep" id="ep"></p>
+      <h1 class="hf" id="title"></h1>
+      <div class="chant hf" id="chant"></div>
+      <p class="story" id="story"></p>
+      <div class="meta" id="meta"></div>
+    </div>
+    <img class="cover" src="img/cover.png" alt="">
+  </section>
+  <div class="grid">
+    <section class="card">
+      <p class="kicker">影片</p><h2 class="hf">動畫短片</h2>
+      <p class="d">全班一起看，可以分段跳著看、暫停、調語速。下面是每一段的開始時間。</p>
+      <a class="btn c" href="#video">▶ 開始看影片</a>
+      <ul class="chap" id="chap"></ul>
+    </section>
+    <section class="card">
+      <p class="kicker">互動練習</p><h2 class="hf">挑戰題</h2>
+      <p class="d" id="quizd"></p>
+      <a class="btn m" href="#quiz">開始挑戰</a>
+    </section>
+    <section class="card">
+      <p class="kicker">給老師</p><h2 class="hf">教學簡報</h2>
+      <p class="d" id="slided"></p>
+      <a class="btn p" href="#slides">打開簡報</a>
+    </section>
+    <section class="card">
+      <p class="kicker">紙本練習</p><h2 class="hf">學習單</h2>
+      <div id="ws"></div>
+    </section>
   </div>
+</div>
+
+<!-- 教材分頁 -->
+<div id="viewer" hidden>
+<header>
+  <div class="top"><a class="home" href="#">← 回主題摘要</a><span class="tag hf">特需・社會技巧</span><h1 class="hf" id="vtitle"></h1></div>
+  <div class="tabs" role="tablist" id="tabs"></div>
 </header>
-<main><iframe id="frame" title="教材內容" src="video.html" allow="fullscreen; autoplay" allowfullscreen></iframe></main>
+<main><iframe id="frame" title="教材內容" allow="fullscreen; autoplay" allowfullscreen></iframe></main>
+</div>
+
 <script>
-const tabs=[...document.querySelectorAll('.tab')],frame=document.getElementById('frame'),open=document.getElementById('open');
-function pick(name,push){
-  const t=tabs.find(x=>x.id==='t-'+name)||tabs[0];
-  tabs.forEach(x=>x.setAttribute('aria-selected',x===t));
-  if(!frame.src.endsWith(t.dataset.f)) frame.src=t.dataset.f;
-  open.href=t.dataset.f;
-  if(push) history.replaceState(null,'','#'+t.id.slice(2));
+const S = {"ep": 7, "star": "阿樂", "name": "不批評，我會找優點", "chant": "想一想、找優點、給建議", "story": "小安給大家看她的畫，阿樂大笑說「好醜喔！像小寶寶畫的！」，阿凱也跟著笑，小安把畫揉掉，說再也不要畫了。倒帶找出 3 個做錯的地方後，阿樂學會先想一想、找優點、給建議，讓說出來的話像花一樣；體育課時也用得上。", "secs": 161, "grade": "國小三年級（資源班）", "perf": ["特社2-Ⅱ-1", "特社2-Ⅱ-2"], "cont": ["特社B-Ⅱ-2", "特社C-Ⅱ-1"], "chapters": [["開場", 0], ["像刺一樣的話", 10], ["小安不想畫了", 34], ["倒帶找問題", 47], ["不批評三步驟", 72], ["再試一次", 101], ["體育課", 124], ["一起念口訣", 143]], "quiz": "9 題，按喇叭聽題目，答錯有提示可以再試。有一題要在畫面上點出 3 個做錯的地方。做完的成績頁可以截圖當評量紀錄。", "slides": "16 張，照「看影片 → 找問題 → 學步驟 → 演演看 → 挑戰題」的順序上課。按「老師備註」看每張的提問和提醒。", "worksheet": false};
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const mmss = s => Math.floor(s/60) + ':' + String(s%60).padStart(2,'0');
+$('ep').textContent = '虎尾小劇場 第 ' + S.ep + ' 集・主演' + S.star;
+$('title').textContent = S.name; $('vtitle').textContent = S.name;
+$('chant').textContent = S.chant;
+$('story').textContent = S.story;
+const len = '約 ' + Math.floor(S.secs/60) + ' 分 ' + (S.secs%60) + ' 秒';
+$('meta').innerHTML = [['片長',len],['適用',S.grade],['學習表現',S.perf.join('、')],['學習內容',S.cont.join('、')]]
+  .map(([k,v]) => '<span><b>'+k+'</b>'+esc(v)+'</span>').join('');
+$('chap').innerHTML = S.chapters.map(([n,t]) => '<li><time>'+mmss(t)+'</time>'+esc(n)+'</li>').join('');
+$('quizd').textContent = S.quiz;
+$('slided').textContent = S.slides;
+if (S.worksheet) {
+  $('ws').innerHTML = '<p class="d">A4 直式，PDF 直接列印；docx 可修改。</p><div class="ws">' +
+    [['A','圈選版','不能讀短句的小朋友：看圖、連連看、圈一圈','worksheet-A'],
+     ['B','讀寫版','能讀寫的小朋友：連連看、判斷、寫一寫','worksheet-B']].map(([L,n,d,f]) =>
+    '<div class="wsrow"><span class="L">'+L+'</span><span class="t"><b>'+n+'</b><small>'+d+'</small></span>'+
+    '<a class="sm" href="worksheets/'+f+'.pdf" target="_blank" rel="noopener">PDF</a>'+
+    '<a class="sm" href="worksheets/'+f+'.docx" download>docx</a></div>').join('') +
+    '</div><p style="margin:12px 0 0"><a class="sm" href="#sheet">預覽學習單</a></p>';
+} else {
+  $('ws').innerHTML = '<p class="none">這個主題還沒有學習單。</p>';
 }
-tabs.forEach(t=>t.onclick=()=>pick(t.id.slice(2),true));
-addEventListener('hashchange',()=>pick(location.hash.slice(1)));
-pick(location.hash.slice(1)||'video');
+
+const TABS = [['video','video.html','動畫短片'],['quiz','quiz.html','挑戰題'],['slides','slides.html','教學簡報']];
+if (S.worksheet) TABS.push(['sheet','worksheet.html','學習單']);
+$('tabs').innerHTML = TABS.map(([id,f,n],i) =>
+  '<button class="tab" role="tab" id="t-'+id+'" data-f="'+f+'" aria-selected="false"><span>'+(i+1)+'</span>'+n+'</button>').join('') +
+  '<a class="open" id="open" target="_blank" rel="noopener">在新分頁開啟</a>';
+const tabs = [...document.querySelectorAll('.tab')], frame = $('frame');
+tabs.forEach(t => t.onclick = () => { location.hash = t.id.slice(2); });
+function route() {
+  const h = location.hash.slice(1);
+  const t = tabs.find(x => x.id === 't-' + h);
+  if (!t) { $('viewer').hidden = true; $('home').hidden = false; document.title = S.name; frame.removeAttribute('src'); scrollTo(0,0); return; }
+  $('home').hidden = true; $('viewer').hidden = false;
+  tabs.forEach(x => x.setAttribute('aria-selected', x === t));
+  if (!frame.src.endsWith(t.dataset.f)) frame.src = t.dataset.f;
+  $('open').href = t.dataset.f;
+  document.title = S.name + '・' + t.textContent.slice(1);
+}
+addEventListener('hashchange', route);
+route();
 </script>
 </body>
 </html>
