@@ -241,8 +241,21 @@ function armSVG(side, a, d, c) {
     for (let i = 0; i < 4; i++) fing += `<ellipse cx="${-15 + i * 10}" cy="-26" rx="6" ry="14" fill="${d.skin}" stroke="${OL}" stroke-width="4"/>`;
     s += `<g transform="translate(${hx},${hy}) rotate(${f1(ang)})">${fing}<ellipse cx="22" cy="-6" rx="13" ry="7" transform="rotate(-35 22 -6)" fill="${d.skin}" stroke="${OL}" stroke-width="4"/><circle r="20" fill="${d.skin}" stroke="${OL}" stroke-width="4.5"/></g>`;
   } else {
-    if ((c.thumb === side || c.thumb === 2)) s += `<rect x="${f1(p.hx - 6)}" y="${f1(p.hy - 34)}" width="13" height="26" rx="6.5" fill="${d.skin}" stroke="${OL}" stroke-width="4"/>`;
-    if ((c.finger === side)) s += `<rect x="${f1(p.hx - 5)}" y="${f1(p.hy - 38)}" width="11" height="30" rx="5.5" fill="${d.skin}" stroke="${OL}" stroke-width="4"/>`;
+    if ((c.thumb === side || c.thumb === 2)) {
+      // 比讚：橫向拳頭（看得到彎起的四指）＋短胖、往外斜的大拇指
+      s += `<g transform="translate(${hx},${hy})"><path d="M-10 -12 Q-14 -30 -4 -33 Q5 -34 6 -24 L7 -12Z" fill="${d.skin}" stroke="${OL}" stroke-width="4" stroke-linejoin="round" transform="rotate(-18)"/>
+      <rect x="-17" y="-14" width="34" height="30" rx="11" fill="${d.skin}" stroke="${OL}" stroke-width="4.5"/>
+      <path d="M2 -5 H15 M2 4 H15 M4 12 H14" stroke="${OL}" stroke-width="3" stroke-linecap="round" opacity=".75"/></g>`;
+      return s;
+    }
+    if ((c.finger === side)) {
+      // 伸食指：食指在拳頭邊邊、看得到彎起的手指和橫過來的大拇指（避免像比中指）
+      s += `<g transform="translate(${hx},${hy})"><rect x="-15" y="-38" width="10" height="32" rx="5" fill="${d.skin}" stroke="${OL}" stroke-width="4" transform="rotate(-22 -10 -8)"/>
+      <rect x="-16" y="-13" width="31" height="28" rx="10" fill="${d.skin}" stroke="${OL}" stroke-width="4.5"/>
+      <path d="M-1 -5 H11 M-1 3 H11" stroke="${OL}" stroke-width="3" stroke-linecap="round" opacity=".75"/>
+      <ellipse cx="-3" cy="8" rx="10" ry="5.5" fill="${d.skin}" stroke="${OL}" stroke-width="3.5"/></g>`;
+      return s;
+    }
     s += `<circle cx="${hx}" cy="${hy}" r="15" fill="${d.skin}" stroke="${OL}" stroke-width="4.5"/>`;
   }
   return s;
@@ -751,7 +764,7 @@ const ICON = {
   breath: T => { const b = 1 + Math.sin(T * 3) * .08;
     return `<g transform="scale(${f1(b * 100) / 100})"><circle r="50" fill="#e4f4ff" stroke="${OL}" stroke-width="6"/><path d="M-32 -12 q16 -14 32 0 t32 0" fill="none" stroke="#3fa9f5" stroke-width="8" stroke-linecap="round"/><path d="M-32 6 q16 -14 32 0 t26 0" fill="none" stroke="#3fa9f5" stroke-width="8" stroke-linecap="round"/><path d="M-26 24 q14 -12 28 0" fill="none" stroke="#3fa9f5" stroke-width="8" stroke-linecap="round"/></g>`; },
   heart: T => `${heartPath(0, 4, 44, '#ff6fa8', 6)}<circle cx="-14" cy="-4" r="5" fill="${OL}"/><circle cx="14" cy="-4" r="5" fill="${OL}"/><path d="M-10 12 Q0 20 10 12" fill="none" stroke="${OL}" stroke-width="4" stroke-linecap="round"/>`,
-  thumb: T => `<g transform="rotate(${f1(Math.sin(T * 4) * 8)})"><rect x="-34" y="-8" width="58" height="52" rx="16" fill="#ffd8b4" stroke="${OL}" stroke-width="6"/><rect x="-14" y="-52" width="22" height="52" rx="11" fill="#ffd8b4" stroke="${OL}" stroke-width="6"/><path d="M-30 12 h40 M-30 28 h40" stroke="${OL}" stroke-width="4" stroke-linecap="round"/><rect x="24" y="0" width="16" height="44" rx="6" fill="#2fbf8f" stroke="${OL}" stroke-width="5"/></g>`,
+  thumb: T => `<g transform="rotate(${f1(Math.sin(T * 4) * 6)})"><path d="M-30 -2 Q-40 -44 -16 -50 Q4 -54 4 -30 L4 -2Z" fill="#ffd8b4" stroke="${OL}" stroke-width="6" stroke-linejoin="round" transform="rotate(-14 -14 -2)"/><rect x="-42" y="-8" width="80" height="54" rx="18" fill="#ffd8b4" stroke="${OL}" stroke-width="6"/><path d="M4 6 H32 M4 20 H32 M8 34 H30" stroke="${OL}" stroke-width="4" stroke-linecap="round"/><rect x="38" y="0" width="14" height="42" rx="6" fill="#2fbf8f" stroke="${OL}" stroke-width="5"/></g>`,
   zip: T => { let t2 = ''; for (let k = -3; k <= 3; k++) t2 += `<rect x="${k * 11 - 3}" y="-8" width="6" height="16" rx="2" fill="#b8bfd0" stroke="${OL}" stroke-width="2"/>`;
     const px = -30 + ((T * .6) % 1) * 60;
     return `<circle r="50" fill="#ffe0e6" stroke="${OL}" stroke-width="6"/><rect x="-40" y="-6" width="80" height="12" rx="6" fill="#7a4b3a"/>${t2}<g transform="translate(${f1(px)},0)"><rect x="-9" y="-6" width="18" height="30" rx="5" fill="#ffc83d" stroke="${OL}" stroke-width="4"/></g>`; },
