@@ -50,6 +50,7 @@ a{color:inherit}
 .goal{margin-top:16px;background:#fff1ea;border:2px solid var(--coral);border-radius:16px;padding:14px 20px}
 .goal .kicker{color:var(--coral);font-weight:700;font-size:.95rem}
 .goal p{margin:0;font-weight:700;line-height:1.7}
+.card.wide{grid-column:1/-1}
 @media (max-width:760px){.hero{grid-template-columns:1fr}.cover{order:-1}.grid{grid-template-columns:1fr}.card{padding:18px}}
 /* ---------- 教材分頁 ---------- */
 #viewer{display:flex;flex-direction:column;min-height:100vh}
@@ -82,6 +83,11 @@ iframe{flex:1;width:100%;border:0;min-height:calc(100vh - 120px);background:#1d2
     <img class="cover" src="img/cover.png" alt="">
   </section>
   <div class="grid">
+    <section class="card wide" id="playcard" hidden>
+      <p class="kicker">互動練習・新情境</p><h2 class="hf">劇情選選看</h2>
+      <p class="d" id="playd"></p>
+      <a class="btn c" href="#story">▶ 開始選選看</a>
+    </section>
     <section class="card">
       <p class="kicker">影片</p><h2 class="hf">動畫短片</h2>
       <p class="d">全班一起看，可以分段跳著看、暫停、調語速。下面是每一段的開始時間。</p>
@@ -115,7 +121,7 @@ iframe{flex:1;width:100%;border:0;min-height:calc(100vh - 120px);background:#1d2
 </div>
 
 <script>
-const S = {"ep": 13, "star": "阿樂", "name": "等你說完，我再說", "chant": "嘴巴關、眼睛看、耳朵聽、再開口", "story": "小安在台上分享去動物園的事，阿樂忍不住大聲插嘴「我也去過！」，沒舉手就跑上台，還搶小安的圖畫，小安難過得說不下去。倒帶找出 3 個做錯的地方後，阿樂學會不插嘴四步驟，等別人說完再說；媽媽在講電話時，也用得上。", "secs": 203, "grade": "國小三年級（資源班）", "perf": ["特社2-Ⅱ-2", "特社3-Ⅱ-1"], "cont": ["特社B-Ⅱ-2", "特社B-Ⅱ-3"], "chapters": [["開場", 0], ["我先說！", 11], ["結果呢", 41], ["倒帶找問題", 56], ["不插嘴四步驟", 81], ["再試一次", 118], ["媽媽在講電話", 154], ["一起念口訣", 185]], "quiz": "9 題，按喇叭聽題目，答錯有提示可以再試。有一題要在畫面上點出做錯的地方。做完的成績頁可以截圖當評量紀錄。", "slides": "17 張，照「看影片 → 找問題 → 學步驟 → 演演看 → 挑戰題」的順序上課。按「老師備註」看每張的提問和提醒。", "worksheet": true};
+const S = {"ep": 13, "star": "阿樂", "name": "等你說完，我再說", "chant": "嘴巴關、眼睛看、耳朵聽、再開口", "story": "小安在台上分享去動物園的事，阿樂忍不住大聲插嘴「我也去過！」，沒舉手就跑上台，還搶小安的圖畫，小安難過得說不下去。倒帶找出 3 個做錯的地方後，阿樂學會不插嘴四步驟，等別人說完再說；媽媽在講電話時，也用得上。", "secs": 203, "grade": "國小三年級（資源班）", "perf": ["特社2-Ⅱ-2", "特社3-Ⅱ-1"], "cont": ["特社B-Ⅱ-2", "特社B-Ⅱ-3"], "chapters": [["開場", 0], ["我先說！", 11], ["結果呢", 41], ["倒帶找問題", 56], ["不插嘴四步驟", 81], ["再試一次", 118], ["媽媽在講電話", 154], ["一起念口訣", 185]], "quiz": "9 題，按喇叭聽題目，答錯有提示可以再試。有一題要在畫面上點出做錯的地方。做完的成績頁可以截圖當評量紀錄。", "slides": "17 張，照「看影片 → 找問題 → 學步驟 → 演演看 → 挑戰題」的順序上課。按「老師備註」看每張的提問和提醒。", "worksheet": true, "play": "「要去動物園囉」：換一個新的情境，影片停下來時，從 3 個做法選一個，看看會發生什麼事。選項會念出來，可以按圖片選。最後的紀錄頁可以截圖當評量紀錄。"};
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const mmss = s => Math.floor(s/60) + ':' + String(s%60).padStart(2,'0');
@@ -141,7 +147,9 @@ if (S.worksheet) {
   $('ws').innerHTML = '<p class="none">這個主題還沒有學習單。</p>';
 }
 
-const TABS = [['video','video.html','動畫短片'],['quiz','quiz.html','挑戰題'],['slides','slides.html','教學簡報']];
+const TABS = [['video','video.html','動畫短片'],['quiz','quiz.html','挑戰題']];
+if (S.play) { TABS.push(['story','story.html','劇情選選看']); $('playcard').hidden = false; $('playd').textContent = S.play; }
+TABS.push(['slides','slides.html','教學簡報']);
 if (S.worksheet) TABS.push(['sheet','worksheet.html','學習單']);
 $('tabs').innerHTML = TABS.map(([id,f,n],i) =>
   '<button class="tab" role="tab" id="t-'+id+'" data-f="'+f+'" aria-selected="false"><span>'+(i+1)+'</span>'+n+'</button>').join('') +
