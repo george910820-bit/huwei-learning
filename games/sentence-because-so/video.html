@@ -781,12 +781,33 @@ try { Object.assign(opt, JSON.parse(localStorage.getItem('sentence-video-opt') |
 const saveOpt = () => { try { localStorage.setItem('sentence-video-opt', JSON.stringify(opt)); } catch (e) {} };
 const cur = () => SCENES[si].beats[bi];
 
-function speakBeat() {
-  started = false; speaking = false;
+// 朗讀：記住念到哪裡，暫停後從那一句（逗號、句號分段）接著念
+const cleanSay = t => t.replace(/（[^）]*）/g, '').replace(/⋯+|……/g, '，');
+let sayText = '', sayBase = 0, sayChar = 0, sayStart = 0, sayBoundary = false, resumeAt = null;
+function speakBeat(from = 0) {
+  started = false; speaking = false; resumeAt = null;
   if (!opt.voiceOn || !hasSpeech) return;
   const b = cur(), id = ++uttId;
-  const u = speakText(b.say || b.text, b.who, () => { if (id === uttId) speaking = false; }, () => { if (id === uttId) started = true; });
-  if (u) speaking = true;
+  sayText = cleanSay(b.say || b.text); sayBase = from; sayChar = from; sayBoundary = false; sayStart = 0;
+  const part = sayText.slice(from);
+  if (!part.replace(/[，。！？、；：\s]/g, '')) return;
+  const u = speakText(part, b.who, () => { if (id === uttId) speaking = false; }, () => { if (id === uttId) { started = true; sayStart = performance.now(); } });
+  if (u) {
+    speaking = true;
+    u.onboundary = e => { if (id === uttId) { sayBoundary = true; sayChar = from + (e.charIndex || 0); } };
+  }
+}
+function pausedPos() {
+  if (!speaking) return null;
+  let pos = sayChar;
+  if (!sayBoundary && started) {
+    const sp = SPK[cur().who] || SPK.N, cps = 4.2 * VOPT.rate * sp.rate;
+    pos = sayBase + Math.floor((performance.now() - sayStart) / 1000 * cps);
+  }
+  pos = Math.min(pos, sayText.length - 1);
+  let k = pos - 1;
+  while (k >= sayBase && !/[，。！？、；：]/.test(sayText[k])) k--;
+  return Math.max(sayBase, k + 1);
 }
 function showSub() {
   const b = cur(), sp = SPK[b.who] || SPK.N;
@@ -794,7 +815,7 @@ function showSub() {
   subText.textContent = b.text;
   subBox.classList.remove('in'); void subBox.offsetWidth; subBox.classList.add('in');
 }
-function startBeat() { bt = 0; showSub(); if (playing) speakBeat(); updateUI(); }
+function startBeat() { bt = 0; resumeAt = null; showSub(); if (playing) speakBeat(); updateUI(); }
 function goScene(i, autoplay = playing) {
   poster = false;
   si = clamp(i, 0, SCENES.length - 1); bi = 0; st = 0; ended = false;
@@ -813,8 +834,8 @@ function nextBeat() {
 function setPlaying(p) {
   if (p && (ended || poster)) { goScene(0, true); return; }
   playing = p;
-  if (!p) { if (hasSpeech) speechSynthesis.cancel(); uttId++; speaking = false; }
-  else { st -= bt; bt = 0; speakBeat(); }
+  if (!p) { const at = pausedPos(); if (hasSpeech) speechSynthesis.cancel(); uttId++; speaking = false; resumeAt = at; }
+  else { if (resumeAt != null) speakBeat(resumeAt); else resumeAt = null; }
   updateUI();
 }
 function isTalking() {
