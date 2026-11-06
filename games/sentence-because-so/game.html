@@ -1,0 +1,1152 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>句型遊戲｜因為……，所以……</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@500;700;900&display=swap">
+<style>
+:root{--bg:#fff3dc;--card:#fffaf0;--ink:#4a3426;--line:#e9c48f;--sun:#ffd84d;--pink:#ff6f91;--mint:#38b77a;--red:#e8505b;--grape:#9579d6;
+  --cause:#ff8a3d;--causeBg:#ffe4c7;--causeT:#a8480a;--effect:#3f8fe0;--effectBg:#d9edff;--effectT:#1b5aa3;
+  --f-round:'Huninn','Noto Sans TC','PingFang TC','Microsoft JhengHei',sans-serif;--f-body:'Noto Sans TC','PingFang TC','Microsoft JhengHei',sans-serif}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{min-height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);-webkit-tap-highlight-color:transparent;
+  background-image:radial-gradient(circle at 10% 0%,#ffe2b0 0,transparent 40%),radial-gradient(circle at 100% 100%,#ffd6e2 0,transparent 40%)}
+.wrap{max-width:1240px;margin:0 auto;padding:12px 16px 30px}
+.rf{font-family:var(--f-round);font-weight:400}
+.btn{font:inherit;font-family:var(--f-round);font-size:1.15rem;color:var(--ink);background:#fff;border:3px solid var(--ink);border-radius:16px;padding:9px 16px;cursor:pointer;box-shadow:0 4px 0 var(--ink);white-space:nowrap;touch-action:manipulation}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:0 4px 0 var(--ink)}
+.btn.go{background:var(--sun)}
+.btn.ok{background:var(--mint);color:#fff}
+.btn.no{background:#ffe3e5}
+.btn.big{font-size:1.5rem;padding:12px 28px;border-radius:20px}
+.btn:focus-visible,.card:focus-visible,.slot:focus-visible{outline:4px solid #4fa3e8;outline-offset:3px}
+/* ---------- 設定頁 ---------- */
+.panel{background:var(--card);border:3px solid var(--line);border-radius:24px;box-shadow:0 6px 0 rgba(160,100,30,.18);padding:22px 26px}
+#setup .hero{display:grid;grid-template-columns:1fr minmax(240px,42%);gap:20px;align-items:center}
+#setup h1{margin:.2em 0 .3em;font-family:var(--f-round);font-weight:400;font-size:clamp(1.8rem,4.6vw,3rem);line-height:1.2}
+.tag{display:inline-block;background:var(--pink);color:#fff;border-radius:999px;padding:4px 14px;font-family:var(--f-round)}
+.lead{font-size:1.1rem;line-height:1.7;margin:.3em 0}
+#coverSvg{width:100%;border-radius:18px;border:3px solid var(--ink);display:block}
+.form{display:grid;gap:14px;margin-top:18px}
+.frow{display:grid;grid-template-columns:7.5em 1fr;gap:10px;align-items:center}
+.frow>label,.frow>span{font-weight:900;font-size:1.05rem}
+.frow input[type=text]{font:inherit;font-size:1.1rem;border:3px solid var(--ink);border-radius:12px;padding:8px 12px;width:100%;max-width:320px}
+.seg2{display:flex;flex-wrap:wrap;gap:8px}
+.seg2 button{font:inherit;font-size:1.02rem;border:3px solid var(--ink);background:#fff;color:var(--ink);border-radius:14px;padding:8px 14px;cursor:pointer;text-align:left;line-height:1.35}
+.seg2 button small{display:block;color:#8a6a4a;font-size:.85rem}
+.seg2 button[aria-pressed="true"]{background:var(--sun);box-shadow:inset 0 0 0 2px var(--ink)}
+.note{color:#8a6a4a;font-size:.95rem;line-height:1.6;margin:0}
+@media (max-width:760px){#setup .hero{grid-template-columns:1fr}.frow{grid-template-columns:1fr}}
+/* ---------- 遊戲頁 ---------- */
+.top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.lvl{font-family:var(--f-round);font-size:clamp(1.1rem,2.6vw,1.6rem)}
+.lvl b{font-weight:400;color:#fff;background:var(--grape);padding:3px 12px;border-radius:999px;margin-right:6px}
+.dots{display:flex;gap:6px;margin-left:auto}
+.dots i{width:22px;height:22px;border-radius:50%;border:3px solid var(--ink);background:#fff;display:block}
+.dots i.now{background:var(--sun)}
+.dots i.done{background:var(--mint)}
+.dots i.gap{width:8px;border:0;background:none}
+.stagebox{position:relative;width:min(100%,calc(46vh * 16 / 9));margin:0 auto;aspect-ratio:16/9;border:4px solid var(--ink);border-radius:20px;overflow:hidden;background:#000}
+.stagebox svg{display:block;width:100%;height:100%}
+.replay{position:absolute;right:10px;bottom:10px;font-size:1rem;padding:6px 12px;background:rgba(255,250,240,.95)}
+.prompt{display:flex;align-items:center;gap:10px;justify-content:center;margin:12px 0 6px;font-family:var(--f-round);font-size:clamp(1.15rem,2.7vw,1.7rem);text-align:center;flex-wrap:wrap}
+.say{font-size:1rem;padding:5px 10px;border-radius:12px}
+.modes{display:flex;gap:8px;justify-content:center;margin:6px 0 10px}
+.modes button{font:inherit;font-family:var(--f-round);font-size:1.1rem;border:3px solid var(--ink);background:#fff;color:var(--ink);border-radius:999px;padding:6px 18px;cursor:pointer}
+.modes button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.zone{background:var(--card);border:3px solid var(--line);border-radius:22px;padding:14px 16px;display:flex;flex-direction:column;gap:14px;align-items:center}
+.frame{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;font-family:var(--f-round);font-size:clamp(1.3rem,3vw,2.3rem)}
+.pill{border:3px solid var(--ink);border-radius:999px;padding:.12em .55em;color:#fff;line-height:1.4}
+.pill.c1{background:var(--cause)}.pill.c2{background:var(--effect)}
+.punct{font-size:1.2em;line-height:1;padding:0 .05em}
+.slot{min-width:5.2em;min-height:1.9em;border:4px dashed #b9a99a;border-radius:16px;background:#fff;display:flex;align-items:center;justify-content:center;padding:.1em .3em;position:relative;cursor:pointer;transition:background .15s}
+.slot.k-cause{border-color:var(--cause)}.slot.k-effect{border-color:var(--effect)}.slot.k-conn{min-width:3em}
+.slot.k-cause::after,.slot.k-effect::after{position:absolute;bottom:-1.25em;left:50%;transform:translateX(-50%);font-size:.42em;color:#fff;border-radius:999px;padding:.05em .7em;white-space:nowrap}
+.slot.k-cause::after{content:'原因';background:var(--cause)}.slot.k-effect::after{content:'結果';background:var(--effect)}
+.slot.sel{background:#fff7c4;box-shadow:0 0 0 4px var(--sun)}
+.slot.over{background:#fff3a8}
+.slot.right{border-style:solid;border-color:var(--mint);background:#e2f7ea}
+.slot .card{margin:0;box-shadow:none;border:0;background:transparent;padding:0;font-size:1em;cursor:pointer}
+.frame.withlabels{margin-bottom:1.1em}
+.tray{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;min-height:3em}
+.card{font-family:var(--f-round);font-size:clamp(1.25rem,2.8vw,2.1rem);background:#fff;color:var(--ink);border:3px solid var(--ink);border-radius:16px;padding:.2em .6em;box-shadow:0 5px 0 var(--ink);cursor:grab;user-select:none;-webkit-user-select:none;touch-action:none;line-height:1.35}
+.card.used{visibility:hidden}
+.card.ghost{position:fixed;z-index:50;pointer-events:none;transform:translate(-50%,-50%) rotate(-3deg) scale(1.06);box-shadow:0 10px 20px rgba(0,0,0,.25)}
+.card.conn1{color:var(--cause)}.card.conn2{color:var(--effect)}
+.shake{animation:shake .45s}
+@keyframes shake{20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+.acts{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.fb{min-height:1.6em;font-family:var(--f-round);font-size:clamp(1.05rem,2.4vw,1.5rem);text-align:center;padding:.3em .9em;border-radius:14px}
+.fb.good{background:#e2f7ea;color:#1f7a4d}.fb.bad{background:#ffe8e3;color:#b23a2a}.fb.info{background:#eef3ff;color:#3a5aa8}
+.fb:empty{display:none}
+/* 語音 */
+.mic{width:clamp(110px,16vw,150px);height:clamp(110px,16vw,150px);border-radius:50%;border:5px solid var(--ink);background:var(--pink);color:#fff;font-family:var(--f-round);font-size:1.15rem;cursor:pointer;box-shadow:0 6px 0 var(--ink);display:grid;place-items:center;line-height:1.2}
+.mic svg{width:46%;height:46%}
+.mic.on{background:var(--red);animation:pulse 1s infinite}
+@keyframes pulse{50%{box-shadow:0 6px 0 var(--ink),0 0 0 14px rgba(232,80,91,.25)}}
+.heard{min-height:2.2em;min-width:min(100%,520px);background:#fff;border:3px dashed #c9b8a4;border-radius:16px;padding:.35em .8em;font-family:var(--f-round);font-size:clamp(1.2rem,2.8vw,1.9rem);text-align:center}
+.heard .hi1{color:var(--cause);font-weight:900}.heard .hi2{color:var(--effect);font-weight:900}
+.heard.empty{color:#a8957f;font-size:1.05rem}
+.chk{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;font-size:1rem}
+.chk span{border-radius:999px;padding:3px 12px;background:#efe7dc;color:#8a7864}
+.chk span.y{background:#e2f7ea;color:#1f7a4d}
+.judge{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;border-top:3px dotted var(--line);padding-top:12px;width:100%}
+.judge b{font-family:var(--f-round);font-weight:400;font-size:1.15rem;background:var(--ink);color:#fff;border-radius:10px;padding:4px 10px}
+.vnote{font-size:.95rem;color:#8a6a4a;text-align:center;margin:0;max-width:640px;line-height:1.6}
+.vnote:empty{display:none}
+.hint{font-size:1rem;padding:5px 12px}
+/* 過場、結果 */
+.center{text-align:center}
+.bigmsg{font-family:var(--f-round);font-size:clamp(1.8rem,5vw,3.2rem);margin:.2em 0}
+table{border-collapse:collapse;width:100%;font-size:1.05rem;margin:14px 0}
+th,td{border:2px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:#ffe9c4}
+td.st{white-space:nowrap;color:#e0a100;font-size:1.2rem}
+.sumrow{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin:10px 0}
+.sumrow div{background:#fff;border:3px solid var(--line);border-radius:16px;padding:10px 18px;font-family:var(--f-round);font-size:1.2rem}
+.sumrow b{font-size:1.8rem;font-weight:400;color:var(--pink)}
+@media (max-width:520px){.frame{font-size:1.15rem;gap:5px}.slot{min-width:3.6em}.pill{padding:.1em .4em}.card{font-size:1.15rem}.zone{padding:12px 8px}}
+@media print{.noprint{display:none!important}body{background:#fff}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- 設定 -->
+  <section id="setup" class="panel">
+    <div class="hero">
+      <div>
+        <span class="tag">虎尾句型小教室</span>
+        <h1>句型遊戲：<br>因為……，所以……</h1>
+        <p class="lead">第一關：影片裡的三個句子。<br>第二關：看三段新的短片，自己造句。</p>
+      </div>
+      <svg id="coverSvg" viewBox="0 0 1280 720" aria-hidden="true"></svg>
+    </div>
+    <div class="form">
+      <div class="frow"><label for="kid">小朋友名字</label><input type="text" id="kid" placeholder="可以不填" autocomplete="off"></div>
+      <div class="frow"><span>難度</span><div class="seg2" id="optLevel">
+        <button data-v="easy" aria-pressed="true">簡單<small>「因為」「所以」已經放好，只排原因和結果</small></button>
+        <button data-v="hard" aria-pressed="false">挑戰<small>「因為」「所以」也要自己排</small></button></div></div>
+      <div class="frow"><span>第一關作答</span><div class="seg2" id="optM1">
+        <button data-v="build" aria-pressed="true">排字卡<small>點選或拖拉</small></button>
+        <button data-v="voice" aria-pressed="false">用說的<small>老師判斷對不對</small></button></div></div>
+      <div class="frow"><span>第二關作答</span><div class="seg2" id="optM2">
+        <button data-v="build" aria-pressed="true">排字卡<small>點選或拖拉</small></button>
+        <button data-v="voice" aria-pressed="false">用說的<small>老師判斷對不對</small></button></div></div>
+      <p class="note">每一題都可以在畫面上切換「排字卡」和「用說的」。用說的要用 Chrome、開網路、接麥克風；辨識出來的字只是參考，對不對由老師按按鈕決定。</p>
+      <div><button class="btn go big" id="startBtn">開始玩 ▶</button></div>
+    </div>
+  </section>
+
+  <!-- 題目 -->
+  <section id="play" hidden>
+    <div class="top">
+      <div class="lvl" id="lvl"></div>
+      <div class="dots" id="dots"></div>
+    </div>
+    <div class="stagebox"><svg id="svg" viewBox="0 0 1280 720" role="img" aria-label="情境短片"></svg>
+      <button class="btn replay" id="replay">▶ 再看一次</button></div>
+    <div class="prompt"><span id="promptText"></span><button class="btn say" id="sayPrompt" aria-label="念題目">🔊</button></div>
+    <div class="modes" role="group" aria-label="作答方式">
+      <button id="mBuild" aria-pressed="true">🖐 排字卡</button>
+      <button id="mVoice" aria-pressed="false">🎤 用說的</button>
+    </div>
+    <div class="zone" id="zBuild">
+      <div class="frame withlabels" id="frame"></div>
+      <div class="tray" id="tray"></div>
+      <div class="fb" id="fbB" aria-live="polite"></div>
+      <div class="acts">
+        <button class="btn" id="readBtn">🔊 念念看</button>
+        <button class="btn" id="clearBtn">↺ 重排</button>
+        <button class="btn go" id="checkBtn">✔ 檢查</button>
+      </div>
+    </div>
+    <div class="zone" id="zVoice" hidden>
+      <div class="frame" id="vframe"></div>
+      <button class="btn hint" id="hintBtn">💡 給一點提示</button>
+      <button class="mic" id="micBtn"><span><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-2.08A7 7 0 0 0 19 12h-2z"/></svg><br><b id="micLab" class="rf">按我說</b></span></button>
+      <div class="heard empty" id="heard">按麥克風，用「因為……，所以……」說一句話</div>
+      <div class="chk"><span id="c1">說到「因為」</span><span id="c2">說到「所以」</span></div>
+      <p class="vnote" id="vnote"></p>
+      <div class="fb" id="fbV" aria-live="polite"></div>
+      <div class="judge noprint"><b>老師判斷</b><button class="btn ok" id="judgeOk">✔ 說對了</button><button class="btn no" id="judgeNo">✘ 再試一次</button></div>
+    </div>
+    <div class="zone" id="zNext" hidden>
+      <div class="fb good" id="fbDone"></div>
+      <div class="acts"><button class="btn" id="readAgain">🔊 再念一次</button><button class="btn go big" id="nextBtn">下一題 ➜</button></div>
+    </div>
+  </section>
+
+  <!-- 過場 -->
+  <section id="inter" class="panel center" hidden>
+    <p class="bigmsg">第一關完成！</p>
+    <p class="lead">接下來是第二關：看新的短片，自己用「因為……，所以……」造句。</p>
+    <button class="btn go big" id="toPart2">開始第二關 ▶</button>
+  </section>
+
+  <!-- 成績 -->
+  <section id="result" class="panel" hidden>
+    <p class="bigmsg center">全部完成！</p>
+    <p class="center lead" id="rInfo"></p>
+    <div class="sumrow" id="rSum"></div>
+    <table><thead><tr><th>題目</th><th>正確句子</th><th>作答方式</th><th>結果</th><th></th></tr></thead><tbody id="rBody"></tbody></table>
+    <p class="note">這一頁可以截圖或列印，當作評量紀錄。「用說的」題目是老師按的結果。</p>
+    <div class="acts noprint" style="margin-top:12px"><button class="btn" id="printBtn">🖨 列印</button><button class="btn go" id="againBtn">↺ 再玩一次</button></div>
+  </section>
+</div>
+<script>
+// ===== 句型小教室｜Q版小動物動畫引擎 =====
+const W = 1280, H = 720, OL = '#4a3426';
+const FONT = "'Huninn','Noto Sans TC','PingFang TC','Microsoft JhengHei',sans-serif";
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const lerp = (a, b, t) => a + (b - a) * t;
+const EZ = {
+  lin: t => t,
+  io: t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2,
+  out: t => 1 - Math.pow(1 - t, 3),
+  in: t => t * t * t,
+  back: t => { const c1 = 1.8, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); },
+};
+function kf(t, k) {
+  if (t <= k[0][0]) return k[0][1];
+  for (let i = 1; i < k.length; i++) {
+    if (t <= k[i][0]) { const [t0, v0] = k[i - 1], [t1, v1, e] = k[i]; return lerp(v0, v1, EZ[e || 'io']((t - t0) / (t1 - t0))); }
+  }
+  return k[k.length - 1][1];
+}
+const pop = (t, at, dur = .4) => t < at ? 0 : EZ.back(clamp((t - at) / dur));
+const fade = (t, a, b) => clamp((t - a) / (b - a));
+const rnd = i => { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+const f1 = n => Math.round(n * 10) / 10;
+
+// ---------- 角色資料 ----------
+const SP = {
+  bear:  { name: '小熊', fur: '#c98b5a', fur2: '#f6dcbc', shirt: '#4fa3e8', trim: '#ffffff', ear: 'round', ph: 0 },
+  bunny: { name: '小兔', fur: '#fffaf6', fur2: '#ffc6d5', shirt: '#ff8fb3', trim: '#fff3a8', ear: 'long', bow: '#ff4f86', ph: 1.3 },
+  cat:   { name: '小貓', fur: '#ffb45e', fur2: '#fff2df', shirt: '#5cc98a', trim: '#ffe066', ear: 'tri', stripe: '#e88c30', tail: true, ph: 2.4 },
+  owl:   { name: '貓頭鷹老師', fur: '#9579d6', fur2: '#f3ecff', shirt: '#9579d6', trim: '#ffd84d', ear: 'tuft', owl: true, ph: .7 },
+};
+function P(id, o) {
+  return Object.assign({ id, x: 640, y: 660, s: .9, face: 1, expr: 'neutral', talk: false, lx: 0, ly: 0,
+    la: [8], ra: [8], tilt: 0, htilt: 0, jump: 0, walk: 0, op: 1, fx: [], hold: null, sq: 0 }, o);
+}
+const WAVE = T => 150 + Math.sin(T * 9) * 22;
+const UP = 165;
+
+function armEnd(side, ang) {
+  const a = ang * Math.PI / 180, sx = side * 46, sy = -112;
+  return { sx, sy, hx: sx + side * Math.sin(a) * 52, hy: sy + Math.cos(a) * 52 };
+}
+function armSVG(side, ang, d) {
+  const p = armEnd(side, ang);
+  const col = d.owl ? d.fur : d.shirt;
+  return `<line x1="${p.sx}" y1="${p.sy}" x2="${f1(p.hx)}" y2="${f1(p.hy)}" stroke="${OL}" stroke-width="33" stroke-linecap="round"/>
+  <line x1="${p.sx}" y1="${p.sy}" x2="${f1(p.hx)}" y2="${f1(p.hy)}" stroke="${col}" stroke-width="24" stroke-linecap="round"/>
+  <circle cx="${f1(p.hx)}" cy="${f1(p.hy)}" r="15" fill="${d.owl ? d.fur2 : d.fur}" stroke="${OL}" stroke-width="4.5"/>`;
+}
+function earsSVG(d, T, c) {
+  const wig = Math.sin(T * 2.2 + d.ph) * 4;
+  if (d.ear === 'round') return [-1, 1].map(s => `<circle cx="${s * 70}" cy="-290" r="30" fill="${d.fur}" stroke="${OL}" stroke-width="5"/><circle cx="${s * 70}" cy="-288" r="15" fill="${d.fur2}"/>`).join('');
+  if (d.ear === 'long') {
+    const droop = c.expr === 'sad' || c.expr === 'cry' ? 1 : 0;
+    return [-1, 1].map(s => {
+      const r = s * (10 + wig) + (droop ? s * 55 : 0);
+      return `<g transform="rotate(${f1(r)} ${s * 38} -282)"><ellipse cx="${s * 38}" cy="-360" rx="25" ry="70" fill="${d.fur}" stroke="${OL}" stroke-width="5"/><ellipse cx="${s * 38}" cy="-356" rx="12" ry="50" fill="${d.fur2}"/></g>`;
+    }).join('');
+  }
+  if (d.ear === 'tri') return [-1, 1].map(s => `<g transform="rotate(${f1(s * wig * .6)} ${s * 60} -270)"><path d="M${s * 28} -282 L${s * 72} -350 L${s * 92} -258Z" fill="${d.fur}" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/><path d="M${s * 44} -282 L${s * 70} -326 L${s * 80} -270Z" fill="${d.fur2}"/></g>`).join('');
+  if (d.ear === 'tuft') return [-1, 1].map(s => `<path d="M${s * 40} -284 L${s * 82} -338 L${s * 90} -262Z" fill="${d.fur}" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/>`).join('');
+  return '';
+}
+function eyesSVG(c, d, T) {
+  const e = c.expr, lx = c.lx * 7, ly = c.ly * 5;
+  const blink = ((T + d.ph * 1.7) % 3.9) < .13;
+  let s = '';
+  for (const sd of [-1, 1]) {
+    const cx = sd * 34 + lx, cy = -220 + ly;
+    if (d.owl) s += `<circle cx="${sd * 34}" cy="-220" r="34" fill="${d.fur2}" stroke="${OL}" stroke-width="4"/>`;
+    if (e === 'happy' || e === 'laugh' || e === 'yum') {
+      s += `<path d="M${cx - 13} ${cy + 4} Q${cx} ${cy - 14} ${cx + 13} ${cy + 4}" fill="none" stroke="${OL}" stroke-width="7" stroke-linecap="round"/>`;
+    } else if (e === 'sleepy') {
+      s += `<path d="M${cx - 13} ${cy} Q${cx} ${cy + 9} ${cx + 13} ${cy}" fill="none" stroke="${OL}" stroke-width="6" stroke-linecap="round"/>`;
+    } else if (e === 'cry' || e === 'hurt') {
+      s += `<path d="M${cx - 12 * sd} ${cy - 10} L${cx + 10 * sd} ${cy} L${cx - 12 * sd} ${cy + 10}" fill="none" stroke="${OL}" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+    } else if (e === 'hot') {
+      s += `<ellipse cx="${cx}" cy="${cy + 3}" rx="11" ry="9" fill="${OL}"/><path d="M${cx - 15} ${cy - 3} H${cx + 15}" stroke="${d.owl ? d.fur2 : d.fur}" stroke-width="9"/><path d="M${cx - 14} ${cy - 2} Q${cx} ${cy - 6} ${cx + 14} ${cy - 2}" fill="none" stroke="${OL}" stroke-width="5" stroke-linecap="round"/>`;
+    } else if (blink && e !== 'surprised') {
+      s += `<path d="M${cx - 12} ${cy} H${cx + 12}" stroke="${OL}" stroke-width="6" stroke-linecap="round"/>`;
+    } else {
+      const big = e === 'surprised' ? 1.25 : e === 'sad' ? .9 : 1;
+      s += `<ellipse cx="${cx}" cy="${cy}" rx="${f1(12 * big)}" ry="${f1(16 * big)}" fill="${OL}"/><circle cx="${f1(cx - 4)}" cy="${f1(cy - 6 * big)}" r="${f1(5 * big)}" fill="#fff"/><circle cx="${f1(cx + 5)}" cy="${f1(cy + 6)}" r="2.4" fill="#fff"/>`;
+    }
+    if (e === 'sad' || e === 'cry') s += `<path d="M${cx - 14 * sd} ${cy - 30} L${cx + 10 * sd} ${cy - 22}" stroke="${OL}" stroke-width="5" stroke-linecap="round" transform="rotate(${sd * -8} ${cx} ${cy - 26})"/>`;
+    if (e === 'think') s += `<path d="M${cx - 12} ${cy - 28} Q${cx} ${cy - 34} ${cx + 12} ${cy - 28}" fill="none" stroke="${OL}" stroke-width="4.5" stroke-linecap="round"/>`;
+  }
+  if (e === 'cry') {
+    for (const sd of [-1, 1]) {
+      const ph = (T * 1.5 + (sd > 0 ? .5 : 0)) % 1, x = sd * 40 + lx;
+      s += `<path d="M${x} -208 Q${x + sd * 6} -180 ${x + sd * 4} -150" fill="none" stroke="#7cc8ff" stroke-width="10" stroke-linecap="round" opacity=".9"/><circle cx="${f1(x + sd * (8 + ph * 30))}" cy="${f1(-150 + ph * 50)}" r="${f1(7 * (1 - ph * .5))}" fill="#7cc8ff" opacity="${f1(1 - ph)}"/>`;
+    }
+  }
+  return s;
+}
+function mouthSVG(c, d, T) {
+  const e = c.expr, my = d.owl ? -184 : -178;
+  const red = '#c9405a', tongue = '#ff8a9e';
+  const open = (ry, rx = 15) => `<path d="M${-rx} ${my - 2} Q0 ${f1(my - 2 + ry * 2.2)} ${rx} ${my - 2}Z" fill="${red}" stroke="${OL}" stroke-width="4.5" stroke-linejoin="round"/><ellipse cx="0" cy="${f1(my - 2 + ry * 1.25)}" rx="${f1(rx * .5)}" ry="${f1(Math.max(1, ry * .45))}" fill="${tongue}"/>`;
+  if (d.owl) {
+    const o = c.talk ? (Math.sin(T * 16) + 1) * 4 : e === 'laugh' || e === 'surprised' ? 7 : 0;
+    return `<path d="M-14 -196 L14 -196 L0 ${f1(-176 + o * .3)}Z" fill="#ffb02e" stroke="${OL}" stroke-width="4" stroke-linejoin="round"/>` + (o > .5 ? `<path d="M-10 ${f1(-180 + o * .3)} L10 ${f1(-180 + o * .3)} L0 ${f1(-168 + o)}Z" fill="#ff9a1f" stroke="${OL}" stroke-width="3.5" stroke-linejoin="round"/>` : '');
+  }
+  if (c.talk) return open(4 + (Math.sin(T * 16) + 1) * 4.5);
+  switch (e) {
+    case 'happy': return open(8, 16);
+    case 'laugh': return open(13, 20);
+    case 'surprised': return `<ellipse cx="0" cy="${my + 4}" rx="9" ry="12" fill="${red}" stroke="${OL}" stroke-width="4.5"/>`;
+    case 'sad': case 'hurt': return `<path d="M-12 ${my + 6} Q0 ${my - 6} 12 ${my + 6}" fill="none" stroke="${OL}" stroke-width="5" stroke-linecap="round"/>`;
+    case 'cry': return open(9, 17);
+    case 'hot': return `<path d="M-10 ${my - 2} Q0 ${my + 4} 10 ${my - 2}" fill="none" stroke="${OL}" stroke-width="5" stroke-linecap="round"/><path d="M-6 ${my + 1} Q-6 ${my + 18} 0 ${my + 18} Q6 ${my + 18} 6 ${my + 1}Z" fill="${tongue}" stroke="${OL}" stroke-width="3.5"/>`;
+    case 'sleepy': { const y = (Math.sin(T * 1.2) + 1) / 2; return y > .6 ? `<ellipse cx="0" cy="${my + 6}" rx="13" ry="${f1(10 + (y - .6) * 30)}" fill="${red}" stroke="${OL}" stroke-width="4.5"/>` : `<ellipse cx="0" cy="${my + 2}" rx="6" ry="4" fill="${red}" stroke="${OL}" stroke-width="3.5"/>`; }
+    case 'yum': { const ch = Math.sin(T * 12) > 0; return ch ? `<path d="M-10 ${my} Q0 ${my + 10} 10 ${my}" fill="none" stroke="${OL}" stroke-width="5" stroke-linecap="round"/>` : `<ellipse cx="0" cy="${my + 3}" rx="8" ry="6" fill="${red}" stroke="${OL}" stroke-width="4"/>`; }
+    case 'think': return `<path d="M-8 ${my + 2} H8" stroke="${OL}" stroke-width="5" stroke-linecap="round"/>`;
+    default: return d.ear === 'round' ? `<path d="M-12 ${my - 2} Q0 ${my + 8} 12 ${my - 2}" fill="none" stroke="${OL}" stroke-width="5" stroke-linecap="round"/>`
+      : `<path d="M-14 ${my - 3} q7 9 14 0 q7 9 14 0" fill="none" stroke="${OL}" stroke-width="4.5" stroke-linecap="round"/>`;
+  }
+}
+function headSVG(c, d, T) {
+  let s = earsSVG(d, T, c);
+  s += `<ellipse cx="0" cy="-212" rx="98" ry="86" fill="${d.fur}" stroke="${OL}" stroke-width="5.5"/>`;
+  if (d.stripe) s += `<path d="M-14 -296 L-10 -270 M0 -298 L0 -268 M14 -296 L10 -270" stroke="${d.stripe}" stroke-width="7" stroke-linecap="round"/>`;
+  if (d.ear === 'round') s += `<ellipse cx="0" cy="-184" rx="38" ry="28" fill="${d.fur2}"/>`;
+  if (d.owl) s += `<path d="M-60 -282 Q0 -262 60 -282" fill="none" stroke="#7b5fc0" stroke-width="5" stroke-linecap="round"/>`;
+  // 腮紅
+  if (!d.owl) s += `<ellipse cx="-62" cy="-186" rx="17" ry="10" fill="#ff8fa8" opacity="${c.expr === 'hot' ? .95 : .55}"/><ellipse cx="62" cy="-186" rx="17" ry="10" fill="#ff8fa8" opacity="${c.expr === 'hot' ? .95 : .55}"/>`;
+  s += eyesSVG(c, d, T);
+  if (!d.owl) s += d.ear === 'round' ? `<ellipse cx="0" cy="-198" rx="12" ry="8" fill="${OL}"/>` : `<path d="M-7 -200 L7 -200 L0 -192Z" fill="#ff7d97" stroke="${OL}" stroke-width="3" stroke-linejoin="round"/>`;
+  s += mouthSVG(c, d, T);
+  if (d.tail) s += [-1, 1].map(sd => `<path d="M${sd * 56} -196 L${sd * 100} -204 M${sd * 56} -186 L${sd * 100} -184" stroke="${OL}" stroke-width="3" stroke-linecap="round"/>`).join('');
+  if (d.bow) s += `<g transform="translate(46,-286) rotate(16)"><path d="M0 0 L-26 -16 L-26 16Z M0 0 L26 -16 L26 16Z" fill="${d.bow}" stroke="${OL}" stroke-width="4" stroke-linejoin="round"/><circle r="8" fill="${d.bow}" stroke="${OL}" stroke-width="4"/></g>`;
+  if (d.owl) s += `<g transform="translate(0,-300)"><path d="M-62 0 L0 -26 L62 0 L0 24Z" fill="#3a3352" stroke="${OL}" stroke-width="4" stroke-linejoin="round"/><rect x="-26" y="2" width="52" height="16" fill="#3a3352"/><path d="M40 0 Q52 20 50 40" fill="none" stroke="${d.trim}" stroke-width="4"/><circle cx="50" cy="44" r="6" fill="${d.trim}"/></g>`;
+  return s;
+}
+function bodySVG(c, d, T) {
+  let s = '';
+  const body = `M-60 -44 C-64 -118 -40 -152 0 -152 C40 -152 64 -118 60 -44 C58 -12 32 -4 0 -4 C-32 -4 -58 -12 -60 -44Z`;
+  s += `<path d="${body}" fill="${d.shirt}" stroke="${OL}" stroke-width="5.5" stroke-linejoin="round"/>`;
+  if (d.owl) {
+    s += `<ellipse cx="0" cy="-70" rx="40" ry="52" fill="${d.fur2}"/>`;
+    for (let i = 0; i < 3; i++) for (let j = -1; j <= 1; j++) s += `<path d="M${j * 18 - 7} ${-100 + i * 22} q7 7 14 0" fill="none" stroke="#b8a6e6" stroke-width="3.5" stroke-linecap="round"/>`;
+    s += `<g transform="translate(0,-146)"><path d="M0 0 L-22 -12 L-22 12Z M0 0 L22 -12 L22 12Z" fill="#ff6b6b" stroke="${OL}" stroke-width="3.5" stroke-linejoin="round"/><circle r="6" fill="#ff6b6b" stroke="${OL}" stroke-width="3.5"/></g>`;
+  } else {
+    s += `<path d="M-30 -150 Q0 -124 30 -150" fill="none" stroke="${d.trim}" stroke-width="9" stroke-linecap="round"/>`;
+    if (d.ear === 'round') s += `<path d="M-60 -60 Q0 -48 60 -60" fill="none" stroke="${d.trim}" stroke-width="7" opacity=".85"/><path d="M-62 -84 Q0 -72 62 -84" fill="none" stroke="${d.trim}" stroke-width="7" opacity=".85"/>`;
+    if (d.ear === 'long') for (const [x, y] of [[-28, -96], [18, -110], [30, -64], [-12, -50], [-38, -60]]) s += `<circle cx="${x}" cy="${y}" r="6" fill="${d.trim}"/>`;
+    if (d.ear === 'tri') s += `<g transform="translate(26,-90)">${starPath(0, 0, 15, 7, 5, -90, d.trim, 3.5)}</g>`;
+  }
+  return s;
+}
+function charSVG(c, T) {
+  const d = SP[c.id]; if (!d || c.op <= 0) return '';
+  const wk = c.walk ? Math.sin(T * c.walk * 6) : 0;
+  const bob = Math.sin(T * 2.4 + d.ph) * 2.5 - (c.walk ? Math.abs(wk) * 9 : 0);
+  const sq = c.sq;
+  let o = `<g transform="translate(${f1(c.x)},${f1(c.y)})"${c.op < 1 ? ` opacity="${f1(c.op * 100) / 100}"` : ''}>`;
+  o += `<ellipse cx="0" cy="2" rx="${f1(78 * c.s * (1 - clamp(c.jump / 400) * .5))}" ry="${f1(13 * c.s)}" fill="#000" opacity=".15"/>`;
+  o += `<g transform="translate(0,${f1(-c.jump)}) rotate(${f1(c.tilt)}) scale(${f1(c.s * c.face * (1 + sq * .6) * 1000) / 1000},${f1(c.s * (1 - sq) * 1000) / 1000})">`;
+  if (d.tail) { const w = Math.sin(T * 3 + d.ph) * 14; o += `<path d="M-46 -40 Q-110 -40 -104 ${f1(-110 + w)}" fill="none" stroke="${OL}" stroke-width="27" stroke-linecap="round"/><path d="M-46 -40 Q-110 -40 -104 ${f1(-110 + w)}" fill="none" stroke="${d.fur}" stroke-width="18" stroke-linecap="round"/>`; }
+  if (d.ear === 'long') o += `<circle cx="-56" cy="-34" r="20" fill="#fff" stroke="${OL}" stroke-width="5"/>`;
+  // 腳
+  for (const sd of [-1, 1]) {
+    const lift = c.walk ? Math.max(0, wk * sd) * 14 : 0, fx = sd * 30 + (c.walk ? wk * sd * 8 : 0);
+    o += `<ellipse cx="${f1(fx)}" cy="${f1(-10 - lift)}" rx="26" ry="16" fill="${d.owl ? '#ffb02e' : d.fur}" stroke="${OL}" stroke-width="5"/>`;
+  }
+  o += `<g transform="translate(0,${f1(bob)})">`;
+  o += bodySVG(c, d, T);
+  const la = Array.isArray(c.la) ? c.la[0] : c.la, ra = Array.isArray(c.ra) ? c.ra[0] : c.ra;
+  o += armSVG(-1, la, d);
+  o += `<g transform="rotate(${f1(c.htilt)} 0 -150)">` + headSVG(c, d, T) + `</g>`;
+  o += armSVG(1, ra, d);
+  if (c.hold) { const h = armEnd(1, ra); o += holdSVG(c.hold, h.hx, h.hy, c, T); }
+  o += `</g></g></g>`;
+  return o;
+}
+function headWorld(c) { const a = c.tilt * Math.PI / 180; return { x: c.x + Math.sin(a) * 215 * c.s, y: c.y - c.jump - Math.cos(a) * 215 * c.s, s: c.s, face: c.face }; }
+
+// ---------- 手上拿的東西（角色本地座標） ----------
+function holdSVG(h, hx, hy, c, T) {
+  const k = h.k;
+  if (k === 'umbrella') {
+    const op = clamp(h.open ?? 1), base = -330, r = 40 + op * 130, rh = r * .72, ux = hx;
+    if (op < .05) return `<line x1="${f1(hx)}" y1="${f1(hy + 22)}" x2="${f1(hx)}" y2="${f1(hy - 150)}" stroke="${OL}" stroke-width="7" stroke-linecap="round"/><path d="M${f1(hx - 12)} ${f1(hy - 40)} L${f1(hx)} ${f1(hy - 160)} L${f1(hx + 12)} ${f1(hy - 40)}Z" fill="#ff6f91" stroke="${OL}" stroke-width="4" stroke-linejoin="round"/>`;
+    const n = 5, pts = [];
+    for (let i = 0; i <= n; i++) pts.push(ux - r + i * 2 * r / n);
+    let sc = '';
+    for (let i = n; i > 0; i--) sc += ` Q${f1((pts[i] + pts[i - 1]) / 2)} ${f1(base - 22)} ${f1(pts[i - 1])} ${base}`;
+    const dome = `M${f1(ux - r)} ${base} A${f1(r)} ${f1(rh)} 0 0 1 ${f1(ux + r)} ${base}${sc}Z`;
+    let ribs = '';
+    for (let i = 1; i < n; i++) ribs += `<path d="M${f1(ux)} ${f1(base - rh)} Q${f1(ux + (pts[i] - ux) * .7)} ${f1(base - rh * .6)} ${f1(pts[i])} ${base}" fill="none" stroke="${OL}" stroke-width="3.5" opacity=".55"/>`;
+    let dots = '';
+    for (const [dx, dy] of [[-.55, -.3], [0, -.55], [.55, -.3], [-.25, -.15], [.28, -.12]]) dots += `<circle cx="${f1(ux + dx * r)}" cy="${f1(base + dy * rh)}" r="${f1(6 + op * 4)}" fill="#fff" opacity=".9"/>`;
+    return `<line x1="${f1(hx)}" y1="${f1(hy + 22)}" x2="${f1(ux)}" y2="${f1(base - rh)}" stroke="${OL}" stroke-width="7" stroke-linecap="round"/><path d="M${f1(hx)} ${f1(hy + 20)} q0 18 -16 18" fill="none" stroke="${OL}" stroke-width="7" stroke-linecap="round"/><path d="${dome}" fill="#ff6f91" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/>${ribs}${dots}<circle cx="${f1(ux)}" cy="${f1(base - rh - 8)}" r="8" fill="#ffd84d" stroke="${OL}" stroke-width="3.5"/>`;
+  }
+  if (k === 'bread') {
+    const bites = h.bites || 0;
+    let bite = '';
+    for (let i = 0; i < bites; i++) bite += `<circle cx="${f1(40 - i * 18)}" cy="${-30 + (i % 2) * 6}" r="17" fill="BG"/>`;
+    const id = 'bm' + Math.floor(rnd(hx) * 1e5);
+    return `<g transform="translate(${f1(hx + 4)},${f1(hy - 14)}) scale(${c.face * 1.45},1.45) rotate(-8)"><defs><mask id="${id}"><rect x="-80" y="-80" width="160" height="160" fill="#fff"/>${bite.replace(/BG/g, '#000')}</mask></defs><g mask="url(#${id})"><path d="M-46 14 Q-52 -34 -10 -36 Q34 -40 48 -4 Q52 16 30 18 Z" fill="#e9a55a" stroke="${OL}" stroke-width="4.5" stroke-linejoin="round"/><path d="M-30 -14 q8 -8 16 0 M-4 -18 q8 -8 16 0 M20 -14 q8 -8 16 0" fill="none" stroke="#b87334" stroke-width="4" stroke-linecap="round"/></g></g>`;
+  }
+  if (k === 'paper') {
+    return `<g transform="translate(${f1(hx)},${f1(hy - 60)}) scale(${c.face},1) rotate(${f1(-6 + Math.sin(T * 6) * 4)})">${paper100(0, 0, 1)}</g>`;
+  }
+  return '';
+}
+function paper100(x, y, sc = 1) {
+  return `<g transform="translate(${x},${y}) scale(${sc})"><rect x="-60" y="-78" width="120" height="156" rx="8" fill="#fff" stroke="${OL}" stroke-width="5"/>${[0, 1, 2, 3].map(i => `<path d="M-40 ${-10 + i * 22} H40" stroke="#d7d1e6" stroke-width="5" stroke-linecap="round"/>`).join('')}${txt('100', 0, -26, 48, '#ef3b4b', { sw: 0 })}<ellipse cx="0" cy="-40" rx="52" ry="30" fill="none" stroke="#ef3b4b" stroke-width="5" transform="rotate(-8 0 -40)"/></g>`;
+}
+
+// ---------- 文字與形狀 ----------
+function starPath(cx, cy, r1, r2, n, rot, fill, sw = 5) {
+  let dd = '';
+  for (let i = 0; i < n * 2; i++) { const a = (rot + i * 180 / n) * Math.PI / 180, r = i % 2 ? r2 : r1; dd += (i ? 'L' : 'M') + f1(cx + Math.cos(a) * r) + ' ' + f1(cy + Math.sin(a) * r); }
+  return `<path d="${dd}Z" fill="${fill}" stroke="${OL}" stroke-width="${sw}" stroke-linejoin="round"/>`;
+}
+function heartPath(cx, cy, r, fill, sw = 4) {
+  return `<path d="M${cx} ${cy + r * .9} C${cx - r * 1.6} ${cy - r * .1} ${cx - r * .8} ${cy - r * 1.3} ${cx} ${cy - r * .45} C${cx + r * .8} ${cy - r * 1.3} ${cx + r * 1.6} ${cy - r * .1} ${cx} ${cy + r * .9}Z" fill="${fill}" stroke="${OL}" stroke-width="${sw}" stroke-linejoin="round"/>`;
+}
+function txt(str, x, y, size, fill, o = {}) {
+  const sw = o.sw ?? size * .16;
+  return `<text x="${f1(x)}" y="${f1(y)}" font-family="${FONT}" font-size="${size}" font-weight="${o.w || 900}" text-anchor="${o.anchor || 'middle'}" fill="${fill}" ${sw ? `stroke="${o.stroke || OL}" stroke-width="${f1(sw)}" stroke-linejoin="round" paint-order="stroke"` : ''}>${str}</text>`;
+}
+const tw = (s, size) => [...s].reduce((a, ch) => a + (/[\x00-\x7f]/.test(ch) ? .58 : 1) * size, 0);
+function comic(str, x, y, size, fill, sc = 1, rot = 0, burst = null) {
+  if (sc <= 0.01) return '';
+  const w = tw(str, size);
+  let b = '';
+  if (burst) { const rx = Math.max(w * .6 + 40, size * 1.2), ry = size * 1.05 + 26; b = `<g transform="scale(1,${f1(ry / rx * 1000) / 1000})">${starPath(0, 0, rx, rx * .8, 14, 0, burst, 6)}</g>`; }
+  return `<g transform="translate(${f1(x)},${f1(y)}) rotate(${f1(rot)}) scale(${f1(sc * 100) / 100})">${b}${txt(str, 0, size * .36, size, fill, { sw: size * .2 })}</g>`;
+}
+function bubble(str, x, y, size, tx, ty, sc = 1) {
+  if (sc <= .01) return '';
+  const w = tw(str, size) + 56, h = size + 44;
+  return `<g transform="translate(${f1(x)},${f1(y)}) scale(${f1(sc * 100) / 100})"><path d="M${f1(-w / 2 + 30)} ${h / 2 - 4} L${f1(tx - x)} ${f1(ty - y)} L${f1(-w / 2 + 70)} ${h / 2 - 4}Z" fill="#fff" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/><rect x="${f1(-w / 2)}" y="${-h / 2}" width="${f1(w)}" height="${h}" rx="${h / 2}" fill="#fff" stroke="${OL}" stroke-width="5"/><rect x="${f1(-w / 2 + 34)}" y="${h / 2 - 12}" width="40" height="12" fill="#fff"/>${txt(str, 0, size * .36, size, OL, { sw: 0 })}</g>`;
+}
+function confetti(age, seed = 0, n = 60) {
+  if (age < 0 || age > 4) return '';
+  const cols = ['#ff6f91', '#ffd84d', '#5cc98a', '#4fa3e8', '#9579d6'];
+  let s = '';
+  for (let i = 0; i < n; i++) {
+    const r = rnd(i + seed * 100), x = 80 + r * 1120 + Math.sin(age * 3 + i) * 30, y = -40 + age * (180 + rnd(i + 7) * 160) - rnd(i + 3) * 200;
+    s += `<rect x="${f1(x)}" y="${f1(y)}" width="14" height="22" rx="4" fill="${cols[i % 5]}" transform="rotate(${f1(age * 200 + i * 37)} ${f1(x)} ${f1(y)})"/>`;
+  }
+  return s;
+}
+
+// ---------- 特效（世界座標，畫在角色上面） ----------
+const F = (k, a = 0, o = {}) => Object.assign({ k, a }, o);
+function fxSVG(c, T) {
+  if (!c.fx || !c.fx.length) return '';
+  const h = headWorld(c), s = c.s;
+  let out = '';
+  for (const f of c.fx) {
+    const age = T - (f.t0 ?? 0);
+    const g = (inner, dx = 0, dy = 0, sc = 1) => `<g transform="translate(${f1(h.x + dx * s)},${f1(h.y + dy * s)}) scale(${f1(s * sc * 100) / 100})">${inner}</g>`;
+    switch (f.k) {
+      case 'sweat': {
+        const n = f.n || 3;
+        for (let i = 0; i < n; i++) {
+          const ph = (T * .9 + i / n) % 1, sd = i % 2 ? 1 : -1, x = sd * (92 + i * 6), y = -40 + ph * 120;
+          out += g(`<path d="M0 -20 Q14 0 10 10 Q0 22 -10 10 Q-14 0 0 -20Z" fill="#8fd3ff" stroke="${OL}" stroke-width="3.5" opacity="${f1(1 - ph * .6)}"/>`, x, y);
+        }
+        break;
+      }
+      case 'heat': {
+        for (let i = 0; i < 3; i++) {
+          const ph = (T * .7 + i / 3) % 1;
+          out += g(`<path d="M0 0 q12 -14 0 -28 q-12 -14 0 -28" fill="none" stroke="#ff7a3d" stroke-width="7" stroke-linecap="round" opacity="${f1(1 - ph)}"/>`, -50 + i * 50, -110 - ph * 60);
+        }
+        break;
+      }
+      case 'zzz': {
+        for (let i = 0; i < 3; i++) {
+          const ph = (T * .5 + i / 3) % 1;
+          out += g(txt('Z', 0, 0, 40 + i * 6, '#7b8cff', { sw: 7, stroke: '#fff' }), 90 + ph * 70, -110 - ph * 90, .8 + ph * .5);
+        }
+        break;
+      }
+      case 'q': out += g(txt('？', 0, 0, 90, '#4fa3e8', { sw: 12, stroke: '#fff' }), 110, -110, 1 + Math.sin(T * 5) * .06); break;
+      case 'excl': out += g(txt('！', 0, 0, 96, '#ff5a5a', { sw: 12, stroke: '#fff' }), 108, -100, pop(age, 0)); break;
+      case 'hearts': {
+        for (let i = 0; i < 3; i++) { const ph = (T * .6 + i / 3) % 1; out += g(heartPath(0, 0, 20, '#ff6f91'), -70 + i * 70, -120 - ph * 70, 1 - ph * .3); }
+        break;
+      }
+      case 'spark': {
+        for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2 + T, r = 150 + Math.sin(T * 4 + i) * 12; out += g(starPath(0, 0, 18, 8, 4, 0, '#ffd84d', 3.5), Math.cos(a) * r, 20 + Math.sin(a) * r * .7, .8 + Math.sin(T * 6 + i) * .25); }
+        break;
+      }
+      case 'dizzy': {
+        for (let i = 0; i < 3; i++) { const a = T * 4 + i * 2.1; out += g(starPath(0, 0, 18, 8, 5, -90, '#ffd84d', 3.5), Math.cos(a) * 80, -110 + Math.sin(a) * 18); }
+        break;
+      }
+      case 'growl': {
+        const sc = pop(age, 0) * (1 + Math.sin(T * 14) * .05);
+        out += `<g transform="translate(${f1(c.x + 120 * s * c.face)},${f1(c.y - 90 * s)}) scale(${f1(sc * s * 100) / 100}) rotate(${f1(Math.sin(T * 18) * 4)})">${txt('咕嚕咕嚕～', 0, 0, 46, '#fff', { sw: 10, stroke: '#c2702a' })}</g>`;
+        break;
+      }
+      case 'bulb': out += g(`<circle r="30" fill="#fff36b" stroke="${OL}" stroke-width="5"/><rect x="-12" y="26" width="24" height="16" rx="4" fill="#c9c3d9" stroke="${OL}" stroke-width="4"/>`, 0, -150, pop(age, 0)); break;
+      case 'note': {
+        for (let i = 0; i < 2; i++) { const ph = (T * .6 + i / 2) % 1; out += g(txt('♪', 0, 0, 56, '#9579d6', { sw: 8, stroke: '#fff' }), 100 - i * 200, -90 - ph * 80, 1 - ph * .3); }
+        break;
+      }
+    }
+  }
+  return out;
+}
+
+// ---------- 背景 ----------
+const DEFS = `<linearGradient id="skyDay" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fd0ff"/><stop offset="1" stop-color="#e2f6ff"/></linearGradient>
+<linearGradient id="skyHot" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb347"/><stop offset="1" stop-color="#fff0b8"/></linearGradient>
+<linearGradient id="skyRain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8794b0"/><stop offset="1" stop-color="#c9d2e3"/></linearGradient>
+<linearGradient id="skyNight" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b2f6b"/><stop offset="1" stop-color="#5a5fa8"/></linearGradient>`;
+function cloudShape(x, y, sc, fill = '#fff') {
+  return `<g transform="translate(${f1(x)},${f1(y)}) scale(${sc})" fill="${fill}"><circle cx="-50" cy="10" r="34"/><circle cx="0" cy="-12" r="46"/><circle cx="52" cy="6" r="36"/><rect x="-84" y="10" width="170" height="36" rx="18"/></g>`;
+}
+function tree(x, y, sc = 1) {
+  return `<g transform="translate(${x},${y}) scale(${sc})"><rect x="-12" y="-70" width="24" height="74" rx="6" fill="#a8693a" stroke="${OL}" stroke-width="4.5"/><circle cx="0" cy="-110" r="62" fill="#5cc46a" stroke="${OL}" stroke-width="5"/><circle cx="-24" cy="-126" r="14" fill="#8fdc84"/><circle cx="24" cy="-96" r="9" fill="#8fdc84"/></g>`;
+}
+function flower(x, y, col) {
+  return `<g transform="translate(${x},${y})"><path d="M0 0 V-24" stroke="#3f9e4d" stroke-width="4"/>${[0, 1, 2, 3, 4].map(i => `<circle cx="${f1(Math.cos(i * 1.257) * 9)}" cy="${f1(-30 + Math.sin(i * 1.257) * 9)}" r="7" fill="${col}"/>`).join('')}<circle cx="0" cy="-30" r="5" fill="#ffd84d"/></g>`;
+}
+function bgPark(T, o = {}) {
+  const w = o.weather || 'sunny';
+  let s = `<rect x="-200" y="-200" width="1680" height="1120" fill="url(#${w === 'hot' ? 'skyHot' : w === 'rain' ? 'skyRain' : 'skyDay'})"/>`;
+  if (w === 'hot') {
+    const p = 1 + Math.sin(T * 3) * .06;
+    let rays = '';
+    for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI * 2 + T * .3; rays += `<path d="M${f1(Math.cos(a) * 95)} ${f1(Math.sin(a) * 95)} L${f1(Math.cos(a + .1) * 150 * p)} ${f1(Math.sin(a + .1) * 150 * p)} L${f1(Math.cos(a - .1) * 150 * p)} ${f1(Math.sin(a - .1) * 150 * p)}Z" fill="#ffd23f"/>`; }
+    s += `<g transform="translate(1060,130)">${rays}<circle r="90" fill="#ff8c2e" stroke="${OL}" stroke-width="6"/><circle cx="-28" cy="-10" r="7" fill="${OL}"/><circle cx="28" cy="-10" r="7" fill="${OL}"/><path d="M-26 22 Q0 40 26 22" fill="none" stroke="${OL}" stroke-width="6" stroke-linecap="round"/><ellipse cx="-50" cy="16" rx="13" ry="8" fill="#ff5a3d" opacity=".6"/><ellipse cx="50" cy="16" rx="13" ry="8" fill="#ff5a3d" opacity=".6"/></g>`;
+  } else if (w === 'sunny') {
+    s += `<circle cx="1080" cy="120" r="62" fill="#ffd84a" stroke="${OL}" stroke-width="5"/>`;
+    for (let i = 0; i < 3; i++) s += cloudShape(((i * 470 + T * 16) % 1600) - 160, 90 + (i % 2) * 70, .8);
+  } else {
+    for (let i = 0; i < 5; i++) s += cloudShape(((i * 330 + T * 10) % 1700) - 200, 60 + (i % 2) * 50, 1.2, '#6f7a96');
+  }
+  s += `<path d="M-200 470 Q200 380 640 450 T1480 430 V900 H-200Z" fill="${w === 'rain' ? '#7fae7a' : '#8fd877'}"/>`;
+  s += tree(140, 470, 1) + tree(1180, 470, .9) + tree(960, 455, .7);
+  s += `<rect x="-200" y="520" width="1680" height="400" fill="${w === 'rain' ? '#73a06e' : '#7cc864'}"/>`;
+  s += `<path d="M420 720 Q560 560 640 520 L720 520 Q760 560 900 720Z" fill="${w === 'rain' ? '#c9b99a' : '#f3dca6'}"/>`;
+  if (w !== 'rain') for (const [x, y, c] of [[80, 610, '#ff6f91'], [250, 680, '#ffd84d'], [1040, 640, '#9579d6'], [1200, 700, '#ff6f91'], [330, 590, '#fff']]) s += flower(x, y, c);
+  if (o.rock) s += `<path d="M${o.rock - 40} 690 Q${o.rock - 36} 650 ${o.rock} 652 Q${o.rock + 40} 650 ${o.rock + 42} 690Z" fill="#a9a3b8" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/>`;
+  if (w === 'rain') {
+    for (const [x, y] of [[300, 660], [980, 690]]) { const r = (T * 1.5) % 1; s += `<ellipse cx="${x}" cy="${y}" rx="90" ry="18" fill="#9ec3e6"/><ellipse cx="${x}" cy="${y}" rx="${f1(20 + r * 60)}" ry="${f1(4 + r * 12)}" fill="none" stroke="#fff" stroke-width="3" opacity="${f1(1 - r)}"/>`; }
+  }
+  return s;
+}
+function rainFront(T, amt = 1) {
+  if (amt <= 0) return '';
+  let s = '';
+  const n = Math.floor(70 * amt);
+  for (let i = 0; i < n; i++) {
+    const x = (rnd(i) * 1400 + T * 120) % 1400 - 60, y = ((rnd(i + 3) * 760 + T * (700 + rnd(i + 5) * 300)) % 800) - 60;
+    s += `<line x1="${f1(x)}" y1="${f1(y)}" x2="${f1(x - 10)}" y2="${f1(y + 34)}" stroke="#e8f3ff" stroke-width="4" stroke-linecap="round" opacity=".85"/>`;
+  }
+  return s;
+}
+function bgRoom(T, o = {}) {
+  const night = o.night;
+  let s = `<rect x="-200" y="-200" width="1680" height="1120" fill="${night ? '#b9b3e6' : '#ffe9cf'}"/>`;
+  s += `<path d="M-200 0 H1480" stroke="none"/>`;
+  for (let x = 0; x < 1300; x += 80) s += `<rect x="${x}" y="0" width="40" height="470" fill="${night ? '#aea7de' : '#ffe1c0'}"/>`;
+  s += `<rect x="760" y="80" width="300" height="230" rx="16" fill="url(#${night ? 'skyNight' : 'skyDay'})" stroke="${OL}" stroke-width="7"/>`;
+  if (night) { s += `<circle cx="980" cy="150" r="36" fill="#fff3a8"/><circle cx="996" cy="140" r="32" fill="#4a4f95"/>`; for (let i = 0; i < 6; i++) s += starPath(800 + rnd(i) * 240, 110 + rnd(i + 4) * 170, 8 + Math.sin(T * 3 + i) * 2, 3.5, 4, 0, '#fff7c2', 0); }
+  else s += cloudShape(880 + Math.sin(T * .4) * 30, 190, .55);
+  s += `<path d="M910 80 V310 M760 195 H1060" stroke="${OL}" stroke-width="6"/>`;
+  s += `<rect x="240" y="120" width="150" height="120" rx="10" fill="#fff" stroke="${OL}" stroke-width="5"/>${heartPath(315, 184, 30, '#ff8fb3', 4)}`;
+  s += `<rect x="-200" y="470" width="1680" height="450" fill="${night ? '#8f84c9' : '#e8b884'}"/>`;
+  for (let x = -40; x < 1320; x += 120) s += `<line x1="${x}" y1="470" x2="${x - 70}" y2="740" stroke="${night ? '#8378bd' : '#dca66e'}" stroke-width="4"/>`;
+  s += `<ellipse cx="640" cy="640" rx="380" ry="54" fill="${night ? '#a79ee0' : '#ffcf9e'}" stroke="${OL}" stroke-width="4"/>`;
+  if (o.bed) s += bedBack();
+  if (o.lamp) s += `<g transform="translate(200,470)"><rect x="-40" y="-90" width="80" height="90" rx="8" fill="#c58b5a" stroke="${OL}" stroke-width="5"/><path d="M0 -90 V-150" stroke="${OL}" stroke-width="6"/><path d="M-36 -150 L36 -150 L24 -200 L-24 -200Z" fill="#ffd84d" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/>${night ? `<ellipse cx="0" cy="-140" rx="90" ry="40" fill="#fff3a8" opacity=".35"/>` : ''}</g>`;
+  if (o.table) s += `<g transform="translate(1000,640)"><rect x="-130" y="-110" width="260" height="22" rx="8" fill="#c58b5a" stroke="${OL}" stroke-width="5"/><rect x="-110" y="-90" width="18" height="90" fill="#a8693a" stroke="${OL}" stroke-width="4"/><rect x="92" y="-90" width="18" height="90" fill="#a8693a" stroke="${OL}" stroke-width="4"/></g>`;
+  return s;
+}
+function bedBack() {
+  return `<g transform="translate(940,560)"><rect x="-230" y="-170" width="40" height="230" rx="12" fill="#c58b5a" stroke="${OL}" stroke-width="5"/><rect x="-230" y="-40" width="460" height="90" rx="20" fill="#e9a978" stroke="${OL}" stroke-width="5"/><rect x="-200" y="-70" width="120" height="50" rx="22" fill="#fff" stroke="${OL}" stroke-width="5"/></g>`;
+}
+function blanketFront(cover = 1) {
+  if (cover <= 0) return '';
+  return `<g transform="translate(940,560)" opacity="${f1(cover * 100) / 100}"><path d="M-110 -56 Q60 -90 230 -46 L230 40 L-110 40Z" fill="#7fb7ff" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/>${[0, 1, 2, 3].map(i => `<circle cx="${-60 + i * 80}" cy="${-20 + (i % 2) * 22}" r="9" fill="#fff" opacity=".8"/>`).join('')}</g>`;
+}
+function bgClass(T, o = {}) {
+  let s = `<rect x="-200" y="-200" width="1680" height="1120" fill="#fff1d6"/>`;
+  s += `<rect x="150" y="70" width="600" height="280" rx="12" fill="#b77a45" stroke="${OL}" stroke-width="6"/><rect x="170" y="88" width="560" height="244" fill="#3c7a5e"/>`;
+  s += txt(o.board || '數學考試', 450, 230, 64, '#f4f7ef', { sw: 0, w: 700 });
+  s += `<rect x="880" y="80" width="280" height="230" rx="12" fill="url(#skyDay)" stroke="${OL}" stroke-width="6"/>${cloudShape(990 + Math.sin(T * .3) * 30, 190, .5)}<path d="M1020 80 V310" stroke="${OL}" stroke-width="5"/>`;
+  s += `<rect x="-200" y="450" width="1680" height="470" fill="#f2c98f"/>`;
+  for (let x = -40; x < 1320; x += 110) s += `<line x1="${x}" y1="450" x2="${x - 60}" y2="760" stroke="#e4b273" stroke-width="4"/>`;
+  return s;
+}
+const PAL = {
+  warm: ['#ffe59a', '#ffd46b', '#fff6d6'],
+  cool: ['#bfeee4', '#9fe2d4', '#effffb'],
+  pink: ['#ffd3e0', '#ffbdd0', '#fff2f6'],
+  sky:  ['#cfe6ff', '#b4d8ff', '#f2f8ff'],
+};
+function bgStage(T, p) {
+  let s = `<rect x="-200" y="-200" width="1680" height="1120" fill="${p[0]}"/>`;
+  for (let i = 0; i < 22; i++) {
+    const x = (rnd(i) * 1500 + T * (10 + rnd(i + 3) * 18)) % 1500 - 110, y = 40 + rnd(i + 9) * 600 + Math.sin(T + i) * 10, r = 16 + rnd(i + 5) * 26;
+    s += i % 4 ? `<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(r)}" fill="${p[1]}"/>` : `<g transform="translate(${f1(x)},${f1(y)}) rotate(${f1(T * 30 + i * 20)})">${starPath(0, 0, r, r * .5, 5, -90, p[2], 0)}</g>`;
+  }
+  s += `<ellipse cx="640" cy="700" rx="720" ry="80" fill="${p[1]}"/>`;
+  return s;
+}
+function drawBG(R, T) {
+  if (R.bg === 'park') return bgPark(T, R.bgo || {});
+  if (R.bg === 'room') return bgRoom(T, R.bgo || {});
+  if (R.bg === 'class') return bgClass(T, R.bgo || {});
+  return bgStage(T, PAL[R.pal || 'warm']);
+}
+function deskFront(x, y, w = 300) {
+  return `<g transform="translate(${x},${y})"><rect x="${-w / 2}" y="0" width="${w}" height="26" rx="8" fill="#e2a868" stroke="${OL}" stroke-width="5"/><rect x="${-w / 2 + 16}" y="26" width="${w - 32}" height="80" fill="#c98b4f" stroke="${OL}" stroke-width="5"/></g>`;
+}
+
+// ---------- 句子條（因為＝橘、所以＝藍） ----------
+const COL = {
+  cause: { f: '#ffe4c7', s: '#ff8a3d', t: '#a8480a', tag: '原因' },
+  effect: { f: '#d9edff', s: '#3f8fe0', t: '#1b5aa3', tag: '結果' },
+  c1: { f: '#ff8a3d', t: '#fff' }, c2: { f: '#3f8fe0', t: '#fff' },
+};
+// parts: [{t, k:'c1'|'cause'|'c2'|'effect'|'p'|'blank', a: 出現時間}]
+function sentenceSVG(parts, cx, cy, t, o = {}) {
+  const fs = o.fs || 58, pad = 26, gap = 10;
+  const ws = parts.map(p => p.k === 'p' ? fs * .55 : p.k === 'blank' ? Math.max(fs * 4, tw(p.t || '', fs) + pad * 2) : tw(p.t, fs) + pad * 2);
+  let total = ws.reduce((a, b) => a + b, 0) + gap * (parts.length - 1);
+  const sc = Math.min(1, (o.maxW || 1220) / total);
+  let x = -total / 2, s = '';
+  parts.forEach((p, i) => {
+    const w = ws[i], k = p.k, sc2 = p.a == null ? 1 : pop(t, p.a, .45);
+    const mid = x + w / 2; x += w + gap;
+    if (sc2 <= .01) return;
+    const hl = o.hl === i ? 1 : 0, lift = hl ? -10 + Math.sin((o.T || 0) * 8) * 3 : 0;
+    let g = '';
+    const h = fs + 34;
+    if (k === 'p') g = txt(p.t, 0, fs * .36, fs, OL, { sw: 0 });
+    else if (k === 'c1' || k === 'c2') g = `<rect x="${f1(-w / 2)}" y="${-h / 2}" width="${f1(w)}" height="${h}" rx="${h / 2}" fill="${COL[k].f}" stroke="${OL}" stroke-width="5"/>${txt(p.t, 0, fs * .36, fs, COL[k].t, { sw: 0 })}`;
+    else if (k === 'blank') {
+      const c = COL[p.kind || 'cause'];
+      g = `<rect x="${f1(-w / 2)}" y="${-h / 2}" width="${f1(w)}" height="${h}" rx="18" fill="#fff" stroke="${c.s}" stroke-width="5" stroke-dasharray="14 10"/>${txt(p.t || '？', 0, fs * .36, fs, c.s, { sw: 0 })}`;
+    } else {
+      const c = COL[k];
+      g = `<rect x="${f1(-w / 2)}" y="${-h / 2}" width="${f1(w)}" height="${h}" rx="18" fill="${c.f}" stroke="${c.s}" stroke-width="6"/>${txt(p.t, 0, fs * .36, fs, c.t, { sw: 0 })}`;
+    }
+    if (hl) g = `<rect x="${f1(-w / 2 - 8)}" y="${-h / 2 - 8}" width="${f1(w + 16)}" height="${h + 16}" rx="26" fill="#fff36b" opacity=".85"/>` + g;
+    if (o.labels && (k === 'cause' || k === 'effect' || k === 'blank')) {
+      const c = COL[k === 'blank' ? (p.kind || 'cause') : k];
+      g += `<g transform="translate(0,${h / 2 + 34})"><rect x="-50" y="-22" width="100" height="44" rx="22" fill="${c.s}"/>${txt(c.tag, 0, 11, 30, '#fff', { sw: 0 })}</g>`;
+    }
+    s += `<g transform="translate(${f1(mid)},${f1(lift)}) scale(${f1(sc2 * 100) / 100})">${g}</g>`;
+  });
+  const bgW = total + 60, bh = fs + 74 + (o.labels ? 60 : 0);
+  const back = o.plate === false ? '' : `<rect x="${f1(-bgW / 2)}" y="${-fs / 2 - 37}" width="${f1(bgW)}" height="${bh}" rx="34" fill="#fffaf0" stroke="${OL}" stroke-width="6" opacity="${o.plateOp ?? .96}"/>`;
+  return `<g transform="translate(${cx},${cy}) scale(${f1(sc * 1000) / 1000})">${back}${s}</g>`;
+}
+const SENT = (cause, effect, a = null, gapT = .5) => [
+  { t: '因為', k: 'c1', a }, { t: cause, k: 'cause', a: a == null ? null : a + gapT }, { t: '，', k: 'p', a: a == null ? null : a + gapT * 2 },
+  { t: '所以', k: 'c2', a: a == null ? null : a + gapT * 2 }, { t: effect, k: 'effect', a: a == null ? null : a + gapT * 3 }, { t: '。', k: 'p', a: a == null ? null : a + gapT * 3.5 },
+];
+
+// ---------- 畫一個畫面 ----------
+function renderFrame(R, T) {
+  const chars = (R.chars || []).slice().sort((a, c) => a.y - c.y);
+  const gray = R.gray || 0;
+  let out = `<defs>${DEFS}<filter id="gray"><feColorMatrix type="saturate" values="${f1((1 - gray * .85) * 100) / 100}"/></filter></defs>`;
+  const cam = R.cam || { x: 640, y: 360, z: 1 };
+  out += `<g transform="translate(640,360) scale(${f1(cam.z * 1000) / 1000}) translate(${f1(-cam.x)},${f1(-cam.y)})" ${gray > .01 ? 'filter="url(#gray)"' : ''}>`;
+  out += drawBG(R, T) + (R.back || []).join('');
+  for (const c of chars) out += charSVG(c, T);
+  out += (R.front || []).join('');
+  for (const c of chars) out += fxSVG(c, T);
+  out += `</g>` + (R.ui || []).join('');
+  return out;
+}
+
+// ---------- 語音 ----------
+const SPK = {
+  N:     { name: '旁白', col: '#ffd84d', pitch: 1, rate: 1, role: 'n' },
+  owl:   { name: '貓頭鷹老師', col: '#c3b0f2', pitch: .9, rate: .95, role: 'c' },
+  bear:  { name: '小熊', col: '#e8b48a', pitch: .75, rate: .95, role: 'c' },
+  bunny: { name: '小兔', col: '#ffb3c8', pitch: 1.35, rate: 1, role: 'c' },
+  cat:   { name: '小貓', col: '#ffc98a', pitch: 1.2, rate: 1.05, role: 'c' },
+  all:   { name: '一起念', col: '#9fe2a8', pitch: 1, rate: .9, role: 'n' },
+};
+const hasSpeech = 'speechSynthesis' in window;
+const VOPT = { rate: .85, vN: '', vC: '' };
+try { Object.assign(VOPT, JSON.parse(localStorage.getItem('sentence-voice-opt') || '{}')); } catch (e) {}
+const saveVOPT = () => { try { localStorage.setItem('sentence-voice-opt', JSON.stringify(VOPT)); } catch (e) {} };
+function zhVoices() {
+  if (!hasSpeech) return [];
+  const all = speechSynthesis.getVoices().filter(v => /^zh/i.test(v.lang) && !/HK|yue/i.test(v.lang));
+  const score = v => (/TW|Hant/i.test(v.lang) ? 0 : 10) + (/Online|Natural|Neural/i.test(v.name) ? 0 : 2) + (v.localService ? 1 : 0);
+  return all.sort((a, b) => score(a) - score(b));
+}
+function speakText(text, who = 'N', onEnd, onStart) {
+  if (!hasSpeech) { if (onEnd) setTimeout(onEnd, 50); return null; }
+  speechSynthesis.cancel();
+  const sp = SPK[who] || SPK.N;
+  const u = new SpeechSynthesisUtterance(text.replace(/（[^）]*）/g, '').replace(/⋯+|……/g, '，'));
+  const vs = zhVoices(), name = sp.role === 'n' ? VOPT.vN : VOPT.vC;
+  const v = vs.find(x => x.name === name) || vs[0];
+  if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'zh-TW';
+  u.rate = VOPT.rate * sp.rate; u.pitch = sp.pitch;
+  if (onEnd) { u.onend = onEnd; u.onerror = onEnd; }
+  if (onStart) u.onstart = onStart;
+  setTimeout(() => speechSynthesis.speak(u), 40);
+  return u;
+}
+
+// ===== 句型：因為……，所以…… ｜情境短片與題目資料 =====
+const TOPIC = {
+  title: '因為⋯⋯，所以⋯⋯',
+  plain: '因為……，所以……',
+  series: '虎尾句型小教室',
+};
+
+// ---------- 情境短片（影片和遊戲共用） ----------
+const CLIPS = {
+  // 例子一：天氣很熱 → 小熊流了很多汗
+  hot: [
+    { who: 'N', text: '夏天的中午，太陽好大，天氣好熱好熱。', d: 5, act: (t, T) => ({ bg: 'park', bgo: { weather: 'hot' },
+      chars: [P('bear', { x: kf(t, [[0, -160], [3.2, 600, 'out']]), y: 660, walk: t < 3.2 ? 1.4 : 0, expr: t < 3.2 ? 'neutral' : 'hot', lx: .4, fx: t > 3.2 ? [F('heat')] : [] })] }) },
+    { who: 'bear', text: '好熱喔！熱死了！', d: 3.6, act: (t, T) => ({ bg: 'park', bgo: { weather: 'hot' },
+      chars: [P('bear', { x: 600, y: 660, expr: 'hot', ra: 120 + Math.sin(T * 14) * 26, fx: [F('heat'), F('sweat', 0, { n: 2 })] })] }) },
+    { who: 'N', text: '小熊流了很多汗，衣服都濕了。', d: 4.6, act: (t, T) => ({ bg: 'park', bgo: { weather: 'hot' },
+      back: [`<ellipse cx="600" cy="668" rx="${f1(40 + fade(t, 0, 3) * 70)}" ry="${f1(8 + fade(t, 0, 3) * 10)}" fill="#8fd3ff" opacity=".8"/>`],
+      chars: [P('bear', { x: 600, y: 660, expr: 'hot', ra: 120 + Math.sin(T * 14) * 26, fx: [F('heat'), F('sweat', 0, { n: 6 })] })],
+      ui: [comic('滴滴答答', 860, 300, 54, '#fff', pop(t, .6), -6, '#4fa3e8')] }) },
+  ],
+  // 例子二：下大雨了 → 小兔撐雨傘
+  rain: [
+    { who: 'N', text: '小兔在公園裡散步。', d: 4, act: (t, T) => ({ bg: 'park', bgo: { weather: 'sunny' },
+      chars: [P('bunny', { x: kf(t, [[0, -160], [3, 620, 'out']]), y: 660, walk: t < 3 ? 1.3 : 0, expr: 'happy', fx: [F('note')] })] }) },
+    { who: 'N', text: '突然，下起大雨了！', d: 3.6, act: (t, T) => ({ bg: 'park', bgo: { weather: 'rain' }, back: [rainFront(T, fade(t, 0, 1))],
+      chars: [P('bunny', { x: 620, y: 660, expr: 'surprised', jump: Math.max(0, Math.sin(clamp(t * 3) * Math.PI)) * 40, fx: [F('excl', 0, { t0: T - t + .3 }), F('sweat', 0, { n: 4 })] })] }) },
+    { who: 'bunny', text: '哇！下雨了，好濕喔！', d: 3.4, act: (t, T) => ({ bg: 'park', bgo: { weather: 'rain' }, back: [rainFront(T)],
+      chars: [P('bunny', { x: 620, y: 660, expr: 'sad', la: 150, ra: 150, fx: [F('sweat', 0, { n: 4 })] })] }) },
+    { who: 'N', text: '小兔趕快撐起雨傘。', d: 4.4, act: (t, T) => ({ bg: 'park', bgo: { weather: 'rain' }, back: [rainFront(T)],
+      chars: [P('bunny', { x: 620, y: 660, expr: t > 1.6 ? 'happy' : 'neutral', ra: 155, hold: { k: 'umbrella', open: fade(t, .3, 1.4) } })] }) },
+  ],
+  // 例子三：肚子好餓 → 小貓吃麵包
+  hungry: [
+    { who: 'N', text: '小貓玩了一整個下午。', d: 4, act: (t, T) => ({ bg: 'room', bgo: { table: true },
+      chars: [P('cat', { x: 560, y: 650, expr: 'happy', jump: Math.abs(Math.sin(T * 5)) * 50, la: WAVE(T), ra: WAVE(T + 1) })] }) },
+    { who: 'cat', text: '咕嚕咕嚕⋯⋯我的肚子好餓喔！', d: 4.4, act: (t, T) => ({ bg: 'room', bgo: { table: true },
+      chars: [P('cat', { x: 560, y: 650, expr: 'sad', la: 40, ra: 40, fx: [F('growl', 0, { t0: T - t + .2 })] })] }) },
+    { who: 'N', text: '小貓拿出麵包，大口大口地吃。', d: 5, act: (t, T) => ({ bg: 'room', bgo: { table: true },
+      chars: [P('cat', { x: 560, y: 650, expr: t > 1.2 ? 'yum' : 'happy', ra: kf(t, [[0, 40], [.8, 125]]), hold: { k: 'bread', bites: Math.min(3, Math.floor(fade(t, 1.2, 4.2) * 4)) }, fx: t > 1.2 ? [F('hearts')] : [] })] }) },
+  ],
+  // 新情境一：好想睡覺 → 小兔上床睡覺
+  sleepy: [
+    { who: 'N', text: '晚上了，小兔一直打哈欠。', d: 4.4, act: (t, T) => ({ bg: 'room', bgo: { night: true, bed: true, lamp: true },
+      chars: [P('bunny', { x: 440, y: 660, expr: 'sleepy', htilt: Math.sin(T * 1.2) * 6, la: 150 })] }) },
+    { who: 'bunny', text: '好想睡覺喔⋯⋯', d: 3.4, act: (t, T) => ({ bg: 'room', bgo: { night: true, bed: true, lamp: true },
+      chars: [P('bunny', { x: 440, y: 660, expr: 'sleepy', htilt: Math.sin(T * 1.2) * 8, fx: [F('zzz')] })] }) },
+    { who: 'N', text: '小兔爬上床，蓋好被子。', d: 5, act: (t, T) => {
+      const inBed = t > 2.2;
+      const c = inBed ? P('bunny', { x: 1000, y: 512, s: .7, tilt: -88, expr: 'sleepy', fx: [F('zzz')] })
+        : P('bunny', { x: kf(t, [[0, 440], [2.2, 820]]), y: 660, walk: 1.2, expr: 'sleepy' });
+      return { bg: 'room', bgo: { night: true, bed: true, lamp: true }, chars: [c], front: [blanketFront(inBed ? fade(t, 2.2, 2.8) : 0)] };
+    } },
+  ],
+  // 新情境二：考了一百分 → 小熊很開心
+  score: [
+    { who: 'N', text: '老師發考卷了，小熊有一點緊張。', d: 4.6, act: (t, T) => ({ bg: 'class', bgo: { board: '國語考試' },
+      chars: [P('bear', { x: 500, y: 660, expr: 'sad', lx: .5, fx: [F('sweat', 0, { n: 1 })] }), P('owl', { x: kf(t, [[0, 1150], [2, 820]]), y: 660, face: -1, walk: t < 2 ? 1.2 : 0, expr: 'neutral', ra: 100, hold: { k: 'paper' } })] }) },
+    { who: 'N', text: '哇！小熊考了一百分！', d: 4, act: (t, T) => ({ bg: 'class', bgo: { board: '國語考試' },
+      chars: [P('bear', { x: 500, y: 660, expr: 'surprised', ra: 160, hold: { k: 'paper' }, fx: [F('excl', 0, { t0: T - t })] }), P('owl', { x: 820, y: 660, face: -1, expr: 'happy' })] }) },
+    { who: 'bear', text: '耶！我好開心！', d: 4, act: (t, T) => ({ bg: 'class', bgo: { board: '國語考試' },
+      chars: [P('bear', { x: 500, y: 660, expr: 'laugh', ra: 165, la: WAVE(T), hold: { k: 'paper' }, jump: Math.abs(Math.sin(T * 6)) * 45, fx: [F('spark')] }), P('owl', { x: 820, y: 660, face: -1, expr: 'happy', ra: WAVE(T) })],
+      ui: [confetti(t, 3)] }) },
+  ],
+  // 新情境三：跑得太快 → 小貓跌倒了
+  fall: [
+    { who: 'N', text: '小貓在公園裡跑來跑去。', d: 4, act: (t, T) => ({ bg: 'park', bgo: { weather: 'sunny', rock: 470 },
+      chars: [P('cat', { x: 230 + Math.sin(t * 1.4) * 130, y: 660, face: Math.cos(t * 1.4) > 0 ? 1 : -1, walk: 2.6, expr: 'happy' })] }) },
+    { who: 'N', text: '牠跑得好快好快，沒有看到前面的石頭⋯⋯', d: 4.6, act: (t, T) => ({ bg: 'park', bgo: { weather: 'sunny', rock: 470 },
+      chars: [P('cat', { x: kf(t, [[0, 120], [4.6, 420, 'lin']]), y: 660, walk: 3, expr: 'laugh', tilt: 8 })],
+      ui: [comic('咻～', 380, 380, 60, '#fff', pop(t, .4), -8, '#ff8a3d')] }) },
+    { who: 'N', text: '碰！小貓跌倒了。', d: 4.4, act: (t, T) => {
+      const down = t > .5;
+      return { bg: 'park', bgo: { weather: 'sunny', rock: 470 },
+        chars: [P('cat', down ? { x: 520, y: 640, tilt: 80, expr: t > 1.4 ? 'cry' : 'hurt', fx: [F('dizzy')] } : { x: kf(t, [[0, 420], [.5, 540]]), y: 660 - Math.sin(clamp(t / .5) * Math.PI) * 60, tilt: kf(t, [[0, 10], [.5, 70]]), expr: 'surprised' })],
+        ui: [comic('碰！', 700, 360, 80, '#fff', pop(t, .5), -6, '#ff5a5a')] };
+    } },
+  ],
+};
+// 短片最後一個畫面（給句子條當背景、給遊戲停格用）
+function clipEnd(id, T) { const c = CLIPS[id], b = c[c.length - 1]; return b.act(b.d + 20, T); }
+
+// ---------- 題目資料 ----------
+// cause/effect：正確答案；wc/we：干擾卡（錯的原因、錯的結果）；ask：問句；say：遊戲裡的情境說明
+const ITEMS = [
+  { id: 'hot', part: 1, cause: '天氣很熱', effect: '小熊流了很多汗', wc: '天氣很冷', we: '小熊穿上外套', ask: '小熊為什麼流了很多汗？' },
+  { id: 'rain', part: 1, cause: '下大雨了', effect: '小兔撐雨傘', wc: '出大太陽', we: '小兔去游泳', ask: '小兔為什麼撐雨傘？' },
+  { id: 'hungry', part: 1, cause: '肚子好餓', effect: '小貓吃麵包', wc: '肚子好飽', we: '小貓去睡覺', ask: '小貓為什麼吃麵包？' },
+  { id: 'sleepy', part: 2, cause: '好想睡覺', effect: '小兔上床睡覺', wc: '好想吃東西', we: '小兔去溜滑梯', ask: '小兔為什麼上床睡覺？' },
+  { id: 'score', part: 2, cause: '考了一百分', effect: '小熊很開心', wc: '考試沒寫完', we: '小熊很難過', ask: '小熊為什麼很開心？' },
+  { id: 'fall', part: 2, cause: '跑得太快', effect: '小貓跌倒了', wc: '慢慢地走', we: '小貓在唱歌', ask: '小貓為什麼跌倒了？' },
+];
+const sentenceText = it => `因為${it.cause}，所以${it.effect}。`;
+
+// ===== 句型遊戲 =====
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const G = { level: 'easy', m1: 'build', m2: 'build', kid: '', qi: 0, rec: [], mode: 'build', tries: 1, hint: 0, solved: false, slots: [], cards: [], sel: -1 };
+let T = 0;
+
+// ---------- 音效 ----------
+let AC = null;
+function tone(freqs, dur = .12, type = 'sine', gain = .15) {
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    const t = AC.currentTime;
+    freqs.forEach((f, i) => {
+      const o = AC.createOscillator(), g = AC.createGain();
+      o.type = type; o.frequency.value = f;
+      g.gain.setValueAtTime(gain, t + i * dur); g.gain.exponentialRampToValueAtTime(.001, t + i * dur + dur * 1.6);
+      o.connect(g).connect(AC.destination); o.start(t + i * dur); o.stop(t + i * dur + dur * 1.8);
+    });
+  } catch (e) {}
+}
+const sfx = { pop: () => tone([660], .06, 'triangle', .12), good: () => tone([523, 659, 784, 1047], .11, 'triangle', .16), bad: () => tone([300, 220], .14, 'square', .05) };
+
+// ---------- 設定頁 ----------
+function segPick(boxId, key) {
+  const box = $(boxId);
+  box.querySelectorAll('button').forEach(b => b.onclick = () => {
+    box.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
+    G[key] = b.dataset.v;
+  });
+}
+segPick('optLevel', 'level'); segPick('optM1', 'm1'); segPick('optM2', 'm2');
+function show(id) { ['setup', 'play', 'inter', 'result'].forEach(s => $(s).hidden = s !== id); if (id !== 'setup') $('coverSvg').innerHTML = ''; window.scrollTo(0, 0); }
+$('startBtn').onclick = () => { G.kid = $('kid').value.trim(); G.rec = []; startQ(0); };
+$('toPart2').onclick = () => startQ(3);
+$('againBtn').onclick = () => show('setup');
+$('printBtn').onclick = () => { try { print(); } catch (e) {} };
+
+// ---------- 短片播放 ----------
+const CP = { id: null, bi: 0, bt: 0, playing: false, ov: null, ovT: 0, said: false, speaking: false };
+function speakBeat() {
+  const b = CLIPS[CP.id][CP.bi];
+  CP.speaking = true;
+  speakText(b.say || b.text, b.who, () => { CP.speaking = false; });
+}
+function playClip() {
+  if (listening) stopMic();
+  CP.bi = 0; CP.bt = 0; CP.playing = true; CP.ov = null;
+  speakBeat();
+}
+function stepClip(dt) {
+  if (!CP.playing) return;
+  CP.bt += dt;
+  const b = CLIPS[CP.id][CP.bi];
+  const hold = hasSpeech && CP.speaking && CP.bt < b.d + 8;
+  if (CP.bt >= b.d && !hold) {
+    CP.bi++; CP.bt = 0;
+    if (CP.bi >= CLIPS[CP.id].length) { CP.playing = false; CP.bi = CLIPS[CP.id].length - 1; if (!CP.said) { CP.said = true; sayPrompt(); } }
+    else speakBeat();
+  }
+}
+function renderStage() {
+  if (!CP.id) return;
+  let R, who = null;
+  if (CP.playing) { const b = CLIPS[CP.id][CP.bi]; R = b.act(CP.bt, T); who = b.who; }
+  else R = clipEnd(CP.id, T);
+  if (CP.ov) { R.ui = CP.ov(T - CP.ovT, T); }
+  for (const c of R.chars || []) c.talk = CP.playing && c.id === who && CP.bt < CLIPS[CP.id][CP.bi].d * .8 && CP.bt > .15;
+  $('svg').innerHTML = renderFrame(R, T);
+}
+$('replay').onclick = () => playClip();
+
+// ---------- 題目 ----------
+const item = () => ITEMS[G.qi];
+function promptText(it) { return it.ask; }
+function sayPrompt() { speakText(`${item().ask}請用「因為，所以」來說一說。`, 'owl'); }
+$('sayPrompt').onclick = sayPrompt;
+function startQ(i) {
+  G.qi = i; G.tries = 1; G.hint = 0; G.solved = false; G.sel = -1;
+  const it = item();
+  G.mode = (it.part === 1 ? G.m1 : G.m2);
+  show('play');
+  $('lvl').innerHTML = it.part === 1 ? `<b>第一關</b>影片裡的句子 ${i + 1}／3` : `<b>第二關</b>看短片造句 ${i - 2}／3`;
+  $('dots').innerHTML = ITEMS.map((x, k) => (k === 3 ? '<i class="gap"></i>' : '') + `<i class="${k < i ? 'done' : k === i ? 'now' : ''}"></i>`).join('');
+  $('promptText').textContent = promptText(it);
+  CP.id = it.id; CP.said = false;
+  setupBuild(); setupVoice();
+  $('zNext').hidden = true;
+  setMode(G.mode);
+  playClip();
+}
+function setMode(m) {
+  G.mode = m;
+  $('mBuild').setAttribute('aria-pressed', m === 'build'); $('mVoice').setAttribute('aria-pressed', m === 'voice');
+  if (G.solved) return;
+  $('zBuild').hidden = m !== 'build'; $('zVoice').hidden = m !== 'voice';
+  if (m !== 'voice' && listening) stopMic();
+}
+$('mBuild').onclick = () => setMode('build');
+$('mVoice').onclick = () => setMode('voice');
+
+// ---------- 排字卡 ----------
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function setupBuild() {
+  const it = item(), hard = G.level === 'hard';
+  G.slots = (hard ? ['c1', 'cause', 'c2', 'effect'] : ['cause', 'effect']).map(exp => ({ exp, card: null, locked: false, el: null }));
+  let pool = [{ text: it.cause, type: 'cause' }, { text: it.effect, type: 'effect' }, { text: it.wc, type: 'wc' }, { text: it.we, type: 'we' }];
+  if (hard) pool.push({ text: '因為', type: 'c1' }, { text: '所以', type: 'c2' });
+  let order = shuffle(pool);
+  if (order[0].type === 'cause' && order[1].type === 'effect') order = order.slice(2).concat(order.slice(0, 2));
+  G.cards = order.map((c, i) => Object.assign(c, { id: i, slot: null, el: null }));
+  const tray = $('tray'); tray.innerHTML = '';
+  for (const c of G.cards) {
+    const el = document.createElement('div');
+    el.className = 'card' + (c.type === 'c1' ? ' conn1' : c.type === 'c2' ? ' conn2' : '');
+    el.textContent = c.text; el.tabIndex = 0; el.setAttribute('role', 'button');
+    c.el = el; attachDrag(el, c);
+    el.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tapCard(c); } };
+    tray.appendChild(el);
+  }
+  $('fbB').textContent = ''; $('fbB').className = 'fb';
+  $('checkBtn').disabled = false; $('clearBtn').disabled = false;
+  drawFrame();
+}
+function drawFrame() {
+  const hard = G.level === 'hard', f = $('frame');
+  const slot = i => `<div class="slot k-${['cause', 'effect'].includes(G.slots[i].exp) ? G.slots[i].exp : 'conn'}${G.sel === i ? ' sel' : ''}${G.slots[i].locked ? ' right' : ''}" data-i="${i}" tabindex="0" role="button" aria-label="第${i + 1}格"></div>`;
+  f.innerHTML = hard
+    ? `${slot(0)}${slot(1)}<span class="punct">，</span>${slot(2)}${slot(3)}<span class="punct">。</span>`
+    : `<span class="pill c1">因為</span>${slot(0)}<span class="punct">，</span><span class="pill c2">所以</span>${slot(1)}<span class="punct">。</span>`;
+  f.querySelectorAll('.slot').forEach(el => {
+    const sl = G.slots[+el.dataset.i]; sl.el = el;
+    if (sl.card) { const ce = sl.card.el; el.appendChild(ce); ce.classList.remove('used'); }
+    el.onclick = () => tapSlot(+el.dataset.i);
+    el.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tapSlot(+el.dataset.i); } };
+  });
+  // 還沒放進格子的卡片回到托盤，保持原本順序
+  const tray = $('tray');
+  for (const c of G.cards) if (!c.slot && c.el.parentNode !== tray) tray.appendChild(c.el);
+  [...tray.children].sort((a, b) => G.cards.find(c => c.el === a).id - G.cards.find(c => c.el === b).id).forEach(x => tray.appendChild(x));
+}
+function placeCard(c, si) {
+  const sl = G.slots[si];
+  if (!sl || sl.locked || G.solved) return;
+  if (c.slot) c.slot.card = null;
+  if (sl.card) sl.card.slot = null;
+  sl.card = c; c.slot = sl; G.sel = -1;
+  sfx.pop(); speakText(c.text, 'N');
+  $('fbB').textContent = '';
+  drawFrame();
+}
+function unplace(c) {
+  if (!c.slot || c.slot.locked) return;
+  c.slot.card = null; c.slot = null; drawFrame();
+}
+function tapCard(c) {
+  if (G.solved) return;
+  if (c.slot) { if (!c.slot.locked) { unplace(c); sfx.pop(); } return; }
+  let si = G.sel >= 0 && !G.slots[G.sel].locked ? G.sel : G.slots.findIndex(s => !s.card && !s.locked);
+  if (si < 0) { fb('fbB', 'info', '格子滿了。先點格子裡的字卡，把它拿出來。'); return; }
+  placeCard(c, si);
+}
+function tapSlot(i) {
+  const sl = G.slots[i];
+  if (sl.locked || G.solved) return;
+  if (sl.card) { unplace(sl.card); sfx.pop(); return; }
+  G.sel = G.sel === i ? -1 : i; drawFrame();
+}
+function slotAt(x, y) {
+  return G.slots.findIndex(sl => { if (!sl.el) return false; const r = sl.el.getBoundingClientRect(); return x > r.left - 12 && x < r.right + 12 && y > r.top - 16 && y < r.bottom + 16; });
+}
+function attachDrag(el, c) {
+  el.addEventListener('click', e => e.stopPropagation());
+  el.addEventListener('pointerdown', e => {
+    if (G.solved || (c.slot && c.slot.locked) || e.button > 0) return;
+    e.preventDefault(); e.stopPropagation();
+    const sx = e.clientX, sy = e.clientY; let ghost = null, over = -1;
+    try { el.setPointerCapture(e.pointerId); } catch (err) {}
+    const move = ev => {
+      if (!ghost && Math.hypot(ev.clientX - sx, ev.clientY - sy) > 8) {
+        ghost = el.cloneNode(true); ghost.classList.add('ghost');
+        ghost.style.fontSize = getComputedStyle($('tray').firstElementChild || el).fontSize;
+        document.body.appendChild(ghost); el.style.opacity = '.3';
+      }
+      if (ghost) {
+        ghost.style.left = ev.clientX + 'px'; ghost.style.top = ev.clientY + 'px';
+        const o = slotAt(ev.clientX, ev.clientY);
+        if (o !== over) { G.slots.forEach((s, k) => s.el && s.el.classList.toggle('over', k === o)); over = o; }
+      }
+    };
+    const end = ev => {
+      el.removeEventListener('pointermove', move); el.removeEventListener('pointerup', end); el.removeEventListener('pointercancel', end);
+      el.style.opacity = '';
+      G.slots.forEach(s => s.el && s.el.classList.remove('over'));
+      if (ghost) {
+        ghost.remove();
+        const si = ev.type === 'pointercancel' ? -1 : slotAt(ev.clientX, ev.clientY);
+        if (si >= 0) placeCard(c, si); else if (c.slot) { unplace(c); sfx.pop(); }
+      } else if (ev.type === 'pointerup') tapCard(c);
+    };
+    el.addEventListener('pointermove', move); el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
+  });
+}
+function fb(id, kind, msg) { const e = $(id); e.className = 'fb ' + kind; e.textContent = msg; }
+function hintFor(sl) {
+  const c = sl.card, t = c.text;
+  if (sl.exp === 'c1') return '第一格要放「因為」。';
+  if (sl.exp === 'c2') return '逗號後面要放「所以」。';
+  if (c.type === 'c1' || c.type === 'c2') return `「${t}」放錯位置了，再想一想。`;
+  if (sl.exp === 'cause') return (c.type === 'effect' || c.type === 'we') ? `「${t}」是結果，要放在「所以」的後面。` : `再看一次短片：真的是「${t}」嗎？`;
+  return (c.type === 'cause' || c.type === 'wc') ? `「${t}」是原因，要放在「因為」的後面。` : `再看一次短片：真的是「${t}」嗎？`;
+}
+$('checkBtn').onclick = () => {
+  if (G.solved) return;
+  if (G.slots.some(s => !s.card)) { fb('fbB', 'info', '還有空格喔，把字卡放進去再檢查。'); return; }
+  const wrong = [];
+  for (const sl of G.slots) { if (sl.locked) continue; if (sl.card.type === sl.exp) sl.locked = true; else wrong.push(sl); }
+  if (!wrong.length) { drawFrame(); success('build'); return; }
+  G.tries++;
+  const msg = hintFor(wrong[0]);
+  const back = wrong.map(sl => sl.card);
+  back.forEach(c => { c.slot.card = null; c.slot = null; });
+  drawFrame();
+  back.forEach(c => { c.el.classList.remove('shake'); void c.el.offsetWidth; c.el.classList.add('shake'); });
+  fb('fbB', 'bad', msg); sfx.bad(); speakText(msg.replace(/[「」]/g, ''), 'owl');
+};
+$('clearBtn').onclick = () => { G.cards.forEach(c => { if (c.slot && !c.slot.locked) { c.slot.card = null; c.slot = null; } }); G.sel = -1; drawFrame(); $('fbB').textContent = ''; };
+$('readBtn').onclick = () => {
+  const hard = G.level === 'hard', s = G.slots.map(sl => sl.card ? sl.card.text : '');
+  const text = hard ? `${s[0]}${s[1]}，${s[2]}${s[3]}。` : `因為${s[0]}，所以${s[1]}。`;
+  if (G.slots.every(sl => !sl.card)) { fb('fbB', 'info', '先把字卡放進格子，再念念看。'); return; }
+  speakText(text, 'owl');
+};
+
+// ---------- 用說的 ----------
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null, listening = false;
+function setupVoice() {
+  drawVFrame();
+  $('heard').className = 'heard empty'; $('heard').textContent = '按麥克風，用「因為……，所以……」說一句話';
+  $('c1').className = ''; $('c2').className = '';
+  $('fbV').textContent = ''; $('fbV').className = 'fb';
+  $('hintBtn').disabled = false; $('hintBtn').textContent = '💡 給一點提示';
+  $('judgeOk').disabled = false; $('judgeNo').disabled = false;
+  if (!SR) { $('micBtn').disabled = true; $('micLab').textContent = '不能辨識'; $('vnote').textContent = '這個瀏覽器不能辨識語音（請用電腦版 Chrome）。沒關係，請小朋友直接說出來，老師聽完按下面的按鈕。'; }
+  else $('vnote').textContent = '';
+}
+function drawVFrame() {
+  const it = item(), h = G.hint;
+  const b = (txt, k) => `<span class="slot k-${k}" style="cursor:default">${txt ? `<span style="opacity:.55">${esc(txt)}</span>` : '　'}</span>`;
+  $('vframe').innerHTML = `<span class="pill c1">因為</span>${b(h >= 1 ? it.cause : '', 'cause')}<span class="punct">，</span><span class="pill c2">所以</span>${b(h >= 2 ? it.effect : '', 'effect')}<span class="punct">。</span>`;
+  $('vframe').classList.add('withlabels');
+}
+$('hintBtn').onclick = () => {
+  G.hint = Math.min(2, G.hint + 1); drawVFrame();
+  $('hintBtn').textContent = G.hint >= 2 ? '💡 提示都給了' : '💡 再給一點提示';
+  $('hintBtn').disabled = G.hint >= 2;
+};
+function showHeard(s, final) {
+  const h = $('heard');
+  if (!s) { h.className = 'heard empty'; h.textContent = final ? '沒有聽到，再按一次麥克風說說看。' : '正在聽⋯⋯'; return; }
+  h.className = 'heard';
+  h.innerHTML = esc(s).replace(/因為/g, '<span class="hi1">因為</span>').replace(/所以/g, '<span class="hi2">所以</span>');
+  $('c1').className = /因為/.test(s) ? 'y' : ''; $('c2').className = /所以/.test(s) ? 'y' : '';
+}
+function stopMic() { try { rec && rec.stop(); } catch (e) {} listening = false; micUI(); }
+function micUI() { $('micBtn').classList.toggle('on', listening); if (SR) $('micLab').textContent = listening ? '說完按我' : '按我說'; }
+$('micBtn').onclick = () => {
+  if (!SR) return;
+  if (listening) { stopMic(); return; }
+  if (hasSpeech) speechSynthesis.cancel();
+  CP.playing = false;
+  rec = new SR(); rec.lang = 'zh-TW'; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
+  let got = '';
+  rec.onresult = e => { let s = ''; for (let i = 0; i < e.results.length; i++) s += e.results[i][0].transcript; got = s; showHeard(s, false); };
+  rec.onerror = e => {
+    const m = { 'not-allowed': '麥克風被擋住了：請按網址列旁邊的圖示，允許使用麥克風。也可以直接聽小朋友說，再按老師判斷。', 'service-not-allowed': '麥克風被擋住了：請允許使用麥克風。也可以直接聽小朋友說，再按老師判斷。', 'no-speech': '沒有聽到聲音，請靠近麥克風再說一次。', 'network': '語音辨識需要網路，請確認有連上網路。', 'audio-capture': '找不到麥克風，請確認麥克風有接好。' }[e.error];
+    if (m) $('vnote').textContent = m;
+  };
+  rec.onend = () => { listening = false; micUI(); showHeard(got, true); };
+  try { rec.start(); listening = true; $('vnote').textContent = ''; showHeard('', false); } catch (e) { listening = false; }
+  micUI();
+};
+$('judgeOk').onclick = () => { if (listening) stopMic(); success('voice'); };
+$('judgeNo').onclick = () => {
+  if (listening) stopMic();
+  G.tries++; sfx.bad();
+  fb('fbV', 'bad', G.hint < 2 ? '再說一次看看！可以按「給一點提示」，或再看一次短片。' : '再說一次看看！跟著提示說。');
+  $('heard').className = 'heard empty'; $('heard').textContent = '按麥克風，再說一次';
+  $('c1').className = ''; $('c2').className = '';
+};
+
+// ---------- 答對 ----------
+function success(mode) {
+  G.solved = true; sfx.good();
+  const it = item();
+  G.rec[G.qi] = { it, mode, tries: G.tries, hint: mode === 'voice' ? G.hint : 0 };
+  $('zBuild').hidden = true; $('zVoice').hidden = true; $('zNext').hidden = false;
+  $('fbDone').textContent = (G.tries === 1 ? '一次就答對了！' : '答對了！') + ' ' + sentenceText(it);
+  $('nextBtn').textContent = G.qi === 2 ? '完成第一關 ➜' : G.qi === 5 ? '看成績 ➜' : '下一題 ➜';
+  readModel();
+}
+function readModel() {
+  const it = item();
+  CP.playing = false;
+  const parts = SENT(it.cause, it.effect);
+  CP.ovT = T;
+  CP.ov = (t, TT) => [sentenceSVG(parts, 640, 108, t, { fs: 52, labels: true, hl: karaokeIdx(t, .5, 1.05), T: TT }), comic('答對了！', 1080, 320, 64, '#fff', pop(t, .1) * (1 - fade(t, 2.4, 2.8)), 6, '#38b77a'), confetti(t, G.qi)];
+  setTimeout(() => speakText(sentenceText(it), 'owl'), 350);
+}
+function karaokeIdx(t, start, step) { if (t < start) return -1; const o = [0, 1, 3, 4], k = Math.floor((t - start) / step); return k < 4 ? o[k] : -1; }
+$('readAgain').onclick = readModel;
+$('nextBtn').onclick = () => {
+  if (hasSpeech) speechSynthesis.cancel();
+  if (G.qi === 2) { show('inter'); speakText('第一關完成！接下來是第二關。', 'owl'); return; }
+  if (G.qi === 5) { showResult(); return; }
+  startQ(G.qi + 1);
+};
+
+// ---------- 成績 ----------
+function showResult() {
+  show('result');
+  const d = new Date(), ds = `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
+  $('rInfo').textContent = `${G.kid ? G.kid + '　' : ''}${ds}　難度：${G.level === 'hard' ? '挑戰' : '簡單'}`;
+  const recs = G.rec.filter(Boolean), first = recs.filter(r => r.tries === 1).length;
+  $('rSum').innerHTML = `<div>一次就答對 <b>${first}</b> 題</div><div>完成 <b>${recs.length}</b>／6 題</div>`;
+  $('rBody').innerHTML = G.rec.map((r, i) => r ? `<tr><td>${i < 3 ? '第一關' : '第二關'} 第${i % 3 + 1}題</td><td>${esc(sentenceText(r.it))}</td><td>${r.mode === 'voice' ? '用說的' + (r.hint ? `（看了${r.hint}次提示）` : '') : '排字卡'}</td><td>${r.tries === 1 ? '一次答對' : `試了 ${r.tries} 次`}</td><td class="st">${'★'.repeat(r.tries === 1 ? 3 : r.tries === 2 ? 2 : 1)}</td></tr>` : '').join('');
+  speakText('全部完成，你好棒！', 'owl');
+}
+
+// ---------- 主迴圈 ----------
+let last = performance.now(), lastDraw = 0;
+function loop(now) {
+  const dt = Math.min(.05, (now - last) / 1000); last = now; T += dt;
+  if (!$('play').hidden) stepClip(dt);
+  if (now - lastDraw > 30) {
+    lastDraw = now;
+    if (!$('play').hidden) renderStage();
+    else if (!$('setup').hidden) $('coverSvg').innerHTML = renderFrame({ bg: 'stage', pal: 'warm', chars: [P('bear', { x: 330, y: 690, s: .62, expr: 'happy', ra: WAVE(T) }), P('bunny', { x: 560, y: 690, s: .62, expr: 'happy' }), P('cat', { x: 790, y: 690, s: .62, expr: 'laugh', face: -1 }), P('owl', { x: 1010, y: 690, s: .66, face: -1, expr: 'happy', ra: 110 })], ui: [sentenceSVG(SENT('', '').map((p, i) => i === 1 ? { t: '', k: 'blank', kind: 'cause' } : i === 4 ? { t: '', k: 'blank', kind: 'effect' } : p), 640, 150, 9, { fs: 70 })] }, T);
+  }
+  requestAnimationFrame(loop);
+}
+if (hasSpeech) { zhVoices(); speechSynthesis.onvoiceschanged = () => zhVoices(); }
+window.__G = { startQ, G, success, showResult, CP };
+requestAnimationFrame(loop);
+
+</script>
+</body>
+</html>
