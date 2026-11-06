@@ -42,6 +42,7 @@ h1{margin:0;font-family:var(--f-round);font-weight:400;font-size:clamp(1.2rem,2.
 .who{flex:none;color:var(--ink);font-size:.75em;padding:.2em .7em;border-radius:999px;font-weight:700}
 #subText{min-width:0}
 @keyframes subin{from{transform:translate(-50%,10px)}to{transform:translate(-50%,0)}}
+.stage{touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}.pausetag{position:absolute;top:3%;left:2%;pointer-events:none;font-family:var(--f-round);font-size:clamp(.75rem,1.6vw,1.05rem);color:#fff;background:rgba(29,22,46,.55);padding:.25em .8em;border-radius:999px;letter-spacing:.04em}
 .bigplay{position:absolute;left:50%;top:64%;transform:translateX(-50%);display:flex;align-items:center;gap:.5em;padding:.45em 1.2em;
   font:inherit;font-family:var(--f-round);font-size:clamp(1.1rem,3vw,2rem);color:var(--ink);background:var(--sun);border:5px solid var(--ink);border-radius:999px;box-shadow:0 8px 0 var(--ink);cursor:pointer}
 .bigplay:active{transform:translate(-50%,5px);box-shadow:0 3px 0 var(--ink)}
@@ -126,6 +127,7 @@ h1{margin:0;font-family:var(--f-round);font-weight:400;font-size:clamp(1.2rem,2.
       <div class="stage" id="stage">
         <svg id="svg" viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="劇情卡通"></svg>
         <div class="sub" id="sub" aria-live="polite"><span class="who" id="subWho">旁白</span><span id="subText"></span></div>
+        <div class="pausetag" id="pausetag" hidden aria-live="polite">❚❚ 暫停中・連點兩下畫面繼續</div>
         <button class="bigplay" id="bigplay"><span aria-hidden="true">▶</span><b>開始</b></button>
       </div>
       <div class="deck">
@@ -1468,15 +1470,34 @@ function makeUtt(text, who) {
   return u;
 }
 function stopSpeech() { if (hasSpeech) speechSynthesis.cancel(); uttId++; speaking = false; clearReading(); }
-function speakBeat() {
-  started = false; speaking = false;
+
+const cleanSay = s => s.replace(/（[^）]*）/g, '').replace(/——/g, '，').replace(/⋯+|…+/g, '，');
+let spk = null, spkBt0 = 0, resumeAt = -1;
+function pausePoint() {
+  if (!speaking || !spk) return -1;
+  let p = spk.off;
+  if (spk.bound) p = spk.pos;
+  else if (started && spk.t0) p = spk.off + Math.floor((performance.now() - spk.t0) / 1000 * 4 * spk.rate);
+  p = Math.min(p, spk.full.length);
+  let q = -1;
+  for (const c of '，。！？、；：,.!?') q = Math.max(q, spk.full.lastIndexOf(c, p - 1));
+  q = q + 1;
+  if (q >= spk.full.length) return -1;
+  return Math.max(0, q);
+}
+const hasWords = s => /[^\s，。！？、；：,.!?「」『』]/.test(s);
+function speakBeat(from = 0) {
+  started = false; speaking = false; spkBt0 = bt; spk = null; resumeAt = -1;
   if (!opt.voiceOn || !hasSpeech) return;
-  const b = cur(), id = ++uttId;
+  const b = cur(), id = ++uttId, full = cleanSay(b.say || b.text), part = full.slice(from);
   speechSynthesis.cancel();
-  const u = makeUtt(b.say || b.text, b.who);
+  if (!hasWords(part)) return;
+  const u = makeUtt(part, b.who);
+  const k = { full, off: from, pos: from, t0: 0, rate: u.rate, bound: false };
   const done = () => { if (id === uttId) speaking = false; };
-  u.onend = done; u.onerror = done; u.onstart = () => { if (id === uttId) started = true; };
-  speaking = true;
+  u.onend = done; u.onerror = done; u.onstart = () => { if (id === uttId) { started = true; k.t0 = performance.now(); } };
+  u.onboundary = e => { if (id === uttId && e.charIndex >= 0) { k.pos = from + e.charIndex; k.bound = true; } };
+  spk = k; speaking = true;
   setTimeout(() => { if (id === uttId) speechSynthesis.speak(u); }, 40);
 }
 // 依序念，念到哪裡標到哪裡：items = [{ text, el, who }]
@@ -1533,7 +1554,7 @@ function isTalking() {
   const b = cur();
   if (b.noTalk) return false;
   if (opt.voiceOn && hasSpeech) {
-    if (speaking && (started || bt < .8)) return bt > .15;
+    if (speaking && (started || bt < spkBt0 + .8)) return bt > spkBt0 + .15;
     if (!started && bt < b.d * .8) return bt > .15;
     return false;
   }
@@ -1573,9 +1594,11 @@ function nextBeat() {
 }
 function setPaused(p) {
   if (mode !== 'play' && mode !== 'pause') return;
+  if ((mode === 'pause') === p) return;
   mode = p ? 'pause' : 'play';
-  if (p) stopSpeech(); else { st -= bt; bt = 0; frozenT = T; speakBeat(); }
-  bigplay.hidden = !p; if (p) bigplay.querySelector('b').textContent = '繼續';
+  if (p) { const r = pausePoint(); stopSpeech(); resumeAt = r; }
+  else { const r = resumeAt; if (r >= 0) speakBeat(r); else { spkBt0 = bt; resumeAt = -1; } }
+  bigplay.hidden = true;
   updateUI();
 }
 function goSeg(id) {
@@ -1693,6 +1716,7 @@ function updateUI() {
   playBtn.setAttribute('aria-pressed', mode === 'play');
   document.getElementById('replay').disabled = mode === 'poster' || mode === 'end' || mode === 'picked';
   subBox.hidden = !opt.subs || mode === 'poster';
+  document.getElementById('pausetag').hidden = mode !== 'pause';
   const sb = document.getElementById('subs'); sb.setAttribute('aria-pressed', opt.subs); sb.textContent = opt.subs ? '字幕：開' : '字幕：關';
   const vb = document.getElementById('voice');
   vb.textContent = !hasSpeech ? '此瀏覽器不能念' : opt.voiceOn ? '語音：開' : '語音：關';
@@ -1700,6 +1724,18 @@ function updateUI() {
 }
 playBtn.onclick = () => { if (mode === 'poster') begin(); else setPaused(mode === 'play'); };
 bigplay.onclick = () => { if (mode === 'poster') begin(); else if (mode === 'pause') setPaused(false); };
+function dblToggle() { if (mode === 'poster') begin(); else if (mode === 'play' || mode === 'pause') setPaused(mode === 'play'); }
+// 連點兩下畫面：暫停／繼續
+(() => {
+  const stg = document.getElementById('stage'); let lt = 0, lx = 0, ly = 0;
+  stg.addEventListener('pointerup', e => {
+    if (e.button > 0 || e.target.closest('button,a,input,select')) return;
+    const now = performance.now();
+    if (now - lt < 420 && Math.hypot(e.clientX - lx, e.clientY - ly) < 70) { lt = 0; dblToggle(); }
+    else { lt = now; lx = e.clientX; ly = e.clientY; }
+  });
+  stg.addEventListener('dblclick', e => e.preventDefault());
+})();
 document.getElementById('replay').onclick = () => {
   if (mode === 'choice') return showNode(node);
   if (seg) { const f = after; playSeg(seg, f); }
@@ -1743,11 +1779,11 @@ document.getElementById('testC').onclick = () => readSeq([{ text: '老師，可�
 let last = performance.now(), lastDraw = 0;
 function loop(now) {
   const dt = Math.min(.05, (now - last) / 1000); last = now;
-  T += dt;
+  if (mode !== 'pause') T += dt;
   if (mode === 'play') {
     bt += dt; st += dt; S.scroll += lastSpeed * dt;
     const b = cur();
-    const hold = opt.voiceOn && hasSpeech && speaking && (started || bt < b.d + 1.5) && bt < b.d + 12;
+    const hold = opt.voiceOn && hasSpeech && speaking && (started || bt < Math.max(b.d, spkBt0) + 1.5) && bt < Math.max(b.d, spkBt0) + 12;
     if (bt >= b.d && !hold) nextBeat();
   }
   if (now - lastDraw > 22) { lastDraw = now; render(); }

@@ -65,6 +65,7 @@ h1{margin:0;font-family:var(--f-round);font-weight:400;font-size:clamp(1.3rem,3.
 .vrow input[type=range]{width:100%;accent-color:var(--coral)}
 .vnote{margin:0;color:#6b5f80;line-height:1.5}
 .vnote:empty{display:none}
+.stage{touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}.pausetag{position:absolute;top:3%;left:2%;pointer-events:none;font-family:var(--f-round);font-size:clamp(.75rem,1.6vw,1.05rem);color:#fff;background:rgba(29,22,46,.55);padding:.25em .8em;border-radius:999px;letter-spacing:.04em}
 .tip{margin:0;color:var(--muted);font-size:.92rem;line-height:1.6}
 .tip kbd{font-family:inherit;background:#3e4880;border-radius:6px;padding:1px 7px}
 @media (max-width:640px){.vrow{grid-template-columns:1fr}.btn{font-size:.95rem;padding:7px 10px}.ctrls .spacer{display:none}}
@@ -80,6 +81,7 @@ h1{margin:0;font-family:var(--f-round);font-weight:400;font-size:clamp(1.3rem,3.
   <div class="stage" id="stage">
     <svg id="svg" viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="再見了，抱怨小怪獸卡通短片"></svg>
     <div class="sub" id="sub" aria-live="polite"><span class="who" id="subWho">旁白</span><span id="subText"></span></div>
+    <div class="pausetag" id="pausetag" hidden aria-live="polite">❚❚ 暫停中・連點兩下畫面繼續</div>
     <button class="bigplay" id="bigplay"><i aria-hidden="true">▶</i><b>開始播放</b></button>
   </div>
   <div class="deck">
@@ -103,7 +105,7 @@ h1{margin:0;font-family:var(--f-round);font-weight:400;font-size:clamp(1.3rem,3.
       <p class="vnote" id="vnote"></p>
       <div><button class="btn main" id="vclose">完成</button></div>
     </div>
-    <p class="tip">按 <kbd>空白鍵</kbd> 暫停或繼續，<kbd>←</kbd> <kbd>→</kbd> 換段落。暫停後再播放，會從這一句重新念。</p>
+    <p class="tip">按 <kbd>空白鍵</kbd> 暫停或繼續，<kbd>←</kbd> <kbd>→</kbd> 換段落。在畫面上連點兩下也可以暫停／繼續；暫停後再播放，會從暫停的地方接著播。</p>
   </div>
 </div>
 <script>
@@ -1165,14 +1167,33 @@ function zhVoices() {
   const score = v => (/TW|Hant/i.test(v.lang) ? 0 : 10) + (/Online|Natural|Neural/i.test(v.name) ? 0 : 2) + (v.localService ? 1 : 0);
   return all.sort((a, b) => score(a) - score(b));
 }
-function speakBeat() {
-  started = false; speaking = false;
+
+const cleanSay = s => s.replace(/（[^）]*）/g, '').replace(/——/g, '，').replace(/⋯+|…+/g, '，');
+let spk = null, spkBt0 = 0, resumeAt = -1;
+function pausePoint() {
+  if (!speaking || !spk) return -1;
+  let p = spk.off;
+  if (spk.bound) p = spk.pos;
+  else if (started && spk.t0) p = spk.off + Math.floor((performance.now() - spk.t0) / 1000 * 4 * spk.rate);
+  p = Math.min(p, spk.full.length);
+  let q = -1;
+  for (const c of '，。！？、；：,.!?') q = Math.max(q, spk.full.lastIndexOf(c, p - 1));
+  q = q + 1;
+  if (q >= spk.full.length) return -1;
+  return Math.max(0, q);
+}
+const hasWords = s => /[^\s，。！？、；：,.!?「」『』]/.test(s);
+function speakBeat(from = 0) {
+  started = false; speaking = false; spkBt0 = bt; spk = null;
   if (!opt.voiceOn || !hasSpeech) return;
-  const b = cur(), id = ++uttId;
-  const u = speakText(b.say || b.text, b.who, () => { if (id === uttId) speaking = false; });
+  const b = cur(), id = ++uttId, full = cleanSay(b.say || b.text), part = full.slice(from);
+  if (!hasWords(part)) return;
+  const k = { full, off: from, pos: from, t0: 0, rate: 1, bound: false };
+  const u = speakText(part, b.who, () => { if (id === uttId) speaking = false; });
   if (!u) return;
-  speaking = true;
-  u.onstart = () => { if (id === uttId) started = true; };
+  spk = k; k.rate = u.rate; speaking = true;
+  u.onstart = () => { if (id === uttId) { started = true; k.t0 = performance.now(); } };
+  u.onboundary = e => { if (id === uttId && e.charIndex >= 0) { k.pos = from + e.charIndex; k.bound = true; } };
 }
 function showSub() {
   const b = cur(), sp = SPK[b.who] || SPK.N;
@@ -1181,7 +1202,7 @@ function showSub() {
   subBox.classList.remove('in'); void subBox.offsetWidth; subBox.classList.add('in');
 }
 function startBeat(speak = true) {
-  bt = 0; frozenT = T; showSub();
+  bt = 0; resumeAt = -1; frozenT = T; showSub();
   if (playing && speak) speakBeat();
   updateUI();
 }
@@ -1189,7 +1210,7 @@ function goScene(i, autoplay = playing) {
   poster = false;
   si = clamp(i, 0, SCENES.length - 1); bi = 0; st = 0; S = { scroll: 0 }; ended = false;
   if (hasSpeech) speechSynthesis.cancel(); uttId++; speaking = false;
-  playing = autoplay; bigplay.hidden = playing;
+  playing = autoplay; bigplay.hidden = playing; resumeAt = -1;
   startBeat();
 }
 function nextBeat() {
@@ -1202,16 +1223,17 @@ function nextBeat() {
 }
 function setPlaying(p) {
   if (p && (ended || poster)) { poster = false; goScene(0, true); return; }
-  playing = p; bigplay.hidden = p;
-  if (!p) { if (hasSpeech) speechSynthesis.cancel(); uttId++; speaking = false; }
-  else { st -= bt; bt = 0; frozenT = T; speakBeat(); }
+  if (p === playing) return;
+  playing = p; bigplay.hidden = true;
+  if (!p) { resumeAt = pausePoint(); if (hasSpeech) speechSynthesis.cancel(); uttId++; speaking = false; }
+  else { if (resumeAt >= 0) speakBeat(resumeAt); else spkBt0 = bt; resumeAt = -1; }
   updateUI();
 }
 function isTalking() {
   const b = cur();
   if (b.noTalk) return false;
   if (opt.voiceOn && hasSpeech && playing) {
-    if (speaking && (started || bt < .8)) return bt > .15;
+    if (speaking && (started || bt < spkBt0 + .8)) return bt > spkBt0 + .15;
     if (!started && bt < b.d * .8) return bt > .15;
     return false;
   }
@@ -1235,6 +1257,7 @@ function updateUI() {
   playBtn.setAttribute('aria-pressed', playing);
   [...chapBox.children].forEach((c, i) => c.classList.toggle('on', i === si));
   subBox.hidden = !opt.subs;
+  document.getElementById('pausetag').hidden = playing || poster || ended;
   document.getElementById('subs').setAttribute('aria-pressed', opt.subs);
   document.getElementById('subs').textContent = opt.subs ? '字幕：開' : '字幕：關';
   const vb = document.getElementById('voice');
@@ -1289,7 +1312,7 @@ function loop(now) {
   if (playing) {
     bt += dt; st += dt; T += dt; S.scroll += lastSpeed * dt;
     const b = cur();
-    const speechHold = opt.voiceOn && hasSpeech && speaking && (started || bt < b.d + 1.5) && bt < b.d + 12;
+    const speechHold = opt.voiceOn && hasSpeech && speaking && (started || bt < Math.max(b.d, spkBt0) + 1.5) && bt < Math.max(b.d, spkBt0) + 12;
     if (bt >= b.d && !speechHold) nextBeat();
   }
   if (now - lastDraw > 22) { lastDraw = now; render(); updateBar(); }
@@ -1299,6 +1322,18 @@ function loop(now) {
 // 控制
 playBtn.onclick = () => setPlaying(!playing);
 bigplay.onclick = () => setPlaying(true);
+function dblToggle() { if (poster || ended) setPlaying(true); else setPlaying(!playing); }
+// 連點兩下畫面：暫停／繼續
+(() => {
+  const stg = document.getElementById('stage'); let lt = 0, lx = 0, ly = 0;
+  stg.addEventListener('pointerup', e => {
+    if (e.button > 0 || e.target.closest('button,a,input,select')) return;
+    const now = performance.now();
+    if (now - lt < 420 && Math.hypot(e.clientX - lx, e.clientY - ly) < 70) { lt = 0; dblToggle(); }
+    else { lt = now; lx = e.clientX; ly = e.clientY; }
+  });
+  stg.addEventListener('dblclick', e => e.preventDefault());
+})();
 document.getElementById('prev').onclick = () => goScene(si - 1, true);
 document.getElementById('next').onclick = () => { if (si < SCENES.length - 1) goScene(si + 1, true); };
 document.getElementById('replay').onclick = () => goScene(si, true);
