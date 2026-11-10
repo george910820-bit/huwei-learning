@@ -154,7 +154,7 @@ const SHAPES=[["line","直線"],["circle","圓"],["sector","扇形"],["rect","�
 
 /* ---------- state ---------- */
 const PROT_R=260,CM=40;   // one centimetre on the ruler = one square on 方格紙
-const S={tool:"pen",color:0,size:1,esize:1,bg:"chalk",label:true,inst:{prot:{show:false,x:800,y:620,rot:0},ruler:{show:false,x:420,y:300,rot:0},tri45:{show:false,x:260,y:760,rot:0},tri60:{show:false,x:1000,y:780,rot:0},compass:{show:false,x:800,y:520,r:200,a:0}},pages:[{objs:[],redo:[]}],pi:0,sel:[]};
+const S={tool:"pen",color:0,size:1,esize:1,bg:"chalk",label:true,inst:{prot:{show:false,x:800,y:620,rot:0},ruler:{show:false,x:420,y:300,rot:0,len:15},tri45:{show:false,x:260,y:760,rot:0},tri60:{show:false,x:1000,y:780,rot:0},compass:{show:false,x:800,y:520,r:200,a:0}},pages:[{objs:[],redo:[]}],pi:0,sel:[]};
 const page=()=>S.pages[S.pi];
 const imgCache=new Map();
 function imgOf(src){let im=imgCache.get(src);if(!im){im=new Image();im.onload=()=>render();im.src=src;imgCache.set(src,im);}return im;}
@@ -302,6 +302,7 @@ function handle(x,q,color,kind,ang){x.save();x.fillStyle=color;x.beginPath();x.a
   else{x.arc(q[0],q[1],5,0,7);}
   x.stroke();x.restore();}
 const TRI={tri45:[[0,0],[360,0],[0,-360]],tri60:[[0,0],[420,0],[0,-242]]};
+const rulerLen=()=>S.inst.ruler.len||15;
 const INST={
   prot:{
     local:{move:[-PROT_R-26,0],rot:[PROT_R+26,0],scale:[PROT_R*.72+20,-PROT_R*.72-20],close:[0,-PROT_R-30]},
@@ -317,16 +318,17 @@ const INST={
           x.save();x.translate(Math.cos(a)*(r-60),Math.sin(a)*(r-60));x.rotate(a+Math.PI/2);x.fillStyle="#b3261e";x.font="700 13px sans-serif";x.textAlign="center";x.textBaseline="middle";x.fillText(180-d,0,0);x.restore();}}
       x.beginPath();x.moveTo(0,0);x.lineTo(0,-r*.45);x.stroke();
       x.fillStyle="#d62828";x.beginPath();x.arc(0,0,6,0,7);x.fill();}},
+  // the ruler grows longer or shorter instead of zooming, so 1 公分 always matches the grid
   ruler:{
-    local:{move:[-50,35],rot:[650,35],scale:[650,100],close:[-50,100]},
-    body:q=>q[0]>=-20&&q[0]<=620&&q[1]>=0&&q[1]<=70,
-    edges:[[[-20,0],[620,0]]],
-    draw(x){x.fillStyle="rgba(255,236,170,.55)";x.strokeStyle="rgba(140,100,20,.95)";x.lineWidth=2;
-      x.beginPath();x.rect(-20,0,640,70);x.fill();x.stroke();
+    get local(){const e=rulerLen()*CM;return{move:[-50,35],rot:[e+50,35],scale:[e+50,100],close:[-50,100]};},
+    body:q=>q[0]>=-20&&q[0]<=rulerLen()*CM+20&&q[1]>=0&&q[1]<=70,
+    get edges(){return[[[-20,0],[rulerLen()*CM+20,0]]];},
+    draw(x){const e=rulerLen()*CM;x.fillStyle="rgba(255,236,170,.55)";x.strokeStyle="rgba(140,100,20,.95)";x.lineWidth=2;
+      x.beginPath();x.rect(-20,0,e+40,70);x.fill();x.stroke();
       x.strokeStyle="#5a3d0a";x.fillStyle="#3a2805";x.font="700 16px sans-serif";x.textAlign="center";x.textBaseline="top";
-      for(let mm=0;mm<=150;mm++){const px=mm*CM/10,L=mm%10===0?22:mm%5===0?15:8;x.lineWidth=mm%10===0?2:1;
+      for(let mm=0;mm<=rulerLen()*10;mm++){const px=mm*CM/10,L=mm%10===0?22:mm%5===0?15:8;x.lineWidth=mm%10===0?2:1;
         x.beginPath();x.moveTo(px,0);x.lineTo(px,L);x.stroke();if(mm%10===0)x.fillText(mm/10,px,25);}
-      x.font="700 13px sans-serif";x.fillText("公分",585,48);}},
+      x.font="700 13px sans-serif";x.fillText("公分",e-15,48);}},
   tri45:{
     local:{move:[-34,34],rot:[394,34],scale:[204,-204],close:[-34,-384]},
     body:q=>inPoly(q,TRI.tri45),
@@ -369,7 +371,7 @@ function drawInst(x){
   ["tri45","tri60","ruler","prot"].forEach(k=>{const st=S.inst[k];if(!st.show)return;x.save();x.translate(st.x,st.y);x.rotate(st.rot);x.scale(st.s||1,st.s||1);INST[k].draw(x);x.restore();
     const L=INST[k].local;handle(x,toWorld(st,L.move),"#15803d","move");handle(x,toWorld(st,L.rot),"#1d4ed8","rot");
     handle(x,toWorld(st,L.scale),"#7c3aed","scale",st.rot);handle(x,toWorld(st,L.close),"#dc2626","close");
-    if(act&&act.k==="inst"&&act.which===k&&act.mode==="scale"){const q=toWorld(st,L.scale);labelAt(x,Math.round((st.s||1)*100)+"%",q[0],q[1]-34,"#7c3aed");}});
+    if(act&&act.k==="inst"&&act.which===k&&act.mode==="scale"){const q=toWorld(st,L.scale);labelAt(x,k==="ruler"?rulerLen()+" 公分":Math.round((st.s||1)*100)+"%",q[0],q[1]-34,"#7c3aed");}});
   if(S.inst.compass.show)drawCompass(x,S.inst.compass);
 }
 // which instrument part is under the pointer: handles always win; bodies move only with the 移動 tool
@@ -589,6 +591,7 @@ cOv.addEventListener("pointermove",e=>{
       else{const a=Math.atan2(p[1]-st.y,p[0]-st.x);let d=a-act.lastA;if(d>Math.PI)d-=2*Math.PI;if(d<-Math.PI)d+=2*Math.PI;act.lastA=a;
         act.arc.sweep=Math.max(-2*Math.PI,Math.min(2*Math.PI,act.arc.sweep+d));st.a=act.orig.a+act.arc.sweep;}
     }else if(act.mode==="move"){st.x=act.orig.x+p[0]-act.start[0];st.y=act.orig.y+p[1]-act.start[1];}
+    else if(act.mode==="scale"&&act.which==="ruler"){st.s=1;const q=toLocal(st,p);st.len=Math.max(3,Math.min(40,Math.round((q[0]-50)/CM)));}
     else if(act.mode==="scale"){const d0=Math.max(1,Math.hypot(act.start[0]-st.x,act.start[1]-st.y));
       let k=(act.orig.s||1)*Math.hypot(p[0]-st.x,p[1]-st.y)/d0;k=Math.max(.4,Math.min(3,k));if(Math.abs(k-1)<.06)k=1;st.s=k;}   // eases back onto the real size
     else{st.rot=Math.atan2(p[1]-st.y,p[0]-st.x)-act.off;const d=st.rot*180/Math.PI,s5=Math.round(d/15)*15;if(Math.abs(d-s5)<2)st.rot=s5*Math.PI/180;}   // eases onto 15° steps
@@ -734,7 +737,7 @@ function delSel(){if(!S.sel.length)return;page().objs.push({t:"_del",refs:S.sel.
 function mk(parent,id,html,label,fn){const b=document.createElement("button");b.type="button";b.id=id;b.innerHTML=html;if(label)b.setAttribute("aria-label",label);b.onclick=fn;(typeof parent==="string"?$(parent):parent).appendChild(b);return b;}
 function setTool(t){if(cropObj&&t!=="move"){cropObj=null;hideHint();}if(t!==S.tool){if(bendObj)hideHint();bendObj=null;}if(act&&(act.k==="sweep"||act.k==="poly")){act=null;preview=null;hideHint();}S.tool=t;if(t!=="move")S.sel=[];eraserAt=null;syncUI();renderOv();}
 const INST_BTN=[["prot","量角器"],["ruler","直尺"],["tri45","三角板 45°"],["tri60","三角板 30°"],["compass","圓規"]];
-const INST_TIP={prot:"綠色鈕移動、藍色鈕旋轉、紫色鈕放大縮小、紅色叉叉收起來",ruler:"筆沿著尺的上緣畫出直線；紫色鈕放大縮小、紅色叉叉收起來",tri45:"筆沿著三角板的邊畫出直線；紫色鈕放大縮小、紅色叉叉收起來",tri60:"筆沿著三角板的邊畫出直線；紫色鈕放大縮小、紅色叉叉收起來",
+const INST_TIP={prot:"綠色鈕移動、藍色鈕旋轉、紫色鈕放大縮小、紅色叉叉收起來",ruler:"筆沿著尺的上緣畫出直線；紫色鈕拉長縮短（刻度不變）、紅色叉叉收起來",tri45:"筆沿著三角板的邊畫出直線；紫色鈕放大縮小、紅色叉叉收起來",tri60:"筆沿著三角板的邊畫出直線；紫色鈕放大縮小、紅色叉叉收起來",
   compass:"綠色鈕移動、藍色鈕拉開大小，拖著橘色筆尖繞一圈就畫出圓；紅色叉叉收起來"};
 const regular=(n,R)=>Array.from({length:n},(_,i)=>{const a=-Math.PI/2+i*2*Math.PI/n;return[R*Math.cos(a),R*Math.sin(a)];});
 const LIB=[
@@ -772,7 +775,7 @@ const MAIN=[
   {id:"pic",html:()=>`${ICON.pic}圖片<span class="car">▾</span>`,on:()=>S.tool==="mask",click:()=>togglePop("pic")},
   {id:"shape",html:()=>`${ICON[shapePick]}圖形<span class="car">▾</span>`,on:()=>SHAPE_KEYS.includes(S.tool),click:()=>togglePop("shape")},
   {id:"kit",html:()=>{const n=INST_BTN.filter(([k])=>S.inst[k].show).length;return`${ICON.kit}工具<span class="car">▾</span>`;},on:()=>S.tool==="angle"||INST_BTN.some(([k])=>S.inst[k].show),click:()=>togglePop("kit")},
-  {id:"bg",html:()=>`${ICON.bg}${BG[S.bg].name}<span class="car">▾</span>`,on:()=>false,click:()=>togglePop("bg")},
+  {id:"bg",html:()=>`${ICON.bg}${BG[S.bg].name.slice(0,2)}<span class="car">▾</span>`,on:()=>false,click:()=>togglePop("bg")},
 ];
 MAIN.forEach(m=>mk("main","m-"+m.id,"",null,m.click));
 function opt(row,id,html,pressed,fn,cls){const b=mk(row,id,html,null,fn);if(cls)b.className=cls;b.setAttribute("aria-pressed",String(pressed));return b;}
