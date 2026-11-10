@@ -40,7 +40,18 @@ body{background:var(--wall);color:var(--chalk);font-family:var(--font);font-size
 .tray button .dot{width:16px;height:16px;border-radius:50%;border:2px solid rgba(0,0,0,.3)}
 .tray button .car{font-size:11px;opacity:.7;margin-left:1px}
 .pop{position:absolute;bottom:calc(100% + 10px);z-index:20;background:#fbf4e6;color:var(--btn-ink);border-radius:14px;padding:12px 14px;box-shadow:0 10px 24px rgba(0,0,0,.4);
-  display:grid;gap:10px;min-width:220px}
+  display:grid;gap:10px;min-width:220px;max-width:min(600px,calc(100vw - 40px));max-height:calc(100vh - 120px);overflow:auto}
+.pop .lib{flex-direction:column;gap:2px;padding:6px 6px;min-width:66px;font-size:13px}
+.pop .lib svg{width:34px;height:34px}
+.pop .thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;width:min(560px,calc(100vw - 70px))}
+.pop .thumb{flex-direction:column;gap:4px;padding:6px;font-size:14px}
+.pop .thumb canvas{width:100%;border-radius:6px;display:block;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.pop input[type=text]{width:180px;height:auto;font:inherit;font-size:15px;padding:6px 8px;border-radius:8px;border:2px solid #d9c6a3;background:#fff;color:#3b2a1a;accent-color:auto}
+.pop .warn[data-armed="1"]{background:#e2574c;color:#fff}
+.restore{position:absolute;left:50%;top:70px;transform:translateX(-50%);z-index:7;display:flex;gap:8px;align-items:center;background:#fbf4e6;color:var(--btn-ink);
+  padding:8px 10px 8px 16px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.4);font-weight:700}
+.restore button{font:inherit;font-weight:700;border:0;border-radius:8px;padding:6px 12px;cursor:pointer;background:#efe2c9;color:var(--btn-ink)}
+.restore button.yes{background:var(--on)}
 .pop::after{content:"";position:absolute;top:100%;left:var(--arrow,30px);border:9px solid transparent;border-top-color:#fbf4e6}
 .pop h3{margin:0;font-size:14px;color:#8a6a46;letter-spacing:.04em}
 .pop .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
@@ -64,6 +75,16 @@ body{background:var(--wall);color:var(--chalk);font-family:var(--font);font-size
 .imgbar{position:absolute;z-index:6;display:flex;gap:6px;background:#fbf4e6;border-radius:10px;padding:5px;box-shadow:0 4px 12px rgba(0,0,0,.35)}
 .imgbar button{font:inherit;font-size:15px;font-weight:700;cursor:pointer;border:0;border-radius:8px;padding:6px 10px;background:#efe2c9;color:var(--btn-ink);display:inline-flex;align-items:center;gap:5px}
 .imgbar button[aria-pressed="true"]{background:var(--on)}
+.imgbar{align-items:center;flex-wrap:wrap;max-width:calc(100% - 8px)}
+.imgbar .rng{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:700;color:var(--btn-ink);padding:0 6px}
+.imgbar .rng input{width:150px;accent-color:#c79b00}
+.imgbar button.ok{background:var(--on)}
+.imgbar.cutting{flex-direction:column;align-items:stretch;gap:6px;padding:8px}
+.imgbar .ln{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.imgbar .ln b{font-size:14px;color:#8a6a46;min-width:76px}
+.imgbar .ln:last-child{justify-content:flex-end}
+.imgbar .sizes{display:inline-flex;gap:4px}.imgbar .sizes[hidden]{display:none}
+.imgbar button:disabled{opacity:.45;cursor:default}
 .imgbar svg{width:18px;height:18px}
 .pop p.tip{margin:0;font-size:14px;line-height:1.5;color:#6b5236;max-width:330px}
 .pop kbd{font:inherit;font-weight:700;background:#efe2c9;border-radius:5px;padding:0 5px}
@@ -75,7 +96,7 @@ body{background:var(--wall);color:var(--chalk);font-family:var(--font);font-size
   <div class="frame">
     <div class="holder" id="holder">
       <div class="board" id="board">
-        <div class="imgbar" id="imgbar" hidden></div><input type="file" id="fileIn" accept="image/*" hidden>
+        <div class="imgbar" id="imgbar" hidden></div><input type="file" id="fileIn" accept="image/*" hidden><input type="file" id="lessonIn" accept=".json,application/json" hidden>
         <canvas id="bg"></canvas><canvas id="pic"></canvas><canvas id="ink"></canvas><canvas id="ov" aria-label="黑板：用滑鼠或觸控筆在上面寫字畫圖"></canvas>
         <div class="toast off" id="toast" aria-live="polite"></div>
         <div class="hint" id="hint" hidden></div>
@@ -84,7 +105,7 @@ body{background:var(--wall);color:var(--chalk);font-family:var(--font);font-size
   </div>
   <div class="tray" role="toolbar" aria-label="黑板工具">
     <div class="grp" id="main"></div>
-    <div class="grp"><button id="prev" aria-label="上一頁">◀</button><span class="page" id="pageNo">1 / 1</span><button id="nextP" aria-label="下一頁">▶</button><button id="addP">＋新頁</button></div>
+    <div class="grp"><button id="prev" aria-label="上一頁">◀</button><button class="page" id="pageNo" title="看所有頁面、存課程">1 / 1</button><button id="nextP" aria-label="下一頁">▶</button><button id="addP">＋新頁</button></div>
     <div class="grp"><button id="delBtn" disabled>移除</button><button id="undo">回上一步</button><button id="redoBtn" disabled>下一步</button><button id="danger" data-armed="0">清除這頁</button><button id="save">存成圖片</button><button id="fs">全螢幕</button></div>
     <div class="pop" id="pop" hidden role="dialog"></div>
   </div>
@@ -108,6 +129,7 @@ const ICON={
   lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>',
   unlock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 017.5-2"/></svg>',
   mask:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="10" rx="1" fill="currentColor" fill-opacity=".25"/><path d="M10 10.5a2 2 0 113 1.7c-.7.4-1 .8-1 1.5"/></svg>',
+  cutout:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h4M12 4h3M19 4v4M20 12v3M20 19h-4M12 20H9M4 20v-4M4 12V9"/><path d="M9 15l3-6 3 6z" fill="currentColor"/></svg>',
   select:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 3"><path d="M5 9c0-4 14-6 15 0s-6 9-11 8-4-4-4-8z"/><path stroke-dasharray="none" d="M8 17l-2 5"/></svg>',
   remove:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>',
   move:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3"/></svg>',
@@ -175,9 +197,28 @@ function labelAt(x,txt,px,py,color){
   x.save();x.font=fontOf(26);x.textAlign="center";x.textBaseline="middle";
   x.lineWidth=7;x.strokeStyle=S.bg==="chalk"?"#1f3d2e":"#fbfbf8";x.lineJoin="round";x.strokeText(txt,px,py);
   x.fillStyle=color;x.fillText(txt,px,py);x.restore();}
-const cells=v=>{const c=Math.round(v/GRID*10)/10;return (Number.isInteger(c)?c:c.toFixed(1))+" 格";};
+let LSC=1;   // how much the item being drawn is enlarged, so grid labels still read true lengths
+const I6=[1,0,0,1,0,0];
+const mMul=(A,B)=>[A[0]*B[0]+A[2]*B[1],A[1]*B[0]+A[3]*B[1],A[0]*B[2]+A[2]*B[3],A[1]*B[2]+A[3]*B[3],A[0]*B[4]+A[2]*B[5]+A[4],A[1]*B[4]+A[3]*B[5]+A[5]];
+const mApply=(m,p)=>m?[m[0]*p[0]+m[2]*p[1]+m[4],m[1]*p[0]+m[3]*p[1]+m[5]]:p;
+const mInv=m=>{const d=m[0]*m[3]-m[1]*m[2];return[m[3]/d,-m[1]/d,-m[2]/d,m[0]/d,(m[2]*m[5]-m[3]*m[4])/d,(m[1]*m[4]-m[0]*m[5])/d];};
+const mScale=m=>m?Math.sqrt(Math.abs(m[0]*m[3]-m[1]*m[2])):1;
+const toObj=(o,p)=>o.m?mApply(mInv(o.m),p):p;   // board point → the item's own (unrotated) coordinates
+const cells=v=>{const c=Math.round(v*LSC/GRID*10)/10;return (Number.isInteger(c)?c:c.toFixed(1))+" 格";};
 function sweepOf(o){return o.sweep;}
+// every item may carry its own turn/size (o.m) and its own rubbed-out marks (o.er), which travel with it
 function drawObj(x,o){
+  if(o.er&&o.er.length){drawErased(x,o);return;}
+  if(o.m){x.save();x.transform(...o.m);LSC=mScale(o.m);drawBase(x,o);LSC=1;x.restore();}else drawBase(x,o);}
+let scr=null;
+function drawErased(x,o){const cv=x.canvas;if(!scr)scr=document.createElement("canvas");
+  if(scr.width!==cv.width||scr.height!==cv.height){scr.width=cv.width;scr.height=cv.height;}
+  const s2=scr.getContext("2d");s2.setTransform(1,0,0,1,0,0);s2.globalCompositeOperation="source-over";s2.clearRect(0,0,scr.width,scr.height);s2.setTransform(x.getTransform());
+  if(o.m)s2.transform(...o.m);LSC=mScale(o.m);drawBase(s2,o);LSC=1;
+  s2.save();s2.globalCompositeOperation="destination-out";s2.lineCap="round";s2.lineJoin="round";s2.strokeStyle="#000";s2.shadowColor="transparent";
+  o.er.forEach(e=>{s2.lineWidth=e.w;strokePath(s2,e.pts);});s2.restore();
+  x.save();x.setTransform(1,0,0,1,0,0);x.drawImage(scr,0,0);x.restore();}
+function drawBase(x,o){
   x.save();x.lineCap="round";x.lineJoin="round";
   const col=o.c!=null?inkColor(o.c):null;
   if(o.t==="ink"){x.strokeStyle=col;x.lineWidth=o.w;
@@ -227,7 +268,10 @@ function renderOv(){
   xOv.clearRect(0,0,W,H);
   if(preview)drawObj(xOv,preview);
   const b=selBox();if(b){xOv.save();xOv.setLineDash([8,6]);xOv.strokeStyle="#ffd84d";xOv.lineWidth=3;xOv.strokeRect(b.x-8,b.y-8,b.w+16,b.h+16);xOv.setLineDash([]);
-    const one=S.sel.length===1&&S.sel[0];if(one&&!one.locked&&(one.t==="img"||one.t==="text"||one.t==="mask")){xOv.fillStyle="#ffd84d";xOv.fillRect(b.x+b.w-4,b.y+b.h-4,16,16);}xOv.restore();}
+    xOv.restore();const H2=selHandles();
+    if(H2){xOv.save();xOv.strokeStyle="#ffd84d";xOv.lineWidth=2;xOv.beginPath();xOv.moveTo(H2.rot[0],b.y-8);xOv.lineTo(H2.rot[0],H2.rot[1]+14);xOv.stroke();xOv.restore();
+      handle(xOv,H2.rot,"#1d4ed8","rot");handle(xOv,H2.scale,"#7c3aed","scale",Math.PI/2);
+      if(act&&act.k==="xf")labelAt(xOv,act.mode==="rot"?`轉了 ${act.deg||0}°`:`${Math.round((act.k2||1)*100)}%`,act.mode==="rot"?H2.rot[0]:H2.scale[0],(act.mode==="rot"?H2.rot[1]:H2.scale[1])-34,"#ffd84d");}}
   if(act&&act.k==="lasso"&&act.pts.length>1){xOv.save();xOv.setLineDash([10,8]);xOv.strokeStyle="#ffd84d";xOv.lineWidth=3;xOv.fillStyle="rgba(255,216,77,.12)";
     xOv.beginPath();act.pts.forEach((q,i)=>i?xOv.lineTo(...q):xOv.moveTo(...q));xOv.closePath();xOv.fill();xOv.stroke();xOv.restore();}
   drawShapeHandles(xOv,bendTarget());
@@ -235,6 +279,8 @@ function renderOv(){
     if(act&&act.k==="crop"){const r=clampRect(rectOf(act.a,act.b),b);xOv.fillStyle="rgba(0,0,0,.45)";
       xOv.beginPath();xOv.rect(b.x,b.y,b.w,b.h);xOv.rect(r.x+r.w,r.y,-r.w,r.h);xOv.fill("evenodd");xOv.setLineDash([]);xOv.strokeStyle="#fff";xOv.strokeRect(r.x,r.y,r.w,r.h);}
     xOv.restore();}
+  if(act&&act.k==="cutbrush"){xOv.save();xOv.globalAlpha=.55;xOv.strokeStyle="#ff6b9a";xOv.lineCap="round";xOv.lineJoin="round";xOv.lineWidth=act.w;strokePath(xOv,act.pts);xOv.restore();}
+  if(cut&&!act&&cut.wand==="hand"&&eraserAt){xOv.save();xOv.strokeStyle="#ff6b9a";xOv.lineWidth=2;xOv.beginPath();xOv.arc(eraserAt[0],eraserAt[1],BRUSH[cut.bsize].w/2,0,7);xOv.stroke();xOv.restore();}
   if(act&&act.k==="maskdraw"){const r=rectOf(act.a,act.b);xOv.save();xOv.globalAlpha=.8;drawObj(xOv,{t:"mask",...r});xOv.restore();}
   placeImgBar();
   drawInst(xOv);
@@ -342,42 +388,128 @@ function edgeNear(p){let best=null,bd=22;
 function onEdge(e,p){const{A,B}=e,vx=B[0]-A[0],vy=B[1]-A[1],t=Math.max(0,Math.min(1,((p[0]-A[0])*vx+(p[1]-A[1])*vy)/(vx*vx+vy*vy)));return[A[0]+vx*t,A[1]+vy*t];}
 
 /* ---------- geometry helpers ---------- */
-function bbox(o){
+function bbox(o){const b=lbox(o);if(!b||!o.m)return b;
+  const P=[[b.x,b.y],[b.x+b.w,b.y],[b.x,b.y+b.h],[b.x+b.w,b.y+b.h]].map(q=>mApply(o.m,q)),xs=P.map(q=>q[0]),ys=P.map(q=>q[1]),x=Math.min(...xs),y=Math.min(...ys);
+  return{x,y,w:Math.max(...xs)-x,h:Math.max(...ys)-y};}
+function lbox(o){
   if(o.t==="text"){xInk.save();xInk.font=fontOf(o.size);const lines=o.s.split("\n");const w=Math.max(...lines.map(l=>xInk.measureText(l).width));xInk.restore();return{x:o.x,y:o.y,w,h:lines.length*o.size*1.25};}
   if(o.t==="img"||o.t==="mask")return{x:o.x,y:o.y,w:o.w,h:o.h};
   if(o.t==="poly"){const all=o.pts.concat((o.ctl||[]).filter(Boolean)),xs=all.map(p=>p[0]),ys=all.map(p=>p[1]);const x=Math.min(...xs),y=Math.min(...ys);return{x,y,w:Math.max(...xs)-x,h:Math.max(...ys)-y};}
   if(o.t==="line"||o.t==="rect")return{x:Math.min(o.a[0],o.b[0]),y:Math.min(o.a[1],o.b[1]),w:Math.abs(o.b[0]-o.a[0]),h:Math.abs(o.b[1]-o.a[1])};
-  if(o.t==="circle"||o.t==="sector"||o.t==="angle"||o.t==="arc"){const r=Math.max(o.r,o.r2||0);return{x:o.o[0]-r,y:o.o[1]-r,w:2*r,h:2*r};}
+  if(o.t==="circle"){const r=o.r;return{x:o.o[0]-r,y:o.o[1]-r,w:2*r,h:2*r};}
+  if(o.t==="sector"||o.t==="angle"||o.t==="arc"){   // just the drawn part, not the whole circle
+    const P=o.t==="arc"?[]:[o.o],n=Math.max(2,Math.ceil(Math.abs(o.sweep)/(Math.PI/12)));
+    if(o.t==="angle"){const a1=o.a0+o.sweep,r2=o.r2||o.r;P.push([o.o[0]+o.r*Math.cos(o.a0),o.o[1]+o.r*Math.sin(o.a0)],[o.o[0]+r2*Math.cos(a1),o.o[1]+r2*Math.sin(a1)]);}
+    else for(let i=0;i<=n;i++){const a=o.a0+o.sweep*i/n;P.push([o.o[0]+o.r*Math.cos(a),o.o[1]+o.r*Math.sin(a)]);}
+    const xs=P.map(q=>q[0]),ys=P.map(q=>q[1]),x=Math.min(...xs),y=Math.min(...ys);return{x,y,w:Math.max(...xs)-x,h:Math.max(...ys)-y};}
   if(o.t==="ink"){const xs=o.pts.map(p=>p[0]),ys=o.pts.map(p=>p[1]);const x=Math.min(...xs),y=Math.min(...ys);return{x,y,w:Math.max(...xs)-x,h:Math.max(...ys)-y};}
   return null;}
 /* ---------- textbook pictures: crop, lock, and covers that hide answers ---------- */
 let cropObj=null;
 const rectOf=(a,b)=>({x:Math.min(a[0],b[0]),y:Math.min(a[1],b[1]),w:Math.abs(b[0]-a[0]),h:Math.abs(b[1]-a[1])});
 function clampRect(r,b){const x=Math.max(r.x,b.x),y=Math.max(r.y,b.y);return{x,y,w:Math.max(0,Math.min(r.x+r.w,b.x+b.w)-x),h:Math.max(0,Math.min(r.y+r.h,b.y+b.h)-y)};}
-function maskAt(p){const L=liveObjs();for(let i=L.length-1;i>=0;i--){const o=L[i];if(o.t==="mask"&&p[0]>=o.x&&p[0]<=o.x+o.w&&p[1]>=o.y&&p[1]<=o.y+o.h)return o;}return null;}
-function applyCrop(a){const o=cropObj,b=bbox(o),r=clampRect(rectOf(a.a,a.b),b);
+function maskAt(p){const L=liveObjs();for(let i=L.length-1;i>=0;i--){const o=L[i];if(o.t!=="mask")continue;const q=toObj(o,p);if(q[0]>=o.x&&q[0]<=o.x+o.w&&q[1]>=o.y&&q[1]<=o.y+o.h)return o;}return null;}
+function applyCrop(a){const o=cropObj,b=lbox(o),r=clampRect(rectOf(toObj(o,a.a),toObj(o,a.b)),b);
   if(r.w<20||r.h<20){renderOv();return;}
   const im=imgOf(o.src),c=o.crop||{sx:0,sy:0,sw:im.naturalWidth,sh:im.naturalHeight},before=JSON.stringify(o);
   o.crop={sx:c.sx+(r.x-o.x)/o.w*c.sw,sy:c.sy+(r.y-o.y)/o.h*c.sh,sw:r.w/o.w*c.sw,sh:r.h/o.h*c.sh};Object.assign(o,{x:r.x,y:r.y,w:r.w,h:r.h});
   recordMove(o,before);cropObj=null;hideHint();render();toast("裁好了，不滿意可以按「回上一步」");}
-function placeImgBar(){const bar=$("imgbar"),o=!act&&!cropObj&&S.tool==="move"&&S.sel.length===1&&S.sel[0].t==="img"?S.sel[0]:null;
+/* ---------- 去背: the teacher picks how much, and whether white inside the picture goes too ---------- */
+let cut=null;   // {o,before,src0,mode,str,noise}
+function pixelsOf(src){const im=imgOf(src),w=im.naturalWidth,h=im.naturalHeight;if(!w)return null;
+  const c=document.createElement("canvas");c.width=w;c.height=h;const x=c.getContext("2d");x.drawImage(im,0,0);
+  try{return{c,x,w,h,d:x.getImageData(0,0,w,h)};}catch(e){return null;}}
+// the background colour = the most common colour around the picture's edge
+function edgeColour(P){const{w,h,d}=P,a=d.data,cols=[],st=Math.max(1,Math.floor((w+h)/600)),take=(i,j)=>{const k=(j*w+i)*4;if(a[k+3]>10)cols.push([a[k],a[k+1],a[k+2]]);};
+  for(let i=0;i<w;i+=st){take(i,0);take(i,h-1);}for(let j=0;j<h;j+=st){take(0,j);take(w-1,j);}
+  if(cols.length<8)return null;const med=ch=>{const v=cols.map(q=>q[ch]).sort((p,q)=>p-q);return v[v.length>>1];},bg=[med(0),med(1),med(2)];
+  const dev=cols.map(q=>Math.hypot(q[0]-bg[0],q[1]-bg[1],q[2]-bg[2])).sort((p,q)=>p-q);return{bg,noise:dev[Math.floor(dev.length*.9)]};}
+const strToTol=s=>4+s*1.1;   // 強度 0–100 → how far from the background colour still counts as background
+function cutPixels(P,bg,mode,tol,acts){const seeds=(acts||[]).filter(q=>q.k==="tap").map(q=>[q.x,q.y]);const{w,h,d}=P,a=d.data,n=w*h,gone=new Uint8Array(n),t2=tol*tol;
+  const close=(i,ref)=>{const k=i*4,dr=a[k]-ref[0],dg=a[k+1]-ref[1],db=a[k+2]-ref[2];return dr*dr+dg*dg+db*db<=t2;};
+  // spread from starting points over touching pixels of nearly the same colour
+  const flood=(starts,ref)=>{const st=[];const push=i=>{if(!gone[i]&&close(i,ref)){gone[i]=1;st.push(i);}};starts.forEach(push);
+    while(st.length){const i=st.pop(),x=i%w;if(x>0)push(i-1);if(x<w-1)push(i+1);if(i>=w)push(i-w);if(i<n-w)push(i+w);}};
+  if(mode==="all"){for(let i=0;i<n;i++)if(close(i,bg))gone[i]=1;}
+  else if(mode==="outside"){const e=[];for(let i=0;i<w;i++)e.push(i,(h-1)*w+i);for(let j=0;j<h;j++)e.push(j*w,j*w+w-1);flood(e,bg);}   // only background that reaches the picture's edge
+  // 魔法擦: each spot the teacher tapped clears the patch of colour around it
+  seeds.forEach(([x,y])=>{if(x<0||y<0||x>=w||y>=h)return;const i=y*w+x,k=i*4;flood([i],[a[k],a[k+1],a[k+2]]);});
+  // soft edge only one pixel wide, so lines keep their full strength
+  const soft=tol*1.35;
+  for(let i=0,k=0;i<n;i++,k+=4){if(gone[i]){a[k+3]=0;continue;}
+    const x=i%w,nb=(x>0&&gone[i-1])||(x<w-1&&gone[i+1])||(i>=w&&gone[i-w])||(i<n-w&&gone[i+w]);
+    if(nb){const dd=Math.hypot(a[k]-bg[0],a[k+1]-bg[1],a[k+2]-bg[2]);if(dd<soft)a[k+3]=Math.round(a[k+3]*Math.max(0,(dd-tol)/(soft-tol)));}}
+  P.x.putImageData(d,0,0);
+  // 手動: rub out just where the brush went
+  const br=(acts||[]).filter(q=>q.k==="brush");
+  if(br.length){const x=P.x;x.save();x.globalCompositeOperation="destination-out";x.lineCap="round";x.lineJoin="round";x.strokeStyle="#000";
+    br.forEach(q=>{x.lineWidth=q.w;strokePath(x,q.pts);});x.restore();}
+  return P.c.toDataURL("image/png");}
+function openCut(o){const src0=o.src0||o.src,P=pixelsOf(src0);if(!P){toast("這張圖不能去背");return;}const E=edgeColour(P);if(!E){toast("這張圖已經是透明的了");return;}
+  const tol0=Math.max(18,Math.min(70,E.noise*1.6+10));cut={o,before:JSON.stringify(o),src0,mode:"outside",str:Math.round((tol0-4)/1.1),bg:E.bg,acts:JSON.parse(JSON.stringify(o.cutActs||[])),wand:"auto",bsize:1};
+  if(o.cutMode)cut.mode=o.cutMode;if(o.cutStr!=null)cut.str=o.cutStr;cutHint();
+  $("imgbar").dataset.for="";runCut(true);}
+let cutT=0;
+function runCut(now){clearTimeout(cutT);cutT=setTimeout(()=>{if(!cut)return;const c=cut,P=pixelsOf(c.src0);if(!P)return;const src=cutPixels(P,c.bg,c.mode,strToTol(c.str),c.acts),ni=new Image();
+  ni.onload=()=>{if(cut!==c)return;imgCache.set(src,ni);c.o.src=src;render();};ni.src=src;},now?0:120);}
+function refreshCutBar(){const b=$("cutBack");if(b&&cut){b.textContent=`↶ 撤回一下（${cut.acts.length}）`;b.disabled=!cut.acts.length;}}
+function cutHint(){showHint(cut.wand==="auto"?"魔法擦（自動）：點一下，相連的同樣顏色全部擦掉":"魔法擦（手動）：按住滑過的地方才擦掉，沒滑到的會保留");}
+const BRUSH=[{n:"小",w:14},{n:"中",w:32},{n:"大",w:64}];
+// board point → pixel in the original picture (null when outside the picture)
+function natOf(p,loose){const o=cut.o,q=toObj(o,p);if(!loose&&(q[0]<o.x||q[0]>o.x+o.w||q[1]<o.y||q[1]>o.y+o.h))return null;
+  const im=imgOf(cut.src0),c=o.crop||{sx:0,sy:0,sw:im.naturalWidth,sh:im.naturalHeight};
+  return[c.sx+(q[0]-o.x)/o.w*c.sw,c.sy+(q[1]-o.y)/o.h*c.sh];}
+function natPerBoard(){const o=cut.o,im=imgOf(cut.src0),c=o.crop||{sw:im.naturalWidth};return c.sw/o.w/mScale(o.m);}
+// a tap on the picture while 去背 is open: remember that spot in the original picture's pixels
+function cutDown(p){const n=natOf(p);if(!n)return false;
+  if(cut.wand==="auto"){cut.acts.push({k:"tap",x:Math.floor(n[0]),y:Math.floor(n[1])});refreshCutBar();runCut(true);return true;}
+  act={k:"cutbrush",pts:[p],w:BRUSH[cut.bsize].w};renderOv();return true;}
+function finishCut(keep){const c=cut;if(!c)return;cut=null;clearTimeout(cutT);$("imgbar").dataset.for="";
+  hideHint();
+  if(keep){Object.assign(c.o,{src0:c.src0,cutMode:c.mode,cutStr:c.str,cutActs:c.acts});recordMove(c.o,c.before);toast("去背好了，不滿意可以按「回上一步」");}else{restoreObj(c.o,c.before);}render();}
+function cutBar(bar){const c=cut;bar.classList.add("cutting");
+  const line=t=>{const r=document.createElement("div");r.className="ln";if(t){const b=document.createElement("b");b.textContent=t;r.appendChild(b);}bar.appendChild(r);return r;};
+  const group=(r,cls,items,get,set)=>items.forEach(([id,label,v])=>{const b=mk(r,id,label,null,()=>{set(v);r.querySelectorAll("."+cls).forEach(x=>x.setAttribute("aria-pressed",String(x===b)));});
+    b.className=cls;b.setAttribute("aria-pressed",String(get()===v));});
+  let r=line("自動去背");
+  group(r,"seg",[["cutOut","只去外圍底色","outside"],["cutAll","白色全部去掉","all"],["cutNone","不自動","none"]],()=>c.mode,v=>{c.mode=v;runCut(true);});
+  const lab=document.createElement("label");lab.className="rng";lab.innerHTML=`去得少<input type="range" id="cutStr" min="0" max="100" value="${c.str}" aria-label="去背強度">去得多`;r.appendChild(lab);
+  lab.querySelector("input").oninput=e=>{c.str=+e.target.value;runCut();};
+  r=line("魔法擦擦筆");
+  group(r,"wnd",[["wandAuto","自動（點一下）","auto"],["wandHand","手動（滑過才擦）","hand"]],()=>c.wand,v=>{c.wand=v;cutHint();$("brushSizes").hidden=v!=="hand";});
+  const bs=document.createElement("span");bs.id="brushSizes";bs.className="sizes";bs.hidden=c.wand!=="hand";r.appendChild(bs);
+  group(bs,"bsz",BRUSH.map((z,i)=>["bs-"+i,z.n,i]),()=>c.bsize,v=>{c.bsize=v;});
+  const back=mk(r,"cutBack","",null,()=>{c.acts.pop();refreshCutBar();runCut(true);});refreshCutBar();
+  r=line();mk(r,"cutOk","完成",null,()=>finishCut(true)).className="ok";mk(r,"cutNo","取消",null,()=>finishCut(false));}
+function placeImgBar(){if(act&&act.k==="cutbrush")return;const bar=$("imgbar"),o=!act&&!cropObj&&S.tool==="move"&&S.sel.length===1&&S.sel[0].t==="img"?S.sel[0]:null;
+  if(cut&&o!==cut.o&&!act){finishCut(true);return;}   // clicking elsewhere keeps what was chosen
   if(!o){bar.hidden=true;bar.dataset.for="";return;}
-  if(bar.dataset.for!==String(liveObjs().indexOf(o))+o.locked){bar.innerHTML="";bar.dataset.for=String(liveObjs().indexOf(o))+o.locked;
+  if(!cut)bar.classList.remove("cutting");
+  const key=String(liveObjs().indexOf(o))+o.locked+(cut?"cut":"");
+  if(cut&&bar.dataset.for!==key){bar.innerHTML="";bar.dataset.for=key;cutBar(bar);}
+  if(bar.dataset.for!==key){bar.innerHTML="";bar.dataset.for=key;
     if(!o.locked)mk(bar,"crop",ICON.crop+"裁切",null,()=>{cropObj=o;S.sel=[];showHint("在圖片上拉一個框，框住要留下的部分（Esc 取消）");render();});
+    if(!o.locked)mk(bar,"cutout",ICON.cutout+(o.src0?"調整去背":"去背"),null,()=>openCut(o));
     const lb=mk(bar,"lock",(o.locked?ICON.unlock+"解除鎖定":ICON.lock+"鎖定"),null,()=>{const before=JSON.stringify(o);o.locked=!o.locked;if(!o.locked)delete o.locked;recordMove(o,before);
       toast(o.locked?"圖片鎖住了，上課寫字不會拖到它":"可以移動、縮放了");render();});lb.setAttribute("aria-pressed",String(!!o.locked));}
-  bar.hidden=false;const b=bbox(o);bar.style.left=Math.max(4,b.x*disp)+"px";bar.style.top=Math.max(4,b.y*disp-50)+"px";}
+  bar.hidden=false;const b=bbox(o),bh=$("board").clientHeight;const hh=bar.offsetHeight||50;let top=(b.y+b.h)*disp+16;if(top>bh-hh-4){top=b.y*disp-hh-56;if(top<4)top=bh-hh-8;}
+  bar.style.left=Math.max(4,Math.min(b.x*disp,$("board").clientWidth-bar.offsetWidth-4))+"px";bar.style.top=top+"px";}
+function selHandles(){if(S.tool!=="move"||cropObj||!S.sel.length||S.sel.some(o=>o.locked))return null;const b=selBox();if(!b)return null;
+  return{rot:[b.x+b.w/2,b.y-8-40],scale:[b.x+b.w+8,b.y+b.h+8],c:[b.x+b.w/2,b.y+b.h/2],anchor:[b.x-8,b.y-8]};}
+function selHandleAt(p){const h=selHandles();if(!h)return null;for(const k of["rot","scale"])if(Math.hypot(p[0]-h[k][0],p[1]-h[k][1])<22)return{k,h};return null;}
 // the box around everything that is selected
 function selBox(){const bs=S.sel.map(bbox).filter(Boolean);if(!bs.length)return null;const x=Math.min(...bs.map(b=>b.x)),y=Math.min(...bs.map(b=>b.y));
   return{x,y,w:Math.max(...bs.map(b=>b.x+b.w))-x,h:Math.max(...bs.map(b=>b.y+b.h))-y};}
 const inSelBox=p=>{const b=selBox();return b&&p[0]>=b.x-8&&p[0]<=b.x+b.w+8&&p[1]>=b.y-8&&p[1]<=b.y+b.h+8;};
 // an item counts as circled when most of it sits inside the loop
 function circled(o,loop){const b=bbox(o);if(!b)return false;
-  const pts=o.pts&&o.pts.length?o.pts.filter((_,i)=>i%Math.ceil(o.pts.length/40)===0):[[b.x,b.y],[b.x+b.w,b.y],[b.x,b.y+b.h],[b.x+b.w,b.y+b.h],[b.x+b.w/2,b.y+b.h/2]];
+  const pts=o.pts&&o.pts.length?o.pts.filter((_,i)=>i%Math.ceil(o.pts.length/40)===0).map(q=>mApply(o.m,q)):[[b.x,b.y],[b.x+b.w,b.y],[b.x,b.y+b.h],[b.x+b.w,b.y+b.h],[b.x+b.w/2,b.y+b.h/2]];
   return pts.filter(q=>inPoly(q,loop)).length>=pts.length*.7;}
 function hit(pt){const objs=page().objs;for(let i=objs.length-1;i>=0;i--){const o=objs[i];if(o.t==="erase")continue;const b=bbox(o);if(!b)continue;
   if(pt[0]>=b.x-10&&pt[0]<=b.x+b.w+10&&pt[1]>=b.y-10&&pt[1]<=b.y+b.h+10)return o;}return null;}
-function moveObj(o,dx,dy){
+function moveObj(o,dx,dy){if(o.m){o.m[4]+=dx;o.m[5]+=dy;return;}
+  shiftLocal(o,dx,dy);if(o.er)o.er.forEach(e=>e.pts=e.pts.map(q=>[q[0]+dx,q[1]+dy]));}
+function shiftLocal(o,dx,dy){
   if(o.t==="text"||o.t==="img"||o.t==="mask"){o.x+=dx;o.y+=dy;}
   if(o.t==="poly"){o.pts=o.pts.map(p=>[p[0]+dx,p[1]+dy]);if(o.ctl)o.ctl=o.ctl.map(p=>p&&[p[0]+dx,p[1]+dy]);}
   if(o.t==="line"||o.t==="rect"){o.a=[o.a[0]+dx,o.a[1]+dy];o.b=[o.b[0]+dx,o.b[1]+dy];}
@@ -398,6 +530,7 @@ function recordMove(o,before){const p=page();const after=JSON.stringify(o);if(af
 // moving several items at once is one step, so 回上一步 brings them all back together
 function recordGroup(list,before){const p=page();const ch=list.map((o,i)=>({ref:o,before:before[i],after:JSON.stringify(o)})).filter(c=>c.before!==c.after);
   if(!ch.length)return;p.objs.push({t:"_edits",list:ch});p.redo=[];}
+function restoreObj(o,json){const d=JSON.parse(json);Object.keys(o).forEach(k=>{if(k[0]!=="_"&&!(k in d))delete o[k];});Object.assign(o,d);}
 const realObjs=()=>page().objs;
 
 /* ---------- pointer ---------- */
@@ -406,6 +539,7 @@ let act=null,eraserAt=null;
 cOv.addEventListener("pointerdown",e=>{
   if(textBox){commitText();return;}
   const p=pt(e);cOv.setPointerCapture(e.pointerId);
+  if(cut&&cutDown(p))return;
   const sh=shapeHandle(bendTarget(),p);
   if(sh){const o=bendTarget();if(!o.ctl)o.ctl=o.pts.map(()=>null);act={k:sh.k,o,i:sh.i,before:JSON.stringify(o)};return;}
   const ih=instHit(p);
@@ -417,12 +551,13 @@ cOv.addEventListener("pointerdown",e=>{
     return;}
   const T=S.tool,col=S.color,w=SIZES[S.size].w;
   if(T==="pen"){const ed=edgeNear(p);act={k:"draw",edge:ed,o:{t:"ink",c:col,w,pts:[ed?onEdge(ed,p):p]}};preview=act.o;renderOv();}
-  else if(T==="erase"){act={k:"draw",o:{t:"erase",w:eraseW(),pts:[p]}};page().objs.push(act.o);page().redo=[];render();}
+  else if(T==="erase"){act={k:"erase",o:{t:"erase",w:eraseW(),pts:[p]}};render();drawBase(xInk,act.o);}
   else if(T==="text"){openText(p);}
   else if(T==="move"){
     const one=S.sel.length===1&&S.sel[0];
     if(cropObj){act={k:"crop",a:p,b:p};return;}
-    if(one&&!one.locked&&(one.t==="img"||one.t==="text"||one.t==="mask")){const b=bbox(one);if(Math.abs(p[0]-(b.x+b.w+4))<22&&Math.abs(p[1]-(b.y+b.h+4))<22){act={k:"resize",o:one,before:JSON.stringify(one),b};return;}}
+    const sh2=selHandleAt(p);
+    if(sh2){const list=S.sel.slice();act={k:"xf",mode:sh2.k,list,before:list.map(o=>JSON.stringify(o)),base:list.map(o=>o.m?o.m.slice():I6.slice()),start:p,c:sh2.h.c,anchor:sh2.h.anchor};return;}
     if(!(S.sel.length&&inSelBox(p))){const o=hit(p);S.sel=o?[o]:[];}
     if(S.sel.length){const list=S.sel.filter(o=>!o.locked);act={k:"move",list,before:list.map(o=>JSON.stringify(o)),last:p};}
     else act={k:"lasso",pts:[p]};
@@ -443,9 +578,9 @@ cOv.addEventListener("pointerdown",e=>{
     const c=snap(p);act={k:"ray",o:{t:T,c:col,w,o:c,r:0,a0:0,sweep:0}};preview=act.o;}
 });
 cOv.addEventListener("pointermove",e=>{
-  const p=pt(e);
-  eraserAt=S.tool==="erase"?p:null;
-  if(!act){if(S.tool==="erase")renderOv();cOv.style.cursor=instHit(p)?"grab":S.tool==="move"?(inSelBox(p)||hit(p)?"move":"crosshair"):S.tool==="text"?"text":S.tool==="mouse"?"default":"crosshair";if(shapeHandle(bendTarget(),p))cOv.style.cursor="grab";if(S.tool==="mouse"&&maskAt(p))cOv.style.cursor="pointer";if(cropObj)cOv.style.cursor="crosshair";return;}
+  let p=pt(e);
+  eraserAt=S.tool==="erase"||(cut&&cut.wand==="hand")?p:null;if(cut&&cut.wand==="hand"&&!act)renderOv();
+  if(!act){if(S.tool==="erase")renderOv();cOv.style.cursor=instHit(p)?"grab":S.tool==="move"?(inSelBox(p)||hit(p)?"move":"crosshair"):S.tool==="text"?"text":S.tool==="mouse"?"default":"crosshair";if(shapeHandle(bendTarget(),p)||(S.tool==="move"&&selHandleAt(p)))cOv.style.cursor="grab";if(S.tool==="mouse"&&maskAt(p))cOv.style.cursor="pointer";if(cropObj)cOv.style.cursor="crosshair";if(cut){const q=toObj(cut.o,p),o=cut.o;if(q[0]>=o.x&&q[0]<=o.x+o.w&&q[1]>=o.y&&q[1]<=o.y+o.h)cOv.style.cursor="cell";}return;}
   if(act.k==="inst"){const st=S.inst[act.which];
     if(act.which==="compass"){
       if(act.mode==="move"){const q=snap([act.orig.x+p[0]-act.start[0],act.orig.y+p[1]-act.start[1]]);st.x=q[0];st.y=q[1];}
@@ -458,11 +593,20 @@ cOv.addEventListener("pointermove",e=>{
       let k=(act.orig.s||1)*Math.hypot(p[0]-st.x,p[1]-st.y)/d0;k=Math.max(.4,Math.min(3,k));if(Math.abs(k-1)<.06)k=1;st.s=k;}   // eases back onto the real size
     else{st.rot=Math.atan2(p[1]-st.y,p[0]-st.x)-act.off;const d=st.rot*180/Math.PI,s5=Math.round(d/15)*15;if(Math.abs(d-s5)<2)st.rot=s5*Math.PI/180;}   // eases onto 15° steps
     renderOv();return;}
+  if(act.k==="erase"){const q=act.o.pts,l=q[q.length-1];if(Math.hypot(p[0]-l[0],p[1]-l[1])<1.5)return;q.push(p);render();drawBase(xInk,act.o);return;}
   if(act.k==="draw"&&act.edge){act.o.pts=[act.o.pts[0],onEdge(act.edge,p)];renderOv();return;}
   if(act.k==="draw"){const q=act.o.pts,l=q[q.length-1];if(Math.hypot(p[0]-l[0],p[1]-l[1])<1.5)return;q.push(p);
     if(act.o.t==="erase")render();else renderOv();return;}
   if(act.k==="move"){const dx=p[0]-act.last[0],dy=p[1]-act.last[1];act.list.forEach(o=>moveObj(o,dx,dy));act.last=p;render();return;}
   if(act.k==="crop"||act.k==="maskdraw"){act.b=p;renderOv();return;}
+  if(act.k==="cutbrush"){const l=act.pts[act.pts.length-1];if(Math.hypot(p[0]-l[0],p[1]-l[1])>2){act.pts.push(p);renderOv();}return;}
+  if(act.k==="xf"){let M;
+    if(act.mode==="rot"){const c=act.c;let d=(Math.atan2(p[1]-c[1],p[0]-c[0])-Math.atan2(act.start[1]-c[1],act.start[0]-c[0]))*180/Math.PI;
+      d=((d%360)+540)%360-180;const s15=Math.round(d/15)*15;if(Math.abs(d-s15)<3)d=s15;act.deg=Math.round(d);   // eases onto 15° steps
+      const t=d*Math.PI/180,cs=Math.cos(t),sn=Math.sin(t);M=mMul([1,0,0,1,c[0],c[1]],mMul([cs,sn,-sn,cs,0,0],[1,0,0,1,-c[0],-c[1]]));}
+    else{const a=act.anchor;let k=Math.hypot(p[0]-a[0],p[1]-a[1])/Math.max(1,Math.hypot(act.start[0]-a[0],act.start[1]-a[1]));
+      k=Math.max(.15,Math.min(8,k));if(Math.abs(k-1)<.04)k=1;act.k2=k;M=[k,0,0,k,a[0]-k*a[0],a[1]-k*a[1]];}
+    act.list.forEach((o,i)=>{o.m=mMul(M,act.base[i]);});render();return;}
   if(act.k==="lasso"){const l=act.pts[act.pts.length-1];if(Math.hypot(p[0]-l[0],p[1]-l[1])>4){act.pts.push(p);renderOv();}return;}
   if(act.k==="resize"){const o=act.o,b=act.b;
     if(o.t==="img"){const sc=Math.max(.1,(p[0]-o.x)/b.w);o.w=b.w*sc;o.h=b.h*sc;}
@@ -473,8 +617,8 @@ cOv.addEventListener("pointermove",e=>{
     if(o.t==="line"||o.t==="rect"){if(o.t==="line"&&e.shiftKey){const dx=q[0]-o.a[0],dy=q[1]-o.a[1];Math.abs(dx)>Math.abs(dy)?q[1]=o.a[1]:q[0]=o.a[0];}o.b=q;}
     else{o.r=Math.hypot(q[0]-o.o[0],q[1]-o.o[1]);o.ra=Math.atan2(q[1]-o.o[1],q[0]-o.o[0]);}
     renderOv();return;}
-  if(act.k==="vtx"){act.o.pts[act.i]=snap(p);render();return;}
-  if(act.k==="bend"){const o=act.o,[A,B]=sideEnds(o,act.i),m=[(A[0]+B[0])/2,(A[1]+B[1])/2];
+  if(act.k==="vtx"){act.o.pts[act.i]=toObj(act.o,snap(p));render();return;}
+  if(act.k==="bend"){p=toObj(act.o,p);const o=act.o,[A,B]=sideEnds(o,act.i),m=[(A[0]+B[0])/2,(A[1]+B[1])/2];
     o.ctl[act.i]=Math.hypot(p[0]-m[0],p[1]-m[1])<12?null:[2*p[0]-m[0],2*p[1]-m[1]];   // the side passes through the pointer; back near the middle it turns straight
     render();return;}
   if(act.k==="poly"){const o=act.o;
@@ -493,10 +637,12 @@ function endPointer(){
   if(act&&act.k==="poly")return;
   if(!act)return;const a=act;
   if(a.k==="inst"){act=null;preview=null;if(a.arc&&Math.abs(a.arc.sweep)>0.05)commit(a.arc);else renderOv();return;}
+  if(a.k==="erase"){act=null;applyErase(a.o);return;}
   if(a.k==="draw"){act=null;preview=null;if(a.o.t==="ink")commit(a.o);else render();return;}
   if(a.k==="resize"||a.k==="vtx"||a.k==="bend"){act=null;recordMove(a.o,a.before);render();return;}
-  if(a.k==="move"){act=null;recordGroup(a.list,a.before);render();return;}
+  if(a.k==="move"||a.k==="xf"){act=null;recordGroup(a.list,a.before);render();return;}
   if(a.k==="crop"){act=null;applyCrop(a);return;}
+  if(a.k==="cutbrush"){act=null;if(cut){const k=natPerBoard();cut.acts.push({k:"brush",w:a.w*k,pts:a.pts.map(q=>natOf(q,true))});refreshCutBar();runCut(true);}renderOv();return;}
   if(a.k==="maskdraw"){act=null;const r=rectOf(a.a,a.b);if(r.w>20&&r.h>20)commit({t:"mask",...r,open:false});else renderOv();return;}
   if(a.k==="lasso"){act=null;S.sel=a.pts.length>2?liveObjs().filter(o=>o.t!=="erase"&&!o.locked&&circled(o,a.pts)):[];render();
     if(S.sel.length)toast(`選了 ${S.sel.length} 個，拖曳可以移動，按「移除」可以清掉`);return;}
@@ -505,6 +651,13 @@ function endPointer(){
   if(a.k==="ray"){if(a.o.r<12){act=null;preview=null;renderOv();return;}
     act={k:"sweep",o:a.o,lastA:a.o.a0,total:0};showHint(a.o.t==="sector"?"移動滑鼠拉出扇形，按一下完成（Esc 取消）":"移動滑鼠拉出第二條邊，按一下完成（Esc 取消）");}
 }
+function applyErase(e){const r=e.w/2,xs=e.pts.map(q=>q[0]),ys=e.pts.map(q=>q[1]),X0=Math.min(...xs)-r,X1=Math.max(...xs)+r,Y0=Math.min(...ys)-r,Y1=Math.max(...ys)+r;
+  const list=liveObjs().filter(o=>{if(PIC.has(o.t)||o.t==="erase")return false;const b=bbox(o);if(!b||b.x>X1||b.x+b.w<X0||b.y>Y1||b.y+b.h<Y0)return false;
+    return e.pts.some(q=>q[0]>=b.x-r&&q[0]<=b.x+b.w+r&&q[1]>=b.y-r&&q[1]<=b.y+b.h+r);});
+  if(!list.length){render();return;}
+  const before=list.map(o=>JSON.stringify(o));
+  list.forEach(o=>{const inv=o.m?mInv(o.m):null;(o.er=o.er||[]).push({w:e.w/mScale(o.m),pts:e.pts.map(q=>inv?mApply(inv,q):[q[0],q[1]])});});
+  recordGroup(list,before);render();}
 function finishPoly(){const o=act.o;act=null;preview=null;hideHint();delete o.cur;
   if(o.pts.length>=3){o.closed=true;commit(o);if(S.tool==="free"){bendObj=o;renderOv();showHint("拉橘色圓點讓邊變彎，拉白色方塊移動角；拉回中間就變直");}}else renderOv();}
 /* ---------- reshaping a finished shape: white squares move corners, orange dots bend sides ---------- */
@@ -513,12 +666,12 @@ function bendTarget(){const o=S.tool==="free"?bendObj:(S.tool==="move"&&S.sel.le
   return o&&liveObjs().includes(o)?o:null;}
 function sideEnds(o,i){const n=o.pts.length;return[o.pts[(i-1+n)%n],o.pts[i]];}
 function sideMid(o,i){const[A,B]=sideEnds(o,i),C=(o.ctl||[])[i];return C?[(A[0]+2*C[0]+B[0])/4,(A[1]+2*C[1]+B[1])/4]:[(A[0]+B[0])/2,(A[1]+B[1])/2];}
-function shapeHandle(o,p){if(!o)return null;
-  for(let i=0;i<o.pts.length;i++){const q=o.pts[i];if(Math.hypot(p[0]-q[0],p[1]-q[1])<18)return{k:"vtx",i};}
-  for(let i=0;i<o.pts.length;i++){const q=sideMid(o,i);if(Math.hypot(p[0]-q[0],p[1]-q[1])<18)return{k:"bend",i};}return null;}
+function shapeHandle(o,p){if(!o)return null;const k=mScale(o.m);p=toObj(o,p);const R=18/k;
+  for(let i=0;i<o.pts.length;i++){const q=o.pts[i];if(Math.hypot(p[0]-q[0],p[1]-q[1])<R)return{k:"vtx",i};}
+  for(let i=0;i<o.pts.length;i++){const q=sideMid(o,i);if(Math.hypot(p[0]-q[0],p[1]-q[1])<R)return{k:"bend",i};}return null;}
 function drawShapeHandles(x,o){if(!o)return;x.save();
-  for(let i=0;i<o.pts.length;i++){const q=sideMid(o,i);x.fillStyle="#ea580c";x.strokeStyle="#fff";x.lineWidth=3;x.beginPath();x.arc(q[0],q[1],11,0,7);x.fill();x.stroke();}
-  o.pts.forEach(q=>{x.fillStyle="#fff";x.strokeStyle="#1f2937";x.lineWidth=3;x.fillRect(q[0]-9,q[1]-9,18,18);x.strokeRect(q[0]-9,q[1]-9,18,18);});x.restore();}
+  for(let i=0;i<o.pts.length;i++){const q=mApply(o.m,sideMid(o,i));x.fillStyle="#ea580c";x.strokeStyle="#fff";x.lineWidth=3;x.beginPath();x.arc(q[0],q[1],11,0,7);x.fill();x.stroke();}
+  o.pts.forEach(q0=>{const q=mApply(o.m,q0);x.fillStyle="#fff";x.strokeStyle="#1f2937";x.lineWidth=3;x.fillRect(q[0]-9,q[1]-9,18,18);x.strokeRect(q[0]-9,q[1]-9,18,18);});x.restore();}
 function finishSweep(){const o=act.o;act=null;preview=null;hideHint();if(Math.abs(o.sweep)>0.01)commit(o);else renderOv();}
 cOv.addEventListener("pointerup",endPointer);cOv.addEventListener("pointercancel",endPointer);
 
@@ -543,7 +696,7 @@ function commitText(){
   if(edit){delete edit._hidden;const before=JSON.stringify(edit);if(s){edit.s=s;recordMove(edit,before);}else{page().objs.push({t:"_del",ref:edit});page().redo=[];} render();return;}
   if(s)commit({t:"text",c:S.color,size,x:p[0],y:p[1],s});
 }
-cOv.addEventListener("dblclick",e=>{if(S.tool!=="move"&&S.tool!=="text")return;const o=hit(pt(e));if(o&&o.t==="text"){openText([o.x,o.y],o);}});
+cOv.addEventListener("dblclick",e=>{if(S.tool!=="move"&&S.tool!=="text")return;const o=hit(pt(e));if(o&&o.t==="text"){openText(mApply(o.m,[o.x,o.y]),o);}});
 
 /* ---------- paste and drop pictures or text ---------- */
 function addImage(src){const im=new Image();im.onload=()=>{const sc=Math.min(1.5,(W*.8)/im.naturalWidth,(H*.8)/im.naturalHeight);
@@ -560,18 +713,19 @@ $("board").addEventListener("drop",e=>{e.preventDefault();const f=[...e.dataTran
 
 /* ---------- edits ("_edit" / "_del") replay so 復原 works on moves and deletes ---------- */
 const baseDraw=drawObj;
-function liveObjs(){
+function liveObjs(){return liveOf(page());}
+function liveOf(pg){
   // edits already changed their item in place; history markers are skipped and deleted items hidden
   const list=[],gone=new Set();
-  page().objs.forEach(o=>{if(o.t==="_del")(o.refs||[o.ref]).forEach(r=>gone.add(r));else if(o.t!=="_edit"&&o.t!=="_edits")list.push(o);});
+  pg.objs.forEach(o=>{if(o.t==="_del")(o.refs||[o.ref]).forEach(r=>gone.add(r));else if(o.t!=="_edit"&&o.t!=="_edits")list.push(o);});
   return list.filter(o=>!gone.has(o)&&!o._hidden);
 }
 render=function(){
-  xPic.clearRect(0,0,W,H);xInk.clearRect(0,0,W,H);liveObjs().forEach(o=>drawObj(PIC.has(o.t)?xPic:xInk,o));renderOv();syncUI();
+  xPic.clearRect(0,0,W,H);xInk.clearRect(0,0,W,H);liveObjs().forEach(o=>drawObj(PIC.has(o.t)?xPic:xInk,o));renderOv();syncUI();autosave();
 };
 const _undo=undo;undo=function(){const p=page();if(!p.objs.length)return;const last=p.objs[p.objs.length-1];
-  if(last.t==="_edit")Object.assign(last.ref,JSON.parse(last.before));
-  if(last.t==="_edits")last.list.forEach(c=>Object.assign(c.ref,JSON.parse(c.before)));p.redo.push(p.objs.pop());S.sel=[];render();};
+  if(last.t==="_edit")restoreObj(last.ref,last.before);
+  if(last.t==="_edits")last.list.forEach(c=>restoreObj(c.ref,c.before));p.redo.push(p.objs.pop());S.sel=[];render();};
 hit=(orig=>pt=>{const A=liveObjs(),L=A.filter(o=>PIC.has(o.t)).concat(A.filter(o=>!PIC.has(o.t)));for(let i=L.length-1;i>=0;i--){const o=L[i];if(o.t==="erase")continue;const b=bbox(o);if(!b)continue;
   if(pt[0]>=b.x-10&&pt[0]<=b.x+b.w+10&&pt[1]>=b.y-10&&pt[1]<=b.y+b.h+10)return o;}return null;})(hit);
 function delSel(){if(!S.sel.length)return;page().objs.push({t:"_del",refs:S.sel.slice()});page().redo=[];S.sel=[];render();}
@@ -582,6 +736,31 @@ function setTool(t){if(cropObj&&t!=="move"){cropObj=null;hideHint();}if(t!==S.to
 const INST_BTN=[["prot","量角器"],["ruler","直尺"],["tri45","三角板 45°"],["tri60","三角板 30°"],["compass","圓規"]];
 const INST_TIP={prot:"綠色鈕移動、藍色鈕旋轉、紫色鈕放大縮小、紅色叉叉收起來",ruler:"筆沿著尺的上緣畫出直線；紫色鈕放大縮小、紅色叉叉收起來",tri45:"筆沿著三角板的邊畫出直線；紫色鈕放大縮小、紅色叉叉收起來",tri60:"筆沿著三角板的邊畫出直線；紫色鈕放大縮小、紅色叉叉收起來",
   compass:"綠色鈕移動、藍色鈕拉開大小，拖著橘色筆尖繞一圈就畫出圓；紅色叉叉收起來"};
+const regular=(n,R)=>Array.from({length:n},(_,i)=>{const a=-Math.PI/2+i*2*Math.PI/n;return[R*Math.cos(a),R*Math.sin(a)];});
+const LIB=[
+  ...[30,45,60,90,120,150].map(d=>({n:d+"°",k:"angle",deg:d})),
+  {n:"正三角形",k:"poly",pts:[[0,0],[6,0],[3,-5.196]]},{n:"直角三角形",k:"poly",pts:[[0,0],[6,0],[0,-4]]},{n:"等腰三角形",k:"poly",pts:[[0,0],[6,0],[3,-6]]},
+  {n:"正方形",k:"poly",pts:[[0,0],[5,0],[5,-5],[0,-5]]},{n:"長方形",k:"poly",pts:[[0,0],[8,0],[8,-4],[0,-4]]},{n:"平行四邊形",k:"poly",pts:[[0,0],[6,0],[8,-4],[2,-4]]},
+  {n:"梯形",k:"poly",pts:[[0,0],[8,0],[6,-4],[2,-4]]},{n:"菱形",k:"poly",pts:[[0,0],[4,-3],[8,0],[4,3]]},
+  {n:"正五邊形",k:"poly",pts:regular(5,3.5)},{n:"正六邊形",k:"poly",pts:regular(6,3.5)},
+  {n:"圓",k:"circle",r:4},{n:"半圓",k:"sector",r:4,deg:180},{n:"四分之一圓",k:"sector",r:5,deg:90}];
+function libIcon(it){let d="";
+  if(it.k==="angle"){const a=it.deg*Math.PI/180,o=[it.deg>90?18:6,27],L=24;d=`M${o[0]+L} ${o[1]}L${o[0]} ${o[1]}L${(o[0]+L*Math.cos(a)).toFixed(1)} ${(o[1]-L*Math.sin(a)).toFixed(1)}`;
+    return`<svg viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/><path stroke-width="1.6" d="M${o[0]+8} ${o[1]}A8 8 0 0 0 ${(o[0]+8*Math.cos(a)).toFixed(1)} ${(o[1]-8*Math.sin(a)).toFixed(1)}"/></svg>`;}
+  if(it.k==="circle")return`<svg viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="17" cy="17" r="13"/></svg>`;
+  if(it.k==="sector")return it.deg===180?`<svg viewBox="0 0 34 34" fill="currentColor" fill-opacity=".2" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M3 24A14 14 0 0 1 31 24Z"/></svg>`
+    :`<svg viewBox="0 0 34 34" fill="currentColor" fill-opacity=".2" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M6 29V5A24 24 0 0 1 30 29Z"/></svg>`;
+  const xs=it.pts.map(p=>p[0]),ys=it.pts.map(p=>p[1]),x0=Math.min(...xs),y0=Math.min(...ys),sc=26/Math.max(Math.max(...xs)-x0,Math.max(...ys)-y0),
+    w=(Math.max(...xs)-x0)*sc,h=(Math.max(...ys)-y0)*sc;
+  d=it.pts.map((p,i)=>(i?"L":"M")+((p[0]-x0)*sc+(34-w)/2).toFixed(1)+" "+((p[1]-y0)*sc+(34-h)/2).toFixed(1)).join("")+"Z";
+  return`<svg viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="${d}"/></svg>`;}
+function insertLib(it){const col=S.color,w=SIZES[S.size].w,c=[Math.round(W/2/GRID)*GRID,Math.round(H/2/GRID)*GRID];let o;
+  if(it.k==="angle"){const L=6*GRID;o={t:"angle",c:col,w,o:[c[0]-(it.deg>90?0:2*GRID),c[1]+2*GRID],r:L,r2:L,a0:0,sweep:-it.deg*Math.PI/180};}
+  else if(it.k==="circle")o={t:"circle",c:col,w,o:c,r:it.r*GRID,ra:0};
+  else if(it.k==="sector"){const r=it.r*GRID;o=it.deg===180?{t:"sector",c:col,w,o:[c[0],c[1]+r/2],r,a0:0,sweep:-Math.PI}:{t:"sector",c:col,w,o:[c[0]-r/2,c[1]+r/2],r,a0:0,sweep:-Math.PI/2};}
+  else{const xs=it.pts.map(p=>p[0]),ys=it.pts.map(p=>p[1]),mx=(Math.min(...xs)+Math.max(...xs))/2,my=(Math.min(...ys)+Math.max(...ys))/2;
+    const pts=it.pts.map(p=>[c[0]+(p[0]-mx)*GRID,c[1]+(p[1]-my)*GRID]);o={t:"poly",c:col,w,pts,ctl:pts.map(()=>null),closed:true};}
+  commit(o);setTool("move");S.sel=[o];render();toast("放好了：拖曳移動，藍色鈕旋轉、紫色鈕放大縮小");}
 const SHAPE_KEYS=SHAPES.map(x=>x[0]);
 let shapePick="line",openPop=null;
 const MAIN=[
@@ -604,6 +783,7 @@ function buildPop(){
     r=section("粗細");SIZES.forEach((z,i)=>opt(r,"s-"+i,`<i style="width:${z.dot}px;height:${z.dot}px"></i>${z.n}`,S.size===i,()=>{S.size=i;refresh();},"sz"));}
   if(k==="erase"){const r=section("板擦大小");ESIZES.forEach((z,i)=>opt(r,"e-"+i,`<i style="width:${z.dot}px;height:${z.dot}px"></i>${z.n}`,S.esize===i,()=>{S.esize=i;refresh();},"sz"));}
   if(k==="shape"){let r=section("畫什麼圖形");SHAPES.forEach(([s2,n])=>opt(r,"t-"+s2,ICON[s2]+n,S.tool===s2,()=>{shapePick=s2;setTool(s2);closePop();if(s2==="poly")toast("一下一下點出頂點，點回第一個點就完成");}));
+    r=section("常用圖形和角（點一下放到黑板中間）");LIB.forEach((it,i)=>{const b=mk(r,"lib-"+i,libIcon(it)+`<span>${it.n}</span>`,null,()=>{closePop();insertLib(it);});b.className="lib";});
     r=section();const l=document.createElement("label");l.innerHTML=`<input type="checkbox" id="tLabel" ${S.label?"checked":""}>標示數值（長度、半徑、角度）`;r.appendChild(l);
     $("tLabel").onchange=e=>{S.label=e.target.checked;render();};}
   if(k==="kit"){let r=section("量角度");opt(r,"t-angle",ICON.angle+"量角",S.tool==="angle",()=>{setTool("angle");closePop();});
@@ -611,26 +791,38 @@ function buildPop(){
     if(S.inst.compass.show){const c=S.inst.compass,step=d=>{c.r=Math.max(CM_MIN,Math.min(CM_MAX,Math.round((c.r+d)/(GRID/2))*(GRID/2)));refresh();};
       r=section("圓規半徑");mk(r,"cm-dn","－","縮小半徑",()=>step(-GRID/2));const v=document.createElement("b");v.id="cmVal";v.style.minWidth="88px";v.style.textAlign="center";
       v.textContent=cmText(c.r)+(S.bg==="grid"?" 格":" 公分");r.appendChild(v);mk(r,"cm-up","＋","放大半徑",()=>step(GRID/2));}}
+  if(k==="pages"){const g=section("所有頁面（點一下跳過去）");g.className="thumbs";
+    S.pages.forEach((pg,i)=>{const b=opt(g,"pg-"+i,"",i===S.pi,()=>{closePop();goPage(i);},"thumb");b.appendChild(composePage(pg,150/W));
+      const l=document.createElement("span");l.textContent=`第 ${i+1} 頁`+(liveOf(pg).length?"":"（空白）");b.appendChild(l);});
+    let r=section();mk(r,"pgAdd","＋在後面加一頁",null,()=>{closePop();$("addP").click();});
+    if(S.pages.length>1){const del=mk(r,"pgDel",`刪掉第 ${S.pi+1} 頁`,null,()=>{if(del.dataset.armed!=="1"){del.dataset.armed="1";del.textContent="再按一次刪掉";return;}
+      S.pages.splice(S.pi,1);S.pi=Math.min(S.pi,S.pages.length-1);S.sel=[];render();buildPop();toast("刪掉了");});del.className="warn";}
+    r=section("整堂課存起來，下次打開就能接著教或複習");const nm=document.createElement("input");nm.type="text";nm.id="lessonName";nm.value=lessonName;nm.setAttribute("aria-label","課程名稱");
+    nm.oninput=()=>{lessonName=nm.value.trim()||"我的課程";};r.appendChild(nm);
+    mk(r,"lessonSave","存成課程檔",null,()=>{saveBlob(`${lessonName}_小黑板課程.json`,new Blob([JSON.stringify(lessonData())],{type:"application/json"}),`存好了，共 ${S.pages.length} 頁`);});
+    r=section();mk(r,"lessonOpen","打開課程檔",null,()=>$("lessonIn").click());
+    const tip=document.createElement("p");tip.className="tip";tip.textContent="課程檔會存下所有頁面、圖片和遮答案的色塊。打開課程檔會換掉目前黑板上的內容。";$("pop").appendChild(tip);}
   if(k==="pic"){let r=section("放入課本圖片");mk(r,"pickFile",ICON.pic+"選擇圖片檔",null,()=>{closePop();$("fileIn").click();});
     const tip=document.createElement("p");tip.className="tip";tip.innerHTML="或截圖：按 <kbd>Win</kbd>＋<kbd>Shift</kbd>＋<kbd>S</kbd> 框起課本，回到黑板按 <kbd>Ctrl</kbd>＋<kbd>V</kbd>。也可以把圖片檔直接拖進黑板。";$("pop").appendChild(tip);
     r=section("遮住答案");opt(r,"t-mask",ICON.mask+"拉框蓋住答案",S.tool==="mask",()=>{setTool("mask");closePop();toast("拉框蓋住答案；上課時用「滑鼠」點色塊就打開");});}
   if(k==="bg"){const r=section("背景");Object.entries(BG).forEach(([b2,v])=>opt(r,"b-"+b2,v.name,S.bg===b2,()=>{S.bg=b2;drawBg(xBg);render();closePop();}));}
   // point the little arrow at the button that opened the panel
-  const btn=$("m-"+k),tray=document.querySelector(".tray"),br=btn.getBoundingClientRect(),tr=tray.getBoundingClientRect();
+  const btn=k==="pages"?$("pageNo"):$("m-"+k),tray=document.querySelector(".tray"),br=btn.getBoundingClientRect(),tr=tray.getBoundingClientRect();
   box.hidden=false;const left=Math.max(8,Math.min(br.left-tr.left,tr.width-box.offsetWidth-8));box.style.left=left+"px";
   box.style.setProperty("--arrow",Math.max(16,br.left-tr.left-left+br.width/2-9)+"px");
 }
 function refresh(){syncUI();buildPop();renderOv();}
 function togglePop(k){openPop=openPop===k?null:k;if(!openPop){closePop();return;}buildPop();syncUI();}
 function closePop(){openPop=null;$("pop").hidden=true;$("pop").innerHTML="";syncUI();}
-document.addEventListener("pointerdown",e=>{if(openPop&&!e.target.closest("#pop")&&!e.target.closest("#main"))closePop();},true);
+document.addEventListener("pointerdown",e=>{if(openPop&&!e.target.closest("#pop")&&!e.target.closest("#main")&&!e.target.closest("#pageNo"))closePop();},true);
+$("pageNo").onclick=()=>togglePop("pages");
 function syncUI(){
   MAIN.forEach(m=>{const b=$("m-"+m.id);b.innerHTML=m.html();b.setAttribute("aria-pressed",String(m.on()||openPop===m.id));});
-  $("pageNo").textContent=`${S.pi+1} / ${S.pages.length}`;$("prev").disabled=S.pi===0;$("nextP").disabled=S.pi===S.pages.length-1;
+  $("pageNo").innerHTML=`${S.pi+1} / ${S.pages.length}<span class="car">▾</span>`;$("pageNo").setAttribute("aria-pressed",String(openPop==="pages"));$("prev").disabled=S.pi===0;$("nextP").disabled=S.pi===S.pages.length-1;
   $("undo").disabled=!page().objs.length;$("redoBtn").disabled=!page().redo.length;
   $("delBtn").disabled=!S.sel.length;$("delBtn").innerHTML=ICON.remove+"移除";
 }
-function redo(){const p=page();if(!p.redo.length)return;const o=p.redo.pop();if(o.t==="_edit")Object.assign(o.ref,JSON.parse(o.after));if(o.t==="_edits")o.list.forEach(c=>Object.assign(c.ref,JSON.parse(c.after)));p.objs.push(o);render();}
+function redo(){const p=page();if(!p.redo.length)return;const o=p.redo.pop();if(o.t==="_edit")restoreObj(o.ref,o.after);if(o.t==="_edits")o.list.forEach(c=>restoreObj(c.ref,c.after));p.objs.push(o);render();}
 function goPage(i){commitText();S.pi=i;S.sel=[];render();}
 $("prev").onclick=()=>S.pi>0&&goPage(S.pi-1);
 $("nextP").onclick=()=>S.pi<S.pages.length-1&&goPage(S.pi+1);
@@ -646,16 +838,37 @@ $("fs").onclick=()=>{try{document.fullscreenElement?document.exitFullscreen():$(
 document.addEventListener("fullscreenchange",()=>{$("fs").textContent=document.fullscreenElement?"離開全螢幕":"全螢幕";setTimeout(fit,50);});
 
 /* ---------- save the page as a picture ---------- */
-$("save").onclick=async()=>{
-  const c=document.createElement("canvas");c.width=W*2;c.height=H*2;const x=c.getContext("2d");x.scale(2,2);
-  drawBg(x);const layer=()=>{const k=document.createElement("canvas");k.width=W*2;k.height=H*2;const xx=k.getContext("2d");xx.scale(2,2);return[k,xx];};
-  const[pc,xp]=layer(),[ic,xi]=layer();liveObjs().forEach(o=>drawObj(PIC.has(o.t)?xp:xi,o));x.drawImage(pc,0,0,W,H);x.drawImage(ic,0,0,W,H);
-  const blob=await new Promise(r=>c.toBlob(r,"image/png"));
-  const d=new Date(),pad=n=>String(n).padStart(2,"0");
-  const name=`課堂小黑板_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}_第${S.pi+1}頁.png`;
+// a whole page drawn onto one canvas: background, pictures, then chalk
+function composePage(pg,k){const c=document.createElement("canvas");c.width=Math.round(W*k);c.height=Math.round(H*k);const x=c.getContext("2d");x.scale(k,k);
+  drawBg(x);const layer=()=>{const q=document.createElement("canvas");q.width=c.width;q.height=c.height;const xx=q.getContext("2d");xx.scale(k,k);return[q,xx];};
+  const[pc,xp]=layer(),[ic,xi]=layer();liveOf(pg).forEach(o=>drawObj(PIC.has(o.t)?xp:xi,o));x.drawImage(pc,0,0,W,H);x.drawImage(ic,0,0,W,H);return c;}
+async function saveBlob(name,blob,ok){
   let dl=null;try{dl=window.claude&&window.claude.use?await window.claude.use("downloads"):null;}catch(e){}
-  if(dl){try{await dl.save({filename:name,data:blob});toast("已存成圖片");}catch(err){toast(err&&err.code==="declined"?"沒有存檔":"這裡不能存檔");}return;}
-  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();toast("已存成圖片");   // outside Claude: a normal download
+  if(dl){try{await dl.save({filename:name,data:blob});toast(ok);}catch(err){toast(err&&err.code==="declined"?"沒有存檔":"這裡不能存檔");}return;}
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();toast(ok);}   // outside Claude: a normal download
+const stamp=()=>{const d=new Date(),pad=n=>String(n).padStart(2,"0");return`${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;};
+function lessonData(){return{app:"課堂小黑板",v:3,bg:S.bg,pages:S.pages.map(pg=>liveOf(pg).map(o=>{const c=JSON.parse(JSON.stringify(o));delete c._hidden;return c;}))};}
+function loadLesson(d){if(!d||d.app!=="課堂小黑板"||!Array.isArray(d.pages)||!d.pages.length)throw new Error("bad");
+  S.pages=d.pages.map(objs=>({objs,redo:[]}));S.pi=0;S.sel=[];if(BG[d.bg])S.bg=d.bg;drawBg(xBg);render();}
+let lessonName="我的課程";
+$("lessonIn").onchange=e=>{const f=e.target.files[0];e.target.value="";if(!f)return;const r=new FileReader();
+  r.onload=()=>{try{loadLesson(JSON.parse(r.result));lessonName=f.name.replace(/(_小黑板課程)?\.json$/i,"");closePop();toast(`打開了「${lessonName}」，共 ${S.pages.length} 頁`);}catch(err){toast("這個檔案不是小黑板的課程檔");}};r.readAsText(f);};
+// keep the latest board in this browser, so a closed tab can be picked up again
+const SAVE_KEY="classboard-autosave";let saveT=0;
+addEventListener("pagehide",()=>{clearTimeout(saveT);saveNow();});
+function saveNow(){try{const d=lessonData();if(d.pages.some(p=>p.length))localStorage.setItem(SAVE_KEY,JSON.stringify({at:Date.now(),d}));}catch(e){}}
+function autosave(){clearTimeout(saveT);saveT=setTimeout(()=>{try{const d=lessonData();if(d.pages.some(p=>p.length))localStorage.setItem(SAVE_KEY,JSON.stringify({at:Date.now(),d}));}catch(e){}},1500);}
+function offerRestore(){let rec=null;try{rec=JSON.parse(localStorage.getItem(SAVE_KEY)||"null");}catch(e){}
+  if(!rec||!rec.d||!rec.d.pages||!rec.d.pages.some(p=>p.length))return;
+  const t=new Date(rec.at),pad=n=>String(n).padStart(2,"0"),when=`${t.getMonth()+1}/${t.getDate()} ${pad(t.getHours())}:${pad(t.getMinutes())}`;
+  const bar=document.createElement("div");bar.className="restore";bar.innerHTML=`上次的黑板還在（${when}，${rec.d.pages.length} 頁），要接回來嗎？`;
+  const y=document.createElement("button");y.className="yes";y.textContent="接回來";const n=document.createElement("button");n.textContent="不用";
+  y.onclick=()=>{try{loadLesson(rec.d);toast("接回來了");}catch(e){toast("接不回來");}bar.remove();};n.onclick=()=>bar.remove();
+  bar.append(y,n);$("board").appendChild(bar);}
+$("save").onclick=async()=>{
+  const c=composePage(page(),2);
+  const blob=await new Promise(r=>c.toBlob(r,"image/png"));
+  saveBlob(`課堂小黑板_${stamp()}_第${S.pi+1}頁.png`,blob,"已存成圖片");
 };
 
 /* ---------- keys, hints, toast ---------- */
@@ -665,7 +878,7 @@ document.addEventListener("keydown",e=>{
   else if((e.ctrlKey||e.metaKey)&&k==="y"){e.preventDefault();redo();}
   else if((k==="delete"||k==="backspace")&&S.sel.length){e.preventDefault();delSel();}
   else if(k==="enter"&&act&&act.k==="poly"){e.preventDefault();finishPoly();}
-  else if(k==="escape"){closePop();if(cropObj){cropObj=null;hideHint();}if(act&&(act.k==="sweep"||act.k==="poly")){act=null;preview=null;hideHint();renderOv();}S.sel=[];renderOv();syncUI();}
+  else if(k==="escape"){if(cut)finishCut(false);closePop();if(cropObj){cropObj=null;hideHint();}if(act&&(act.k==="sweep"||act.k==="poly")){act=null;preview=null;hideHint();renderOv();}S.sel=[];renderOv();syncUI();}
 });
 let toastT=0;function toast(m){const t=$("toast");t.textContent=m;t.classList.remove("off");clearTimeout(toastT);toastT=setTimeout(()=>t.classList.add("off"),1800);}
 function showHint(m){$("hint").textContent=m;$("hint").hidden=false;}function hideHint(){$("hint").hidden=true;}
@@ -673,5 +886,6 @@ function showHint(m){$("hint").textContent=m;$("hint").hidden=false;}function hi
 new ResizeObserver(fit).observe($("holder"));
 document.fonts&&document.fonts.ready.then(()=>render());
 fit();
+offerRestore();
 })();
 </script>
