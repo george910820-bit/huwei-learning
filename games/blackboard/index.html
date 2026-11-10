@@ -61,6 +61,12 @@ body{background:var(--wall);color:var(--chalk);font-family:var(--font);font-size
 .toast.off{opacity:0}
 .textin{position:absolute;z-index:5;min-width:120px;background:rgba(255,255,255,.08);border:2px dashed var(--on);border-radius:6px;outline:none;resize:none;overflow:hidden;
   font-family:var(--font);font-weight:700;line-height:1.25;padding:2px 4px;white-space:pre}
+.imgbar{position:absolute;z-index:6;display:flex;gap:6px;background:#fbf4e6;border-radius:10px;padding:5px;box-shadow:0 4px 12px rgba(0,0,0,.35)}
+.imgbar button{font:inherit;font-size:15px;font-weight:700;cursor:pointer;border:0;border-radius:8px;padding:6px 10px;background:#efe2c9;color:var(--btn-ink);display:inline-flex;align-items:center;gap:5px}
+.imgbar button[aria-pressed="true"]{background:var(--on)}
+.imgbar svg{width:18px;height:18px}
+.pop p.tip{margin:0;font-size:14px;line-height:1.5;color:#6b5236;max-width:330px}
+.pop kbd{font:inherit;font-weight:700;background:#efe2c9;border-radius:5px;padding:0 5px}
 .hint{position:absolute;right:22px;bottom:20px;font-size:14px;color:rgba(255,255,255,.75);background:rgba(0,0,0,.35);padding:4px 10px;border-radius:999px;pointer-events:none}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -69,7 +75,8 @@ body{background:var(--wall);color:var(--chalk);font-family:var(--font);font-size
   <div class="frame">
     <div class="holder" id="holder">
       <div class="board" id="board">
-        <canvas id="bg"></canvas><canvas id="ink"></canvas><canvas id="ov" aria-label="黑板：用滑鼠或觸控筆在上面寫字畫圖"></canvas>
+        <div class="imgbar" id="imgbar" hidden></div><input type="file" id="fileIn" accept="image/*" hidden>
+        <canvas id="bg"></canvas><canvas id="pic"></canvas><canvas id="ink"></canvas><canvas id="ov" aria-label="黑板：用滑鼠或觸控筆在上面寫字畫圖"></canvas>
         <div class="toast off" id="toast" aria-live="polite"></div>
         <div class="hint" id="hint" hidden></div>
       </div>
@@ -96,6 +103,11 @@ const ICON={
   erase:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 16l9-9 6 6-6 6H7z"/><path d="M8 20h12"/></svg>',
   text:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 6h14M12 6v13"/></svg>',
   mouse:'<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M6 3l12 10h-6l3.5 7-2.5 1.2L9.5 14 6 18z"/></svg>',
+  pic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 17l-5-5-9 8"/></svg>',
+  crop:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2v16h16M2 6h16v16"/></svg>',
+  lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>',
+  unlock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 017.5-2"/></svg>',
+  mask:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="10" rx="1" fill="currentColor" fill-opacity=".25"/><path d="M10 10.5a2 2 0 113 1.7c-.7.4-1 .8-1 1.5"/></svg>',
   select:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 3"><path d="M5 9c0-4 14-6 15 0s-6 9-11 8-4-4-4-8z"/><path stroke-dasharray="none" d="M8 17l-2 5"/></svg>',
   remove:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>',
   move:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3"/></svg>',
@@ -126,14 +138,15 @@ const imgCache=new Map();
 function imgOf(src){let im=imgCache.get(src);if(!im){im=new Image();im.onload=()=>render();im.src=src;imgCache.set(src,im);}return im;}
 
 /* ---------- canvases ---------- */
-const cBg=$("bg"),cInk=$("ink"),cOv=$("ov"),xBg=cBg.getContext("2d"),xInk=cInk.getContext("2d"),xOv=cOv.getContext("2d");
+const cBg=$("bg"),cPic=$("pic"),cInk=$("ink"),cOv=$("ov"),xBg=cBg.getContext("2d"),xPic=cPic.getContext("2d"),xInk=cInk.getContext("2d"),xOv=cOv.getContext("2d");
+const PIC=new Set(["img","mask"]);   // pictures and answer covers sit under the chalk, so 板擦 never rubs them out
 let K=1,disp=1;
 function fit(){
   const h=$("holder").getBoundingClientRect();W=Math.max(1200,Math.min(3200,Math.round(H*h.width/Math.max(h.height,1))));disp=Math.min(h.width/W,h.height/H);
   const bw=Math.floor(W*disp),bh=Math.floor(H*disp);$("board").style.width=bw+"px";$("board").style.height=bh+"px";
   K=disp*(window.devicePixelRatio||1);
-  [cBg,cInk,cOv].forEach(c=>{c.width=Math.round(W*K);c.height=Math.round(H*K);});
-  [xBg,xInk,xOv].forEach(x=>x.setTransform(K,0,0,K,0,0));
+  [cBg,cPic,cInk,cOv].forEach(c=>{c.width=Math.round(W*K);c.height=Math.round(H*K);});
+  [xBg,xPic,xInk,xOv].forEach(x=>x.setTransform(K,0,0,K,0,0));
   drawBg(xBg);render();
 }
 function drawBg(x){
@@ -199,7 +212,13 @@ function drawObj(x,o){
   if(o.t==="arc"){x.strokeStyle=col;x.lineWidth=o.w;x.beginPath();x.arc(o.o[0],o.o[1],o.r,o.a0,o.a0+o.sweep,o.sweep<0);x.stroke();
     if(S.label&&Math.abs(o.sweep)>=Math.PI*2-0.01){x.fillStyle=col;x.beginPath();x.arc(o.o[0],o.o[1],Math.max(4,o.w*.6),0,7);x.fill();
       if(S.bg==="grid")labelAt(x,"半徑 "+cells(o.r),o.o[0],o.o[1]-28,col);}}
-  if(o.t==="img"){const im=imgOf(o.src);if(im.complete&&im.naturalWidth)x.drawImage(im,o.x,o.y,o.w,o.h);}
+  if(o.t==="img"){const im=imgOf(o.src);if(im.complete&&im.naturalWidth){const c=o.crop;c?x.drawImage(im,c.sx,c.sy,c.sw,c.sh,o.x,o.y,o.w,o.h):x.drawImage(im,o.x,o.y,o.w,o.h);}}
+  if(o.t==="mask"){x.save();
+    if(o.open){x.setLineDash([10,8]);x.strokeStyle="rgba(234,88,12,.7)";x.lineWidth=3;x.strokeRect(o.x,o.y,o.w,o.h);}
+    else{x.fillStyle="#ffd66b";x.shadowColor="rgba(0,0,0,.3)";x.shadowBlur=8;x.shadowOffsetY=3;x.fillRect(o.x,o.y,o.w,o.h);x.shadowColor="transparent";
+      x.strokeStyle="#d29b00";x.lineWidth=2;x.strokeRect(o.x,o.y,o.w,o.h);
+      x.fillStyle="#8a5a00";x.font=fontOf(Math.max(20,Math.min(64,o.h*.6)));x.textAlign="center";x.textBaseline="middle";x.fillText("?",o.x+o.w/2,o.y+o.h/2);}
+    x.restore();}
   x.restore();
 }
 function render(){xInk.clearRect(0,0,W,H);page().objs.forEach(o=>drawObj(xInk,o));renderOv();syncUI();}
@@ -208,21 +227,30 @@ function renderOv(){
   xOv.clearRect(0,0,W,H);
   if(preview)drawObj(xOv,preview);
   const b=selBox();if(b){xOv.save();xOv.setLineDash([8,6]);xOv.strokeStyle="#ffd84d";xOv.lineWidth=3;xOv.strokeRect(b.x-8,b.y-8,b.w+16,b.h+16);xOv.setLineDash([]);
-    const one=S.sel.length===1&&S.sel[0];if(one&&(one.t==="img"||one.t==="text")){xOv.fillStyle="#ffd84d";xOv.fillRect(b.x+b.w-4,b.y+b.h-4,16,16);}xOv.restore();}
+    const one=S.sel.length===1&&S.sel[0];if(one&&!one.locked&&(one.t==="img"||one.t==="text"||one.t==="mask")){xOv.fillStyle="#ffd84d";xOv.fillRect(b.x+b.w-4,b.y+b.h-4,16,16);}xOv.restore();}
   if(act&&act.k==="lasso"&&act.pts.length>1){xOv.save();xOv.setLineDash([10,8]);xOv.strokeStyle="#ffd84d";xOv.lineWidth=3;xOv.fillStyle="rgba(255,216,77,.12)";
     xOv.beginPath();act.pts.forEach((q,i)=>i?xOv.lineTo(...q):xOv.moveTo(...q));xOv.closePath();xOv.fill();xOv.stroke();xOv.restore();}
   drawShapeHandles(xOv,bendTarget());
+  if(cropObj){const b=bbox(cropObj);xOv.save();xOv.strokeStyle="#ffd84d";xOv.lineWidth=3;xOv.setLineDash([8,6]);xOv.strokeRect(b.x,b.y,b.w,b.h);
+    if(act&&act.k==="crop"){const r=clampRect(rectOf(act.a,act.b),b);xOv.fillStyle="rgba(0,0,0,.45)";
+      xOv.beginPath();xOv.rect(b.x,b.y,b.w,b.h);xOv.rect(r.x+r.w,r.y,-r.w,r.h);xOv.fill("evenodd");xOv.setLineDash([]);xOv.strokeStyle="#fff";xOv.strokeRect(r.x,r.y,r.w,r.h);}
+    xOv.restore();}
+  if(act&&act.k==="maskdraw"){const r=rectOf(act.a,act.b);xOv.save();xOv.globalAlpha=.8;drawObj(xOv,{t:"mask",...r});xOv.restore();}
+  placeImgBar();
   drawInst(xOv);
   if(eraserAt){xOv.save();xOv.strokeStyle=S.bg==="chalk"?"#fff":"#555";xOv.lineWidth=2;xOv.beginPath();xOv.arc(eraserAt[0],eraserAt[1],eraseW()/2,0,7);xOv.stroke();xOv.restore();}
 }
 
 /* ---------- classroom instruments: protractor, ruler, set squares, compass ---------- */
-const toLocal=(st,p)=>{const dx=p[0]-st.x,dy=p[1]-st.y,c=Math.cos(-st.rot),s=Math.sin(-st.rot);return[dx*c-dy*s,dx*s+dy*c];};
-const toWorld=(st,q)=>{const c=Math.cos(st.rot),s=Math.sin(st.rot);return[st.x+q[0]*c-q[1]*s,st.y+q[0]*s+q[1]*c];};
+const toLocal=(st,p)=>{const k=st.s||1,dx=(p[0]-st.x)/k,dy=(p[1]-st.y)/k,c=Math.cos(-st.rot),s=Math.sin(-st.rot);return[dx*c-dy*s,dx*s+dy*c];};
+const toWorld=(st,q)=>{const k=st.s||1,c=Math.cos(st.rot),s=Math.sin(st.rot);return[st.x+(q[0]*c-q[1]*s)*k,st.y+(q[0]*s+q[1]*c)*k];};
 function inPoly(q,poly){let i=0,j=poly.length-1,c=false;for(;i<poly.length;j=i++){const[a,b]=poly[i],[d,e]=poly[j];if(((b>q[1])!==(e>q[1]))&&(q[0]<(d-a)*(q[1]-b)/(e-b)+a))c=!c;}return c;}
 function handle(x,q,color,kind,ang){x.save();x.fillStyle=color;x.beginPath();x.arc(q[0],q[1],16,0,7);x.fill();x.strokeStyle="#fff";x.lineWidth=3;x.beginPath();
   if(kind==="move"){x.moveTo(q[0]-8,q[1]);x.lineTo(q[0]+8,q[1]);x.moveTo(q[0],q[1]-8);x.lineTo(q[0],q[1]+8);}
   else if(kind==="rot"){x.arc(q[0],q[1],8,-2.4,1.2);}
+  else if(kind==="close"){x.moveTo(q[0]-6,q[1]-6);x.lineTo(q[0]+6,q[1]+6);x.moveTo(q[0]+6,q[1]-6);x.lineTo(q[0]-6,q[1]+6);}
+  else if(kind==="scale"){const A=(ang||0)-Math.PI/4,c=Math.cos(A),s2=Math.sin(A),P=(u,v)=>[q[0]+u*c-v*s2,q[1]+u*s2+v*c];
+    x.moveTo(...P(-8,0));x.lineTo(...P(8,0));x.moveTo(...P(3,-5));x.lineTo(...P(8,0));x.lineTo(...P(3,5));x.moveTo(...P(-3,-5));x.lineTo(...P(-8,0));x.lineTo(...P(-3,5));}
   else if(kind==="size"){const c=Math.cos(ang||0),s2=Math.sin(ang||0),P=(u,v)=>[q[0]+u*c-v*s2,q[1]+u*s2+v*c];   // ↔ along the compass opening
     x.moveTo(...P(-9,0));x.lineTo(...P(9,0));x.moveTo(...P(4,-5));x.lineTo(...P(9,0));x.lineTo(...P(4,5));x.moveTo(...P(-4,-5));x.lineTo(...P(-9,0));x.lineTo(...P(-4,5));}
   else{x.arc(q[0],q[1],5,0,7);}
@@ -230,7 +258,7 @@ function handle(x,q,color,kind,ang){x.save();x.fillStyle=color;x.beginPath();x.a
 const TRI={tri45:[[0,0],[360,0],[0,-360]],tri60:[[0,0],[420,0],[0,-242]]};
 const INST={
   prot:{
-    local:{move:[-PROT_R-26,0],rot:[PROT_R+26,0]},
+    local:{move:[-PROT_R-26,0],rot:[PROT_R+26,0],scale:[PROT_R*.72+20,-PROT_R*.72-20],close:[0,-PROT_R-30]},
     body:q=>q[1]<=4&&Math.hypot(q[0],q[1])<=PROT_R,
     edges:[],
     draw(x){const r=PROT_R;
@@ -244,7 +272,7 @@ const INST={
       x.beginPath();x.moveTo(0,0);x.lineTo(0,-r*.45);x.stroke();
       x.fillStyle="#d62828";x.beginPath();x.arc(0,0,6,0,7);x.fill();}},
   ruler:{
-    local:{move:[-50,35],rot:[650,35]},
+    local:{move:[-50,35],rot:[650,35],scale:[650,100],close:[-50,100]},
     body:q=>q[0]>=-20&&q[0]<=620&&q[1]>=0&&q[1]<=70,
     edges:[[[-20,0],[620,0]]],
     draw(x){x.fillStyle="rgba(255,236,170,.55)";x.strokeStyle="rgba(140,100,20,.95)";x.lineWidth=2;
@@ -254,12 +282,12 @@ const INST={
         x.beginPath();x.moveTo(px,0);x.lineTo(px,L);x.stroke();if(mm%10===0)x.fillText(mm/10,px,25);}
       x.font="700 13px sans-serif";x.fillText("公分",585,48);}},
   tri45:{
-    local:{move:[-34,34],rot:[394,34]},
+    local:{move:[-34,34],rot:[394,34],scale:[204,-204],close:[-34,-384]},
     body:q=>inPoly(q,TRI.tri45),
     edges:[[[0,0],[360,0]],[[0,0],[0,-360]],[[360,0],[0,-360]]],
     draw(x){triDraw(x,TRI.tri45,["90°","45°","45°"]);}},
   tri60:{
-    local:{move:[-34,34],rot:[454,34]},
+    local:{move:[-34,34],rot:[454,34],scale:[236,-150],close:[-34,-266]},
     body:q=>inPoly(q,TRI.tri60),
     edges:[[[0,0],[420,0]],[[0,0],[0,-242]],[[420,0],[0,-242]]],
     draw(x){triDraw(x,TRI.tri60,["90°","30°","60°"]);}},
@@ -278,7 +306,7 @@ function triDraw(x,P,ang){
 // the legs grow with the radius, so the compass can open to any size
 function compassParts(st){const r=st.r,L=Math.max(230,r*.62),d=[Math.cos(st.a),Math.sin(st.a)],n=[d[1],-d[0]];
   const h=Math.sqrt(Math.max(L*L-(r/2)*(r/2),900)),mid=[st.x+d[0]*r/2,st.y+d[1]*r/2],hinge=[mid[0]+n[0]*h,mid[1]+n[1]*h];
-  return{needle:[st.x,st.y],pencil:[st.x+d[0]*r,st.y+d[1]*r],hinge,size:[st.x+d[0]*(r+46),st.y+d[1]*(r+46)],r,a:st.a};}
+  return{needle:[st.x,st.y],pencil:[st.x+d[0]*r,st.y+d[1]*r],hinge,size:[st.x+d[0]*(r+46),st.y+d[1]*(r+46)],close:[hinge[0]+n[0]*42,hinge[1]+n[1]*42],r,a:st.a};}
 const CM_MIN=20,CM_MAX=2400;
 const cmText=v=>{const c=Math.round(v/GRID*10)/10;return (Number.isInteger(c)?c:c.toFixed(1));};
 function drawCompass(x,st){const P=compassParts(st);x.save();x.lineCap="round";
@@ -288,20 +316,22 @@ function drawCompass(x,st){const P=compassParts(st);x.save();x.lineCap="round";
   x.strokeStyle=inkColor(S.color);x.lineWidth=6;const t=[P.pencil[0]+(P.hinge[0]-P.pencil[0])*.07,P.pencil[1]+(P.hinge[1]-P.pencil[1])*.07];x.beginPath();x.moveTo(...t);x.lineTo(...P.pencil);x.stroke();
   x.strokeStyle="#c9ced4";x.lineWidth=3;x.setLineDash([6,6]);x.beginPath();x.moveTo(...P.needle);x.lineTo(...P.pencil);x.stroke();x.setLineDash([]);
   x.fillStyle="#d62828";x.beginPath();x.arc(...P.needle,5,0,7);x.fill();
-  handle(x,P.hinge,"#15803d","move");handle(x,P.pencil,"#ea580c","dot");handle(x,P.size,"#1d4ed8","size",P.a);
+  handle(x,P.hinge,"#15803d","move");handle(x,P.close,"#dc2626","close");handle(x,P.pencil,"#ea580c","dot");handle(x,P.size,"#1d4ed8","size",P.a);
   labelAt(x,"半徑 "+cmText(P.r)+(S.bg==="grid"?" 格":" 公分"),(P.needle[0]+P.pencil[0])/2,(P.needle[1]+P.pencil[1])/2+26,"#ea580c");
   x.restore();}
 function drawInst(x){
-  ["tri45","tri60","ruler","prot"].forEach(k=>{const st=S.inst[k];if(!st.show)return;x.save();x.translate(st.x,st.y);x.rotate(st.rot);INST[k].draw(x);x.restore();
-    handle(x,toWorld(st,INST[k].local.move),"#15803d","move");handle(x,toWorld(st,INST[k].local.rot),"#1d4ed8","rot");});
+  ["tri45","tri60","ruler","prot"].forEach(k=>{const st=S.inst[k];if(!st.show)return;x.save();x.translate(st.x,st.y);x.rotate(st.rot);x.scale(st.s||1,st.s||1);INST[k].draw(x);x.restore();
+    const L=INST[k].local;handle(x,toWorld(st,L.move),"#15803d","move");handle(x,toWorld(st,L.rot),"#1d4ed8","rot");
+    handle(x,toWorld(st,L.scale),"#7c3aed","scale",st.rot);handle(x,toWorld(st,L.close),"#dc2626","close");
+    if(act&&act.k==="inst"&&act.which===k&&act.mode==="scale"){const q=toWorld(st,L.scale);labelAt(x,Math.round((st.s||1)*100)+"%",q[0],q[1]-34,"#7c3aed");}});
   if(S.inst.compass.show)drawCompass(x,S.inst.compass);
 }
 // which instrument part is under the pointer: handles always win; bodies move only with the 移動 tool
 function instHit(p){
   const c=S.inst.compass;
-  if(c.show){const P=compassParts(c);for(const[k,q]of[["size",P.size],["pencil",P.pencil],["move",P.hinge]])if(Math.hypot(p[0]-q[0],p[1]-q[1])<22)return{k:"compass",mode:k};}
+  if(c.show){const P=compassParts(c);for(const[k,q]of[["close",P.close],["size",P.size],["pencil",P.pencil],["move",P.hinge]])if(Math.hypot(p[0]-q[0],p[1]-q[1])<22)return{k:"compass",mode:k};}
   for(const k of["prot","ruler","tri60","tri45"]){const st=S.inst[k];if(!st.show)continue;
-    for(const m of["move","rot"]){const q=toWorld(st,INST[k].local[m]);if(Math.hypot(p[0]-q[0],p[1]-q[1])<22)return{k,mode:m};}
+    for(const m of["close","scale","move","rot"]){const q=toWorld(st,INST[k].local[m]);if(Math.hypot(p[0]-q[0],p[1]-q[1])<22)return{k,mode:m};}
     if(S.tool==="move"&&INST[k].body(toLocal(st,p)))return{k,mode:"move"};}
   return null;}
 // pen near a straight edge of the ruler or a set square: the stroke follows that edge
@@ -314,12 +344,29 @@ function onEdge(e,p){const{A,B}=e,vx=B[0]-A[0],vy=B[1]-A[1],t=Math.max(0,Math.mi
 /* ---------- geometry helpers ---------- */
 function bbox(o){
   if(o.t==="text"){xInk.save();xInk.font=fontOf(o.size);const lines=o.s.split("\n");const w=Math.max(...lines.map(l=>xInk.measureText(l).width));xInk.restore();return{x:o.x,y:o.y,w,h:lines.length*o.size*1.25};}
-  if(o.t==="img")return{x:o.x,y:o.y,w:o.w,h:o.h};
+  if(o.t==="img"||o.t==="mask")return{x:o.x,y:o.y,w:o.w,h:o.h};
   if(o.t==="poly"){const all=o.pts.concat((o.ctl||[]).filter(Boolean)),xs=all.map(p=>p[0]),ys=all.map(p=>p[1]);const x=Math.min(...xs),y=Math.min(...ys);return{x,y,w:Math.max(...xs)-x,h:Math.max(...ys)-y};}
   if(o.t==="line"||o.t==="rect")return{x:Math.min(o.a[0],o.b[0]),y:Math.min(o.a[1],o.b[1]),w:Math.abs(o.b[0]-o.a[0]),h:Math.abs(o.b[1]-o.a[1])};
   if(o.t==="circle"||o.t==="sector"||o.t==="angle"||o.t==="arc"){const r=Math.max(o.r,o.r2||0);return{x:o.o[0]-r,y:o.o[1]-r,w:2*r,h:2*r};}
   if(o.t==="ink"){const xs=o.pts.map(p=>p[0]),ys=o.pts.map(p=>p[1]);const x=Math.min(...xs),y=Math.min(...ys);return{x,y,w:Math.max(...xs)-x,h:Math.max(...ys)-y};}
   return null;}
+/* ---------- textbook pictures: crop, lock, and covers that hide answers ---------- */
+let cropObj=null;
+const rectOf=(a,b)=>({x:Math.min(a[0],b[0]),y:Math.min(a[1],b[1]),w:Math.abs(b[0]-a[0]),h:Math.abs(b[1]-a[1])});
+function clampRect(r,b){const x=Math.max(r.x,b.x),y=Math.max(r.y,b.y);return{x,y,w:Math.max(0,Math.min(r.x+r.w,b.x+b.w)-x),h:Math.max(0,Math.min(r.y+r.h,b.y+b.h)-y)};}
+function maskAt(p){const L=liveObjs();for(let i=L.length-1;i>=0;i--){const o=L[i];if(o.t==="mask"&&p[0]>=o.x&&p[0]<=o.x+o.w&&p[1]>=o.y&&p[1]<=o.y+o.h)return o;}return null;}
+function applyCrop(a){const o=cropObj,b=bbox(o),r=clampRect(rectOf(a.a,a.b),b);
+  if(r.w<20||r.h<20){renderOv();return;}
+  const im=imgOf(o.src),c=o.crop||{sx:0,sy:0,sw:im.naturalWidth,sh:im.naturalHeight},before=JSON.stringify(o);
+  o.crop={sx:c.sx+(r.x-o.x)/o.w*c.sw,sy:c.sy+(r.y-o.y)/o.h*c.sh,sw:r.w/o.w*c.sw,sh:r.h/o.h*c.sh};Object.assign(o,{x:r.x,y:r.y,w:r.w,h:r.h});
+  recordMove(o,before);cropObj=null;hideHint();render();toast("裁好了，不滿意可以按「回上一步」");}
+function placeImgBar(){const bar=$("imgbar"),o=!act&&!cropObj&&S.tool==="move"&&S.sel.length===1&&S.sel[0].t==="img"?S.sel[0]:null;
+  if(!o){bar.hidden=true;bar.dataset.for="";return;}
+  if(bar.dataset.for!==String(liveObjs().indexOf(o))+o.locked){bar.innerHTML="";bar.dataset.for=String(liveObjs().indexOf(o))+o.locked;
+    if(!o.locked)mk(bar,"crop",ICON.crop+"裁切",null,()=>{cropObj=o;S.sel=[];showHint("在圖片上拉一個框，框住要留下的部分（Esc 取消）");render();});
+    const lb=mk(bar,"lock",(o.locked?ICON.unlock+"解除鎖定":ICON.lock+"鎖定"),null,()=>{const before=JSON.stringify(o);o.locked=!o.locked;if(!o.locked)delete o.locked;recordMove(o,before);
+      toast(o.locked?"圖片鎖住了，上課寫字不會拖到它":"可以移動、縮放了");render();});lb.setAttribute("aria-pressed",String(!!o.locked));}
+  bar.hidden=false;const b=bbox(o);bar.style.left=Math.max(4,b.x*disp)+"px";bar.style.top=Math.max(4,b.y*disp-50)+"px";}
 // the box around everything that is selected
 function selBox(){const bs=S.sel.map(bbox).filter(Boolean);if(!bs.length)return null;const x=Math.min(...bs.map(b=>b.x)),y=Math.min(...bs.map(b=>b.y));
   return{x,y,w:Math.max(...bs.map(b=>b.x+b.w))-x,h:Math.max(...bs.map(b=>b.y+b.h))-y};}
@@ -331,7 +378,7 @@ function circled(o,loop){const b=bbox(o);if(!b)return false;
 function hit(pt){const objs=page().objs;for(let i=objs.length-1;i>=0;i--){const o=objs[i];if(o.t==="erase")continue;const b=bbox(o);if(!b)continue;
   if(pt[0]>=b.x-10&&pt[0]<=b.x+b.w+10&&pt[1]>=b.y-10&&pt[1]<=b.y+b.h+10)return o;}return null;}
 function moveObj(o,dx,dy){
-  if(o.t==="text"||o.t==="img"){o.x+=dx;o.y+=dy;}
+  if(o.t==="text"||o.t==="img"||o.t==="mask"){o.x+=dx;o.y+=dy;}
   if(o.t==="poly"){o.pts=o.pts.map(p=>[p[0]+dx,p[1]+dy]);if(o.ctl)o.ctl=o.ctl.map(p=>p&&[p[0]+dx,p[1]+dy]);}
   if(o.t==="line"||o.t==="rect"){o.a=[o.a[0]+dx,o.a[1]+dy];o.b=[o.b[0]+dx,o.b[1]+dy];}
   if(o.o)o.o=[o.o[0]+dx,o.o[1]+dy];
@@ -362,6 +409,7 @@ cOv.addEventListener("pointerdown",e=>{
   const sh=shapeHandle(bendTarget(),p);
   if(sh){const o=bendTarget();if(!o.ctl)o.ctl=o.pts.map(()=>null);act={k:sh.k,o,i:sh.i,before:JSON.stringify(o)};return;}
   const ih=instHit(p);
+  if(ih&&ih.mode==="close"){S.inst[ih.k].show=false;renderOv();syncUI();if(openPop==="kit")buildPop();return;}
   if(ih){const st=S.inst[ih.k];act={k:"inst",which:ih.k,mode:ih.mode,start:p,orig:{...st}};
     if(ih.k==="compass"&&ih.mode==="pencil"){const c=st;act.lastA=Math.atan2(p[1]-c.y,p[0]-c.x);   // turning measured around the needle
       act.arc={t:"arc",c:S.color,w:SIZES[S.size].w,o:[c.x,c.y],r:compassParts(c).r,a0:c.a,sweep:0};preview=act.arc;}
@@ -373,11 +421,14 @@ cOv.addEventListener("pointerdown",e=>{
   else if(T==="text"){openText(p);}
   else if(T==="move"){
     const one=S.sel.length===1&&S.sel[0];
-    if(one&&(one.t==="img"||one.t==="text")){const b=bbox(one);if(Math.abs(p[0]-(b.x+b.w+4))<22&&Math.abs(p[1]-(b.y+b.h+4))<22){act={k:"resize",o:one,before:JSON.stringify(one),b};return;}}
+    if(cropObj){act={k:"crop",a:p,b:p};return;}
+    if(one&&!one.locked&&(one.t==="img"||one.t==="text"||one.t==="mask")){const b=bbox(one);if(Math.abs(p[0]-(b.x+b.w+4))<22&&Math.abs(p[1]-(b.y+b.h+4))<22){act={k:"resize",o:one,before:JSON.stringify(one),b};return;}}
     if(!(S.sel.length&&inSelBox(p))){const o=hit(p);S.sel=o?[o]:[];}
-    if(S.sel.length)act={k:"move",list:S.sel.slice(),before:S.sel.map(o=>JSON.stringify(o)),last:p};
+    if(S.sel.length){const list=S.sel.filter(o=>!o.locked);act={k:"move",list,before:list.map(o=>JSON.stringify(o)),last:p};}
     else act={k:"lasso",pts:[p]};
-    renderOv();}
+    renderOv();syncUI();}
+  else if(T==="mouse"){const m=maskAt(p);if(m){m.open=!m.open;render();}}
+  else if(T==="mask"){act={k:"maskdraw",a:p,b:p};}
   else if(T==="line"||T==="rect"){const a=snap(p);act={k:"shape",o:{t:T,c:col,w,a,b:a}};preview=act.o;}
   else if(T==="poly"||T==="free"){const q=snap(p);
     if(act&&act.k==="poly"){const o=act.o,f=o.pts[0],l=o.pts[o.pts.length-1],min=T==="free"?2:3;
@@ -394,7 +445,7 @@ cOv.addEventListener("pointerdown",e=>{
 cOv.addEventListener("pointermove",e=>{
   const p=pt(e);
   eraserAt=S.tool==="erase"?p:null;
-  if(!act){if(S.tool==="erase")renderOv();cOv.style.cursor=instHit(p)?"grab":S.tool==="move"?(inSelBox(p)||hit(p)?"move":"crosshair"):S.tool==="text"?"text":S.tool==="mouse"?"default":"crosshair";if(shapeHandle(bendTarget(),p))cOv.style.cursor="grab";return;}
+  if(!act){if(S.tool==="erase")renderOv();cOv.style.cursor=instHit(p)?"grab":S.tool==="move"?(inSelBox(p)||hit(p)?"move":"crosshair"):S.tool==="text"?"text":S.tool==="mouse"?"default":"crosshair";if(shapeHandle(bendTarget(),p))cOv.style.cursor="grab";if(S.tool==="mouse"&&maskAt(p))cOv.style.cursor="pointer";if(cropObj)cOv.style.cursor="crosshair";return;}
   if(act.k==="inst"){const st=S.inst[act.which];
     if(act.which==="compass"){
       if(act.mode==="move"){const q=snap([act.orig.x+p[0]-act.start[0],act.orig.y+p[1]-act.start[1]]);st.x=q[0];st.y=q[1];}
@@ -403,15 +454,19 @@ cOv.addEventListener("pointermove",e=>{
       else{const a=Math.atan2(p[1]-st.y,p[0]-st.x);let d=a-act.lastA;if(d>Math.PI)d-=2*Math.PI;if(d<-Math.PI)d+=2*Math.PI;act.lastA=a;
         act.arc.sweep=Math.max(-2*Math.PI,Math.min(2*Math.PI,act.arc.sweep+d));st.a=act.orig.a+act.arc.sweep;}
     }else if(act.mode==="move"){st.x=act.orig.x+p[0]-act.start[0];st.y=act.orig.y+p[1]-act.start[1];}
+    else if(act.mode==="scale"){const d0=Math.max(1,Math.hypot(act.start[0]-st.x,act.start[1]-st.y));
+      let k=(act.orig.s||1)*Math.hypot(p[0]-st.x,p[1]-st.y)/d0;k=Math.max(.4,Math.min(3,k));if(Math.abs(k-1)<.06)k=1;st.s=k;}   // eases back onto the real size
     else{st.rot=Math.atan2(p[1]-st.y,p[0]-st.x)-act.off;const d=st.rot*180/Math.PI,s5=Math.round(d/15)*15;if(Math.abs(d-s5)<2)st.rot=s5*Math.PI/180;}   // eases onto 15° steps
     renderOv();return;}
   if(act.k==="draw"&&act.edge){act.o.pts=[act.o.pts[0],onEdge(act.edge,p)];renderOv();return;}
   if(act.k==="draw"){const q=act.o.pts,l=q[q.length-1];if(Math.hypot(p[0]-l[0],p[1]-l[1])<1.5)return;q.push(p);
     if(act.o.t==="erase")render();else renderOv();return;}
   if(act.k==="move"){const dx=p[0]-act.last[0],dy=p[1]-act.last[1];act.list.forEach(o=>moveObj(o,dx,dy));act.last=p;render();return;}
+  if(act.k==="crop"||act.k==="maskdraw"){act.b=p;renderOv();return;}
   if(act.k==="lasso"){const l=act.pts[act.pts.length-1];if(Math.hypot(p[0]-l[0],p[1]-l[1])>4){act.pts.push(p);renderOv();}return;}
   if(act.k==="resize"){const o=act.o,b=act.b;
     if(o.t==="img"){const sc=Math.max(.1,(p[0]-o.x)/b.w);o.w=b.w*sc;o.h=b.h*sc;}
+    else if(o.t==="mask"){o.w=Math.max(30,p[0]-o.x);o.h=Math.max(30,p[1]-o.y);}
     else{const sc=Math.max(.3,(p[0]-o.x)/Math.max(b.w,1));o.size=Math.round(JSON.parse(act.before).size*sc);}
     render();return;}
   if(act.k==="shape"){const o=act.o,q=snap(p);
@@ -441,7 +496,9 @@ function endPointer(){
   if(a.k==="draw"){act=null;preview=null;if(a.o.t==="ink")commit(a.o);else render();return;}
   if(a.k==="resize"||a.k==="vtx"||a.k==="bend"){act=null;recordMove(a.o,a.before);render();return;}
   if(a.k==="move"){act=null;recordGroup(a.list,a.before);render();return;}
-  if(a.k==="lasso"){act=null;S.sel=a.pts.length>2?liveObjs().filter(o=>o.t!=="erase"&&circled(o,a.pts)):[];render();
+  if(a.k==="crop"){act=null;applyCrop(a);return;}
+  if(a.k==="maskdraw"){act=null;const r=rectOf(a.a,a.b);if(r.w>20&&r.h>20)commit({t:"mask",...r,open:false});else renderOv();return;}
+  if(a.k==="lasso"){act=null;S.sel=a.pts.length>2?liveObjs().filter(o=>o.t!=="erase"&&!o.locked&&circled(o,a.pts)):[];render();
     if(S.sel.length)toast(`選了 ${S.sel.length} 個，拖曳可以移動，按「移除」可以清掉`);return;}
   if(a.k==="shape"){act=null;preview=null;const o=a.o;
     if((o.t==="line"&&Math.hypot(o.b[0]-o.a[0],o.b[1]-o.a[1])>6)||(o.t==="rect"&&Math.abs(o.b[0]-o.a[0])>6&&Math.abs(o.b[1]-o.a[1])>6)||(o.t==="circle"&&o.r>6))commit(o);else renderOv();return;}
@@ -489,8 +546,9 @@ function commitText(){
 cOv.addEventListener("dblclick",e=>{if(S.tool!=="move"&&S.tool!=="text")return;const o=hit(pt(e));if(o&&o.t==="text"){openText([o.x,o.y],o);}});
 
 /* ---------- paste and drop pictures or text ---------- */
-function addImage(src){const im=new Image();im.onload=()=>{const sc=Math.min(1,(W*.6)/im.naturalWidth,(H*.6)/im.naturalHeight);
-  const w=im.naturalWidth*sc,h=im.naturalHeight*sc;imgCache.set(src,im);const o={t:"img",src,x:(W-w)/2,y:(H-h)/2,w,h};commit(o);setTool("move");S.sel=[o];renderOv();toast("圖片貼上了，可以拖曳移動、拉右下角縮放");};im.src=src;}
+function addImage(src){const im=new Image();im.onload=()=>{const sc=Math.min(1.5,(W*.8)/im.naturalWidth,(H*.8)/im.naturalHeight);
+  const w=im.naturalWidth*sc,h=im.naturalHeight*sc;imgCache.set(src,im);const o={t:"img",src,x:(W-w)/2,y:(H-h)/2,w,h};commit(o);setTool("move");S.sel=[o];renderOv();toast("圖片放好了：拖曳移動、拉右下角縮放，上方可以裁切、鎖定");};im.src=src;}
+$("fileIn").onchange=e=>{const f=e.target.files[0];if(f)readFile(f);e.target.value="";};
 function readFile(f){const r=new FileReader();r.onload=()=>addImage(r.result);r.readAsDataURL(f);}
 document.addEventListener("paste",e=>{
   if(textBox)return;const items=[...(e.clipboardData?.items||[])];
@@ -509,21 +567,21 @@ function liveObjs(){
   return list.filter(o=>!gone.has(o)&&!o._hidden);
 }
 render=function(){
-  xInk.clearRect(0,0,W,H);liveObjs().forEach(o=>drawObj(xInk,o));renderOv();syncUI();
+  xPic.clearRect(0,0,W,H);xInk.clearRect(0,0,W,H);liveObjs().forEach(o=>drawObj(PIC.has(o.t)?xPic:xInk,o));renderOv();syncUI();
 };
 const _undo=undo;undo=function(){const p=page();if(!p.objs.length)return;const last=p.objs[p.objs.length-1];
   if(last.t==="_edit")Object.assign(last.ref,JSON.parse(last.before));
   if(last.t==="_edits")last.list.forEach(c=>Object.assign(c.ref,JSON.parse(c.before)));p.redo.push(p.objs.pop());S.sel=[];render();};
-hit=(orig=>pt=>{const L=liveObjs();for(let i=L.length-1;i>=0;i--){const o=L[i];if(o.t==="erase")continue;const b=bbox(o);if(!b)continue;
+hit=(orig=>pt=>{const A=liveObjs(),L=A.filter(o=>PIC.has(o.t)).concat(A.filter(o=>!PIC.has(o.t)));for(let i=L.length-1;i>=0;i--){const o=L[i];if(o.t==="erase")continue;const b=bbox(o);if(!b)continue;
   if(pt[0]>=b.x-10&&pt[0]<=b.x+b.w+10&&pt[1]>=b.y-10&&pt[1]<=b.y+b.h+10)return o;}return null;})(hit);
 function delSel(){if(!S.sel.length)return;page().objs.push({t:"_del",refs:S.sel.slice()});page().redo=[];S.sel=[];render();}
 
 /* ---------- toolbar: a few main buttons; choices open in a small panel above the tray ---------- */
 function mk(parent,id,html,label,fn){const b=document.createElement("button");b.type="button";b.id=id;b.innerHTML=html;if(label)b.setAttribute("aria-label",label);b.onclick=fn;(typeof parent==="string"?$(parent):parent).appendChild(b);return b;}
-function setTool(t){if(t!==S.tool){if(bendObj)hideHint();bendObj=null;}if(act&&(act.k==="sweep"||act.k==="poly")){act=null;preview=null;hideHint();}S.tool=t;if(t!=="move")S.sel=[];eraserAt=null;syncUI();renderOv();}
+function setTool(t){if(cropObj&&t!=="move"){cropObj=null;hideHint();}if(t!==S.tool){if(bendObj)hideHint();bendObj=null;}if(act&&(act.k==="sweep"||act.k==="poly")){act=null;preview=null;hideHint();}S.tool=t;if(t!=="move")S.sel=[];eraserAt=null;syncUI();renderOv();}
 const INST_BTN=[["prot","量角器"],["ruler","直尺"],["tri45","三角板 45°"],["tri60","三角板 30°"],["compass","圓規"]];
-const INST_TIP={prot:"綠色鈕拖曳移動，藍色鈕旋轉",ruler:"筆沿著尺的上緣畫，會畫出直線",tri45:"筆沿著三角板的邊畫，會畫出直線",tri60:"筆沿著三角板的邊畫，會畫出直線",
-  compass:"綠色鈕移動、藍色鈕拉開大小，拖著橘色筆尖繞一圈就畫出圓"};
+const INST_TIP={prot:"綠色鈕移動、藍色鈕旋轉、紫色鈕放大縮小、紅色叉叉收起來",ruler:"筆沿著尺的上緣畫出直線；紫色鈕放大縮小、紅色叉叉收起來",tri45:"筆沿著三角板的邊畫出直線；紫色鈕放大縮小、紅色叉叉收起來",tri60:"筆沿著三角板的邊畫出直線；紫色鈕放大縮小、紅色叉叉收起來",
+  compass:"綠色鈕移動、藍色鈕拉開大小，拖著橘色筆尖繞一圈就畫出圓；紅色叉叉收起來"};
 const SHAPE_KEYS=SHAPES.map(x=>x[0]);
 let shapePick="line",openPop=null;
 const MAIN=[
@@ -532,6 +590,7 @@ const MAIN=[
   {id:"erase",html:()=>`${ICON.erase}板擦<span class="car">▾</span>`,on:()=>S.tool==="erase",click:()=>{setTool("erase");togglePop("erase");}},
   {id:"text",html:()=>`${ICON.text}打字`,on:()=>S.tool==="text",click:()=>{closePop();setTool("text");}},
   {id:"move",html:()=>`${ICON.select}選擇`,on:()=>S.tool==="move",click:()=>{closePop();if(S.tool!=="move")toast("按一下選一個，或在空白處拖曳圈起來");setTool("move");}},
+  {id:"pic",html:()=>`${ICON.pic}圖片<span class="car">▾</span>`,on:()=>S.tool==="mask",click:()=>togglePop("pic")},
   {id:"shape",html:()=>`${ICON[shapePick]}圖形<span class="car">▾</span>`,on:()=>SHAPE_KEYS.includes(S.tool),click:()=>togglePop("shape")},
   {id:"kit",html:()=>{const n=INST_BTN.filter(([k])=>S.inst[k].show).length;return`${ICON.kit}工具<span class="car">▾</span>`;},on:()=>S.tool==="angle"||INST_BTN.some(([k])=>S.inst[k].show),click:()=>togglePop("kit")},
   {id:"bg",html:()=>`${ICON.bg}${BG[S.bg].name}<span class="car">▾</span>`,on:()=>false,click:()=>togglePop("bg")},
@@ -552,6 +611,9 @@ function buildPop(){
     if(S.inst.compass.show){const c=S.inst.compass,step=d=>{c.r=Math.max(CM_MIN,Math.min(CM_MAX,Math.round((c.r+d)/(GRID/2))*(GRID/2)));refresh();};
       r=section("圓規半徑");mk(r,"cm-dn","－","縮小半徑",()=>step(-GRID/2));const v=document.createElement("b");v.id="cmVal";v.style.minWidth="88px";v.style.textAlign="center";
       v.textContent=cmText(c.r)+(S.bg==="grid"?" 格":" 公分");r.appendChild(v);mk(r,"cm-up","＋","放大半徑",()=>step(GRID/2));}}
+  if(k==="pic"){let r=section("放入課本圖片");mk(r,"pickFile",ICON.pic+"選擇圖片檔",null,()=>{closePop();$("fileIn").click();});
+    const tip=document.createElement("p");tip.className="tip";tip.innerHTML="或截圖：按 <kbd>Win</kbd>＋<kbd>Shift</kbd>＋<kbd>S</kbd> 框起課本，回到黑板按 <kbd>Ctrl</kbd>＋<kbd>V</kbd>。也可以把圖片檔直接拖進黑板。";$("pop").appendChild(tip);
+    r=section("遮住答案");opt(r,"t-mask",ICON.mask+"拉框蓋住答案",S.tool==="mask",()=>{setTool("mask");closePop();toast("拉框蓋住答案；上課時用「滑鼠」點色塊就打開");});}
   if(k==="bg"){const r=section("背景");Object.entries(BG).forEach(([b2,v])=>opt(r,"b-"+b2,v.name,S.bg===b2,()=>{S.bg=b2;drawBg(xBg);render();closePop();}));}
   // point the little arrow at the button that opened the panel
   const btn=$("m-"+k),tray=document.querySelector(".tray"),br=btn.getBoundingClientRect(),tr=tray.getBoundingClientRect();
@@ -586,8 +648,8 @@ document.addEventListener("fullscreenchange",()=>{$("fs").textContent=document.f
 /* ---------- save the page as a picture ---------- */
 $("save").onclick=async()=>{
   const c=document.createElement("canvas");c.width=W*2;c.height=H*2;const x=c.getContext("2d");x.scale(2,2);
-  drawBg(x);const ink=document.createElement("canvas");ink.width=W*2;ink.height=H*2;const xi=ink.getContext("2d");xi.scale(2,2);
-  liveObjs().forEach(o=>drawObj(xi,o));x.drawImage(ink,0,0,W,H);
+  drawBg(x);const layer=()=>{const k=document.createElement("canvas");k.width=W*2;k.height=H*2;const xx=k.getContext("2d");xx.scale(2,2);return[k,xx];};
+  const[pc,xp]=layer(),[ic,xi]=layer();liveObjs().forEach(o=>drawObj(PIC.has(o.t)?xp:xi,o));x.drawImage(pc,0,0,W,H);x.drawImage(ic,0,0,W,H);
   const blob=await new Promise(r=>c.toBlob(r,"image/png"));
   const d=new Date(),pad=n=>String(n).padStart(2,"0");
   const name=`課堂小黑板_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}_第${S.pi+1}頁.png`;
@@ -603,7 +665,7 @@ document.addEventListener("keydown",e=>{
   else if((e.ctrlKey||e.metaKey)&&k==="y"){e.preventDefault();redo();}
   else if((k==="delete"||k==="backspace")&&S.sel.length){e.preventDefault();delSel();}
   else if(k==="enter"&&act&&act.k==="poly"){e.preventDefault();finishPoly();}
-  else if(k==="escape"){closePop();if(act&&(act.k==="sweep"||act.k==="poly")){act=null;preview=null;hideHint();renderOv();}S.sel=[];renderOv();syncUI();}
+  else if(k==="escape"){closePop();if(cropObj){cropObj=null;hideHint();}if(act&&(act.k==="sweep"||act.k==="poly")){act=null;preview=null;hideHint();renderOv();}S.sel=[];renderOv();syncUI();}
 });
 let toastT=0;function toast(m){const t=$("toast");t.textContent=m;t.classList.remove("off");clearTimeout(toastT);toastT=setTimeout(()=>t.classList.add("off"),1800);}
 function showHint(m){$("hint").textContent=m;$("hint").hidden=false;}function hideHint(){$("hint").hidden=true;}
