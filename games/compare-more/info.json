@@ -4,5 +4,13 @@
   "grade": "一年級",
   "desc": "兩數量的多少比較：先排一排，再判斷哪一種比較多。",
   "status": "使用中",
-  "updated": "2026-10-21"
+  "updated": "2026-10-21",
+  "worksheets": [
+    {
+      "unit": "U4",
+      "title": "U4 多少比較：10以內比多少",
+      "file": "worksheets/U4多少比較_10以內比多少.docx",
+      "updated": "2026-11-17"
+    }
+  ]
 }

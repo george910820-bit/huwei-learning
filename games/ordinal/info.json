@@ -4,5 +4,13 @@
   "grade": "一年級",
   "desc": "U4 序數：從左、右、前、後、上、下數第幾個，含情境題與老師提示紀錄。",
   "status": "使用中",
-  "updated": "2026-10-21"
+  "updated": "2026-10-21",
+  "worksheets": [
+    {
+      "unit": "U4",
+      "title": "U4 序數：1-10的序數",
+      "file": "worksheets/U4序數_1-10的序數.docx",
+      "updated": "2026-11-17"
+    }
+  ]
 }
