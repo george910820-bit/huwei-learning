@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>課文漢堡組裝大挑戰｜在挫折中成長</title>
+<style>
+  :root{
+    --bg:#FBF6EC; --ink:#3B2A1A; --muted:#7A6652; --line:#E5D8C3;
+    --bun:#E8A94F; --bun-d:#B9772A; --lettuce:#9CCB6B; --lettuce-d:#5E8F33;
+    --patty:#A8653B; --patty-d:#6F3E1F; --cheese:#F4CF4A; --cheese-d:#B8901A;
+    --ok:#2E8B57; --bad:#C0392B; --accent:#D9622B; --card:#FFFFFF;
+    --font:"DFKai-SB","BiauKai","標楷體","Kaiti TC","STKaiti",serif;
+    --ui:"Microsoft JhengHei","PingFang TC","Noto Sans TC",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);}
+  body{min-height:100vh;display:flex;flex-direction:column}
+  header{display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:2px solid var(--line);background:#FFF9EF;flex-wrap:wrap}
+  header h1{font-family:var(--font);font-size:26px;margin:0 12px 0 0;font-weight:700}
+  nav{display:flex;gap:8px;flex-wrap:wrap}
+  .nb{font:inherit;font-size:18px;padding:8px 16px;border-radius:999px;border:2px solid var(--line);background:#fff;color:var(--ink);cursor:pointer}
+  .nb.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .score{margin-left:auto;font-size:20px;font-weight:700;color:var(--accent)}
+  main{flex:1;padding:20px;max-width:1280px;width:100%;margin:0 auto}
+  .lead{font-size:22px;margin:0 0 14px;color:var(--muted)}
+  .lead b{color:var(--ink)}
+  .btn{font:inherit;font-size:20px;padding:10px 22px;border-radius:12px;border:none;background:var(--accent);color:#fff;cursor:pointer}
+  .btn.ghost{background:#fff;color:var(--ink);border:2px solid var(--line)}
+  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .msg{min-height:36px;font-size:22px;margin:12px 0;font-weight:700}
+  .msg.ok{color:var(--ok)} .msg.bad{color:var(--bad)}
+
+  /* 首頁 */
+  .home{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:10px}
+  .lv{background:#fff;border:2px solid var(--line);border-radius:18px;padding:22px;cursor:pointer;text-align:left;font:inherit;color:inherit}
+  .lv:hover{border-color:var(--accent)}
+  .lv .n{font-size:18px;color:var(--accent);font-weight:700}
+  .lv .t{font-family:var(--font);font-size:30px;margin:6px 0 10px}
+  .lv .d{font-size:18px;color:var(--muted);line-height:1.6}
+
+  /* 卡片 */
+  .tray{display:flex;flex-direction:column;gap:12px}
+  .card{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:14px 16px;font-family:var(--font);font-size:23px;line-height:1.5;cursor:grab;user-select:none;touch-action:none;box-shadow:0 2px 0 var(--line)}
+  .card.sel{border-color:var(--accent);box-shadow:0 0 0 4px rgba(217,98,43,.25)}
+  .card.drag{opacity:.35}
+  .ghostcard{position:fixed;pointer-events:none;z-index:50;opacity:.92;transform:rotate(-2deg);max-width:420px}
+  .shake{animation:shake .4s}
+  @keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+  @media (prefers-reduced-motion:reduce){.shake{animation:none}}
+
+  /* 第1關 漢堡 */
+  .l1{display:grid;grid-template-columns:1.25fr 1fr;gap:28px;align-items:start}
+  .burger{display:flex;flex-direction:column;gap:6px}
+  .layer{position:relative;min-height:92px;padding:12px 18px 12px 150px;display:flex;align-items:center;border:3px dashed transparent;cursor:pointer}
+  .layer .tag{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:124px;font-weight:700;font-size:19px;line-height:1.3;text-align:center}
+  .layer .slot{font-family:var(--font);font-size:22px;line-height:1.5;flex:1}
+  .layer .slot:empty::before{content:"把卡片放到這裡";color:rgba(0,0,0,.35);font-family:var(--ui);font-size:18px}
+  .bun-top{background:var(--bun);border-radius:90px 90px 16px 16px;min-height:110px;color:#4A2C0A}
+  .lettuce{background:var(--lettuce);border-radius:14px;color:#24400E}
+  .patty{background:var(--patty);border-radius:14px;color:#FFF3E6}
+  .patty .slot:empty::before{color:rgba(255,255,255,.6)}
+  .bun-bot{background:var(--bun);border-radius:16px 16px 50px 50px;color:#4A2C0A}
+  .layer.hot{border-color:var(--ink)}
+  .layer.done{border-color:transparent}
+  .layer.done .slot::after{content:" ✔";color:#fff;text-shadow:0 0 3px rgba(0,0,0,.4)}
+  .layer.wrong{animation:shake .4s}
+
+  /* 第2關 四格表 */
+  .who{display:flex;align-items:center;gap:14px;margin-bottom:12px}
+  .who .ico{font-size:46px}
+  .who .nm{font-family:var(--font);font-size:34px;font-weight:700}
+  .steps{font-size:18px;color:var(--muted)}
+  .grid4{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+  .cell{background:#fff;border:3px dashed var(--line);border-radius:16px;min-height:150px;padding:12px;cursor:pointer;display:flex;flex-direction:column}
+  .cell h3{margin:0 0 8px;font-size:20px;color:var(--accent)}
+  .cell .slot{font-family:var(--font);font-size:22px;line-height:1.5;flex:1}
+  .cell .slot:empty::before{content:"把卡片放到這裡";color:#B9A88F;font-family:var(--ui);font-size:17px}
+  .cell.hot{border-color:var(--accent)}
+  .cell.done{border-style:solid;border-color:var(--ok);background:#F0FAF3}
+  .cell.wrong{animation:shake .4s}
+  .cell.infer.done{border-style:dashed;border-color:var(--ok)}
+  .l2tray{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+  .tip{background:#FFF3D6;border:2px solid var(--cheese-d);border-radius:14px;padding:14px 18px;font-size:20px;line-height:1.6;margin:10px 0}
+  .tip b{color:#7A5200}
+
+  /* 第3關 段落偵探 */
+  .quote{background:#fff;border:2px solid var(--line);border-left:10px solid var(--accent);border-radius:12px;padding:22px 26px;font-family:var(--font);font-size:30px;line-height:1.6;margin:8px 0 20px}
+  .choices{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  .ch{font:inherit;font-size:24px;padding:18px;border-radius:14px;border:3px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;text-align:center}
+  .ch:hover{border-color:var(--accent)}
+  .ch.right{background:#E6F5EC;border-color:var(--ok)}
+  .ch.no{background:#FBE9E7;border-color:var(--bad)}
+  .explain{font-size:21px;line-height:1.7;background:#F4EFE6;border-radius:12px;padding:14px 18px;margin-top:14px}
+  .prog{font-size:18px;color:var(--muted)}
+
+  /* 完成 */
+  .end{text-align:center;padding:30px 10px}
+  .end .big{font-family:var(--font);font-size:42px;margin:10px 0}
+  .end p{font-size:22px;color:var(--muted)}
+  @media (max-width:900px){.l1{grid-template-columns:1fr}.home{grid-template-columns:1fr}.grid4{grid-template-columns:1fr}.choices{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <h1>🍔 課文漢堡組裝大挑戰</h1>
+  <nav>
+    <button class="nb" data-go="home">首頁</button>
+    <button class="nb" data-go="l1">第1關 組漢堡</button>
+    <button class="nb" data-go="l2">第2關 四格配對</button>
+    <button class="nb" data-go="l3">第3關 段落偵探</button>
+  </nav>
+  <div class="score" id="score">⭐ 0</div>
+</header>
+<main id="app"></main>
+
+<script>
+const $ = (s, el=document) => el.querySelector(s);
+const app = $('#app');
+let stars = 0;
+function addStar(n=1){ stars += n; $('#score').textContent = '⭐ ' + stars; }
+function shuffle(a){ a = a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+function esc(s){ return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+/* ---------- 題目資料 ---------- */
+const L1 = [
+  {id:'p1', cls:'bun-top', tag:'上層麵包<br>論點', text:'人生的道路崎嶇不平，只有在每一次的挫折中勇往直前，才能磨練出堅強的意志。', hint:'上層麵包是作者最想說的道理。'},
+  {id:'p2', cls:'lettuce', tag:'中間的料<br>論據：人物', text:'拳擊手陳念琴在奧運失利、又得了癌症，仍堅持訓練，終於在巴黎奧運獲得銅牌。', hint:'這一層是用「人」來證明道理的例子。'},
+  {id:'p3', cls:'patty', tag:'中間的料<br>論據：植物', text:'仙人掌、落葉樹、椰子接受環境給予的挫折，調適改變自己，在逆境中生存下來。', hint:'這一層是用「植物」來證明道理的例子。'},
+  {id:'p4', cls:'bun-bot', tag:'下層麵包<br>重申論點', text:'引用伽利略的話，提醒我們以正向的心態面對挫折，化危機為轉機，成長壯大。', hint:'下層麵包是最後再說一次道理，還引用了名人的話。'},
+];
+
+const L2 = [
+  {who:'陳念琴', ico:'🥊', slots:{
+     k:'里約奧運在十六強止步；備戰東京奧運時又得到癌症。',
+     h:'調適心情、接受失敗；治療時體能變差，仍堅持不斷的訓練。',
+     r:'找回自信，終於在巴黎奧運獲得銅牌。'}},
+  {who:'仙人掌', ico:'🌵', slots:{
+     k:'沙漠中高溫又缺水的環境。',
+     h:'發展出肥厚的莖存放水分，葉片演化為針刺狀來降低水分蒸發。',
+     r:'★ 在沙漠中生存下來。'}, infer:true},
+  {who:'落葉樹', ico:'🍂', slots:{
+     k:'天氣低溫。',
+     h:'秋冬時節落葉，減少樹葉消耗養分，將能量存起來。',
+     r:'開春時節給予幼芽養分。'}},
+  {who:'椰子', ico:'🥥', slots:{
+     k:'被潮水帶進海裡，漂流可能長達數月。',
+     h:'靠厚厚的外皮保護，種子泡在海水也不會腐爛。',
+     r:'被海浪沖上沙灘，就可以生根發芽。'}},
+];
+const COLS = [['k','遇到什麼困難'],['h','怎麼做'],['r','結果']];
+
+const L3 = [
+  {q:'遇上困難，你會勇敢面對，還是選擇逃避？', a:'論點', ex:'這是第1段的開頭。作者先用問句讓讀者思考，再帶出自己的論點。'},
+  {q:'只有在每一次的挫折中勇往直前，接受困境的考驗，才能磨練出堅強的意志。', a:'論點', ex:'這是第1段的最後一句，也是整篇文章最想說服我們的道理。'},
+  {q:'治療的副作用讓她的體能變差，她仍堅持不斷的訓練。', a:'論據（人物）', ex:'這句在說陳念琴的經歷，是第2段用「人」來證明道理的例子。'},
+  {q:'葉片也演化為針刺狀來降低水分蒸發。', a:'論據（植物）', ex:'這句在說仙人掌，是第3段用「植物」來證明道理的例子。'},
+  {q:'二○二四年的夏天，她三度參加奧運，終於在巴黎奧運獲得銅牌。', a:'論據（人物）', ex:'這是陳念琴克服挫折後的結果，屬於第2段的人物例子。'},
+  {q:'靠著厚厚的外皮保護，種子即使泡在海水也不會腐爛。', a:'論據（植物）', ex:'這句在說椰子，是第3段的植物例子。'},
+  {q:'以正向的心態面對逆境，從中發現自己的不足，並尋求解決問題的方法。', a:'重申論點', ex:'這是第4段。作者在文章最後再說一次道理，告訴我們面對挫折該怎麼做。'},
+];
+const L3OPTS = ['論點','論據（人物）','論據（植物）','重申論點'];
+const BONUS = {
+  q:'伽利略說：「生命如鍛造的鐵塊，愈被敲打，愈能發出火花。」作者在第4段引用這句話，主要是為了什麼？',
+  opts:['引用名人的話，讓重申的道理更有說服力','介紹伽利略有哪些科學發現','說明鐵塊是怎麼打造出來的','再多舉一個人物的例子'],
+  a:0,
+  ex:'第4段的功能是重申論點。作者借用名人說過的話，讓最後再說一次的道理更有力量、更讓人信服。它不是新的例子，因為文章沒有說伽利略遇到什麼挫折。'
+};
+
+/* ---------- 點選＋拖曳放置 ---------- */
+let selected = null; // {el, value}
+function makePlaceable(cardEl, value, onDrop){
+  cardEl.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    const sx = e.clientX, sy = e.clientY; let ghost = null, moved = false;
+    const move = ev => {
+      if(!moved && Math.hypot(ev.clientX-sx, ev.clientY-sy) > 8){
+        moved = true; ghost = cardEl.cloneNode(true); ghost.classList.add('ghostcard');
+        ghost.style.width = cardEl.offsetWidth + 'px'; document.body.appendChild(ghost); cardEl.classList.add('drag');
+      }
+      if(ghost){ ghost.style.left = (ev.clientX - 30) + 'px'; ghost.style.top = (ev.clientY - 20) + 'px';
+        document.querySelectorAll('.hot').forEach(x=>x.classList.remove('hot'));
+        const t = document.elementFromPoint(ev.clientX, ev.clientY); const z = t && t.closest('[data-zone]'); if(z) z.classList.add('hot'); }
+    };
+    const up = ev => {
+      window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up);
+      document.querySelectorAll('.hot').forEach(x=>x.classList.remove('hot'));
+      if(ghost){ ghost.remove(); cardEl.classList.remove('drag');
+        const t = document.elementFromPoint(ev.clientX, ev.clientY); const z = t && t.closest('[data-zone]');
+        if(z) onDrop(z, cardEl, value);
+      } else {
+        document.querySelectorAll('.card.sel').forEach(c=>c.classList.remove('sel'));
+        if(selected && selected.el === cardEl){ selected = null; return; }
+        cardEl.classList.add('sel'); selected = {el:cardEl, value, onDrop};
+      }
+    };
+    window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
+  });
+}
+function zoneClick(zoneEl){
+  zoneEl.addEventListener('click', () => {
+    if(!selected) return;
+    const s = selected; selected = null; s.el.classList.remove('sel'); s.onDrop(zoneEl, s.el, s.value);
+  });
+}
+function flash(el, cls){ el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+function say(text, ok){ const m = $('#msg'); if(!m) return; m.className = 'msg ' + (ok ? 'ok' : 'bad'); m.textContent = text; }
+
+/* ---------- 畫面 ---------- */
+function setNav(k){ document.querySelectorAll('.nb').forEach(b => b.classList.toggle('on', b.dataset.go === k)); }
+document.querySelectorAll('.nb').forEach(b => b.addEventListener('click', () => go(b.dataset.go)));
+function go(k){ selected = null; setNav(k); ({home, l1, l2:()=>l2(0), l3:()=>l3(0)})[k](); window.scrollTo(0,0); }
+
+function home(){
+  app.innerHTML = `
+    <p class="lead">第九課〈在挫折中成長〉用一個漢堡，就能看懂整篇議論文。準備好了嗎？</p>
+    <div class="home">
+      <button class="lv" data-k="l1"><div class="n">第1關</div><div class="t">組漢堡</div><div class="d">把四段的大意，放到漢堡正確的那一層。</div></button>
+      <button class="lv" data-k="l2"><div class="n">第2關</div><div class="t">四格配對</div><div class="d">陳念琴和三種植物，各遇到什麼困難？怎麼做？結果呢？</div></button>
+      <button class="lv" data-k="l3"><div class="n">第3關</div><div class="t">段落偵探</div><div class="d">這句話是論點、論據，還是重申論點？</div></button>
+    </div>
+    <p class="lead" style="margin-top:22px">操作方式：<b>按一下卡片，再按一下要放的位置</b>；也可以直接把卡片拖過去。</p>`;
+  app.querySelectorAll('.lv').forEach(b => b.addEventListener('click', () => go(b.dataset.k)));
+}
+
+function l1(){
+  const order = shuffle(L1);
+  app.innerHTML = `
+    <p class="lead">把右邊四張<b>段落大意卡</b>，放到漢堡正確的那一層。</p>
+    <div class="l1">
+      <div class="burger">${L1.map(p => `<div class="layer ${p.cls}" data-zone="${p.id}"><div class="tag">${p.tag}</div><div class="slot"></div></div>`).join('')}</div>
+      <div><div class="tray" id="tray"></div><div class="msg" id="msg"></div>
+        <div class="row" id="ctl"><button class="btn ghost" id="reset">重來</button></div></div>
+    </div>`;
+  const tray = $('#tray'); let left = L1.length;
+  order.forEach(p => {
+    const c = document.createElement('div'); c.className = 'card'; c.textContent = p.text; tray.appendChild(c);
+    makePlaceable(c, p.id, (zone, el, val) => {
+      if(zone.classList.contains('done')) return;
+      if(zone.dataset.zone === val){
+        $('.slot', zone).textContent = p.text; zone.classList.add('done'); el.remove(); addStar(); left--;
+        say(left ? '答對了！' : '漢堡組好了！第1段和第4段是麵包，夾住中間兩層例子。', true);
+        if(!left){ $('#ctl').insertAdjacentHTML('beforeend', '<button class="btn" id="next">前往第2關 →</button>'); $('#next').onclick = () => go('l2'); }
+      } else { flash(zone,'wrong'); flash(el,'shake'); say('再想想：' + L1.find(x=>x.id===zone.dataset.zone).hint, false); }
+    });
+  });
+  app.querySelectorAll('[data-zone]').forEach(zoneClick);
+  $('#reset').onclick = l1;
+}
+
+function l2(i){
+  const ex = L2[i];
+  const others = shuffle(L2.filter((_,j)=>j!==i).flatMap(o => Object.values(o.slots).map(t => t.replace('★ ','')))).slice(0,2);
+  const cards = shuffle([...COLS.map(([k]) => ({v:k, t:ex.slots[k]})), ...others.map(t => ({v:'x', t}))]);
+  app.innerHTML = `
+    <div class="row" style="justify-content:space-between">
+      <div class="who"><span class="ico">${ex.ico}</span><span class="nm">${ex.who}</span></div>
+      <div class="steps">例子 ${i+1} / ${L2.length}</div>
+    </div>
+    <p class="lead">從下面的卡片中，選出<b>${ex.who}</b>的三張卡，放進四格表。小心，有兩張是別的例子的卡！</p>
+    <div class="grid4">${COLS.map(([k,h]) => `<div class="cell ${k==='r'&&ex.infer?'infer':''}" data-zone="${k}"><h3>${h}</h3><div class="slot"></div></div>`).join('')}</div>
+    <div class="l2tray" id="tray"></div>
+    <div class="msg" id="msg"></div>
+    <div id="extra"></div>
+    <div class="row" id="ctl"><button class="btn ghost" id="reset">重來</button></div>`;
+  let left = 3;
+  cards.forEach(cd => {
+    const c = document.createElement('div'); c.className = 'card'; c.textContent = cd.t; $('#tray').appendChild(c);
+    makePlaceable(c, cd.v, (zone, el, val) => {
+      if(zone.classList.contains('done')) return;
+      if(val === zone.dataset.zone){
+        $('.slot', zone).textContent = cd.t; zone.classList.add('done'); el.remove(); addStar(); left--;
+        say('答對了！', true);
+        if(zone.dataset.zone === 'r' && ex.infer){
+          $('#extra').innerHTML = `<div class="tip"><b>★ 偵探筆記：</b>課文寫仙人掌的那一句，<b>沒有直接寫結果</b>。我們要往段落最後的總結句找：「讓自身能在酷熱、嚴寒和缺水的逆境中生存下來」。酷熱、缺水正是仙人掌的困難，所以推論出它的結果是在沙漠中生存下來。</div>`;
+        }
+        if(!left){
+          say(i < L2.length-1 ? `${ex.who}的四格表完成！` : '四個例子都完成了！人和植物，都在證明第1段的道理。', true);
+          const last = i === L2.length-1;
+          $('#ctl').insertAdjacentHTML('beforeend', `<button class="btn" id="next">${last ? '前往第3關 →' : '下一個例子 →'}</button>`);
+          $('#next').onclick = () => last ? go('l3') : l2(i+1);
+        }
+      } else {
+        flash(zone,'wrong'); flash(el,'shake');
+        say(val === 'x' ? '這張卡說的不是' + ex.who + '喔！' : '這張是' + ex.who + '的卡，但不是放在這一格。', false);
+      }
+    });
+  });
+  app.querySelectorAll('[data-zone]').forEach(zoneClick);
+  $('#reset').onclick = () => l2(i);
+}
+
+function exToggle(){
+  const b = $('#exbtn'), ex = $('#ex');
+  b.onclick = () => { ex.hidden = !ex.hidden; b.textContent = ex.hidden ? '💡 看解說' : '收起解說'; };
+}
+function l3(i){
+  if(i >= L3.length) return bonus();
+  const it = L3[i];
+  app.innerHTML = `
+    <div class="row" style="justify-content:space-between"><p class="lead" style="margin:0">這句話在文章裡扮演什麼角色？</p><span class="prog">第 ${i+1} / ${L3.length} 題</span></div>
+    <div class="quote">「${esc(it.q)}」</div>
+    <div class="choices">${L3OPTS.map(o => `<button class="ch">${o}</button>`).join('')}</div>
+    <div id="fb"></div>`;
+  let tried = false;
+  app.querySelectorAll('.ch').forEach(b => b.onclick = () => {
+    if(b.textContent === it.a){
+      b.classList.add('right'); if(!tried) addStar();
+      app.querySelectorAll('.ch').forEach(x => x.disabled = true);
+      $('#fb').innerHTML = `<div class="msg ok">答對了！</div><div class="row" style="margin-top:14px"><button class="btn ghost" id="exbtn">💡 看解說</button><button class="btn" id="next">下一題 →</button></div><div class="explain" id="ex" hidden>${it.ex}</div>`;
+      exToggle();
+      $('#next').onclick = () => l3(i+1);
+    } else { tried = true; b.classList.add('no'); b.disabled = true; flash(b,'shake'); }
+  });
+}
+
+function bonus(){
+  app.innerHTML = `
+    <p class="lead">🔍 最後一題：大偵探挑戰</p>
+    <div class="quote" style="font-size:26px">${esc(BONUS.q)}</div>
+    <div class="choices">${BONUS.opts.map((o,k) => `<button class="ch" data-k="${k}" style="font-size:22px">${o}</button>`).join('')}</div>
+    <div id="fb"></div>`;
+  let tried = false;
+  app.querySelectorAll('.ch').forEach(b => b.onclick = () => {
+    if(+b.dataset.k === BONUS.a){
+      b.classList.add('right'); if(!tried) addStar(2);
+      app.querySelectorAll('.ch').forEach(x => x.disabled = true);
+      $('#fb').innerHTML = `<div class="msg ok">答對了！</div><div class="row" style="margin-top:14px"><button class="btn ghost" id="exbtn">💡 看解說</button><button class="btn" id="next">完成挑戰 →</button></div><div class="explain" id="ex" hidden>${BONUS.ex}</div>`;
+      exToggle();
+      $('#next').onclick = finish;
+    } else { tried = true; b.classList.add('no'); b.disabled = true; flash(b,'shake'); }
+  });
+}
+
+function finish(){
+  setNav('');
+  app.innerHTML = `<div class="end">
+    <div style="font-size:70px">🍔</div>
+    <div class="big">課文漢堡完成！</div>
+    <p>你一共拿到 <b style="color:var(--accent)">${stars}</b> 顆星星。</p>
+    <p>上層麵包是論點，中間的料是人物和植物兩種論據，<br>下層麵包重申論點，還引用了伽利略的話讓道理更有說服力。</p>
+    <div class="row" style="justify-content:center;margin-top:20px"><button class="btn" id="again">再玩一次</button></div></div>`;
+  $('#again').onclick = () => { stars = 0; addStar(0); go('home'); };
+}
+
+go('home');
+</script>
+</body>
+</html>

@@ -290,6 +290,10 @@ function l2(i){
   $('#reset').onclick = () => l2(i);
 }
 
+function exToggle(){
+  const b = $('#exbtn'), ex = $('#ex');
+  b.onclick = () => { ex.hidden = !ex.hidden; b.textContent = ex.hidden ? '💡 看解說' : '收起解說'; };
+}
 function l3(i){
   if(i >= L3.length) return bonus();
   const it = L3[i];
@@ -303,7 +307,8 @@ function l3(i){
     if(b.textContent === it.a){
       b.classList.add('right'); if(!tried) addStar();
       app.querySelectorAll('.ch').forEach(x => x.disabled = true);
-      $('#fb').innerHTML = `<div class="msg ok">答對了！</div><div class="explain">${it.ex}</div><div class="row" style="margin-top:14px"><button class="btn" id="next">下一題 →</button></div>`;
+      $('#fb').innerHTML = `<div class="msg ok">答對了！</div><div class="row" style="margin-top:14px"><button class="btn ghost" id="exbtn">💡 看解說</button><button class="btn" id="next">下一題 →</button></div><div class="explain" id="ex" hidden>${it.ex}</div>`;
+      exToggle();
       $('#next').onclick = () => l3(i+1);
     } else { tried = true; b.classList.add('no'); b.disabled = true; flash(b,'shake'); }
   });
@@ -320,7 +325,8 @@ function bonus(){
     if(+b.dataset.k === BONUS.a){
       b.classList.add('right'); if(!tried) addStar(2);
       app.querySelectorAll('.ch').forEach(x => x.disabled = true);
-      $('#fb').innerHTML = `<div class="msg ok">答對了！</div><div class="explain">${BONUS.ex}</div><div class="row" style="margin-top:14px"><button class="btn" id="next">完成挑戰 →</button></div>`;
+      $('#fb').innerHTML = `<div class="msg ok">答對了！</div><div class="row" style="margin-top:14px"><button class="btn ghost" id="exbtn">💡 看解說</button><button class="btn" id="next">完成挑戰 →</button></div><div class="explain" id="ex" hidden>${BONUS.ex}</div>`;
+      exToggle();
       $('#next').onclick = finish;
     } else { tried = true; b.classList.add('no'); b.disabled = true; flash(b,'shake'); }
   });
