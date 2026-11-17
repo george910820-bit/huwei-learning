@@ -45,6 +45,10 @@ header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;
 .foot time{font-size:13px;color:var(--soft)}
 .play{display:inline-block;text-decoration:none;font-weight:900;font-size:18px;color:#fff;background:var(--c);padding:10px 22px;border-radius:14px}
 .play:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.ws{border-top:1px dashed var(--line);padding-top:10px;font-size:14px}
+.ws b{display:block;color:var(--soft);margin-bottom:4px}
+.ws a{display:block;color:var(--c);font-weight:700;text-decoration:none;padding:3px 0}
+.ws a:hover{text-decoration:underline}
 .card.done{opacity:.72}
 .card.done .band{filter:saturate(.4)}
 .s-國語{--c:var(--zh);--c-bg:var(--zh-bg)}
@@ -102,7 +106,7 @@ async function load(){
     let info={};
     try{ const res=await fetch(`games/${n}/info.json`,{cache:"no-store"}); if(res.ok) info=await res.json(); }catch(e){}
     return { id:n, name:info.name||n, subject:SUBJECTS.includes(info.subject)?info.subject:"其他",
-      grade:info.grade||"", desc:info.desc||"", status:info.status==="已完成"?"已完成":"使用中", updated:info.updated||"" };
+      grade:info.grade||"", desc:info.desc||"", status:info.status==="已完成"?"已完成":"使用中", updated:info.updated||"", worksheets:Array.isArray(info.worksheets)?info.worksheets:[] };
   }));
   games.sort((a,b)=>(a.status===b.status?0:a.status==="使用中"?-1:1)||String(b.updated).localeCompare(String(a.updated)));
   renderBar(); render();
@@ -126,7 +130,7 @@ function render(){
   if(!list.length){ grid.innerHTML='<div class="msg">找不到符合的遊戲。</div>'; return; }
   grid.innerHTML=list.map(g=>`<article class="card s-${g.subject}${g.status==="已完成"?" done":""}">
     <div class="band"><div class="tags"><span>${g.subject}</span>${g.grade?`<span>${esc(g.grade)}</span>`:""}<span class="st">${g.status}</span></div><h2>${esc(g.name)}</h2></div>
-    <div class="body">${g.desc?`<p>${esc(g.desc)}</p>`:""}<div class="foot">${g.updated?`<time>更新 ${esc(g.updated)}</time>`:"<span></span>"}<a class="play" href="games/${encodeURIComponent(g.id)}/">${g.subject==="特需"?"打開教材":"開始玩"}</a></div></div>
+    <div class="body">${g.desc?`<p>${esc(g.desc)}</p>`:""}${g.worksheets.length?`<div class="ws"><b>學習單下載</b>${g.worksheets.map(w=>`<a href="games/${encodeURIComponent(g.id)}/${w.file.split("/").map(encodeURIComponent).join("/")}" download>📄 ${esc(w.title||w.file)}</a>`).join("")}</div>`:""}<div class="foot">${g.updated?`<time>更新 ${esc(g.updated)}</time>`:"<span></span>"}<a class="play" href="games/${encodeURIComponent(g.id)}/">${g.subject==="特需"?"打開教材":"開始玩"}</a></div></div>
   </article>`).join("");
 }
 $("#q").addEventListener("input",render);
