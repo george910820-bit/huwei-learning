@@ -64,6 +64,7 @@ header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;
 .sub>h3:before{content:"";width:8px;height:22px;border-radius:4px;background:#c62828}
 .lno{display:inline-block;font-size:14px;font-weight:900;color:#fff;background:#c62828;border-radius:8px;padding:0 8px;margin-right:6px;vertical-align:2px}
 .jump{display:flex;flex-wrap:wrap;gap:8px;margin:-10px 0 22px;font-size:15px}
+.jump:empty{display:none}
 .jump a{color:#1f4e9c;font-weight:700;text-decoration:none;border:2px solid #c9d6ee;background:#fff;border-radius:10px;padding:2px 12px}
 .jump a:hover{border-color:#1f4e9c}
 .msg{grid-column:1/-1;text-align:center;color:var(--soft);padding:48px 0;font-size:17px}
@@ -140,7 +141,7 @@ const NUM=["","一","二","三","四","五","六","七","八","九","十","十�
 function card(g){
   return `<article class="card s-${g.subject}${g.status==="已完成"?" done":""}">
     <div class="band"><div class="tags"><span>${g.subject}</span>${g.grade?`<span>${esc(g.grade)}</span>`:""}<span class="st">${g.status}</span></div><h2>${g.lesson?`<span class="lno">L${g.lesson}</span>`:""}${esc(g.name)}</h2></div>
-    <div class="body">${g.desc?`<p>${esc(g.desc)}</p>`:""}${g.worksheets.length?`<div class="ws"><b>學習單下載</b>${g.worksheets.map(w=>`<a href="games/${encodeURIComponent(g.id)}/${w.file.split("/").map(encodeURIComponent).join("/")}" download>📄 ${esc(w.title||w.file)}</a>`).join("")}</div>`:""}<div class="foot">${g.updated?`<time>更新 ${esc(g.updated)}</time>`:"<span></span>"}<a class="play" href="games/${encodeURIComponent(g.id)}/">${g.subject==="特需"?"打開教材":"開始玩"}</a></div></div>
+    <div class="body">${g.desc?`<p>${esc(g.desc)}</p>`:""}${g.worksheets.length?`<div class="ws"><b>學習單下載</b>${g.worksheets.map(w=>`<a href="games/${encodeURIComponent(g.id)}/${w.file.split("/").map(encodeURIComponent).join("/")}" download>📄 ${esc(w.title||w.file)}</a>`).join("")}</div>`:""}<div class="foot">${g.updated?`<time>更新 ${esc(g.updated)}</time>`:"<span></span>"}<a class="play" href="games/${encodeURIComponent(g.id)}/">${g.subject==="特需"?"打開教材":g.id.startsWith("sentence-")?"打開教材包":"開始玩"}</a></div></div>
   </article>`;
 }
 /* 分組：國語課本教材包依「版本 → 年級學期 → 課次」；其他依科目 */
@@ -154,10 +155,8 @@ function groups(list){
       const g0=its[0]; return {title:(g0.grade||"其他")+(g0.semester?(g0.semester==="下"?"下學期":"上學期"):""), items:its};
     })});
   });
-  SUBJECTS.forEach(sj=>{
-    const items=list.filter(g=>!g.publisher&&g.subject===sj); if(!items.length) return;
-    out.push({id:"sub-"+sj, title:sj==="國語"?"國語（其他）":sj, note:"", subs:[{title:"",items}]});
-  });
+  const rest=list.filter(g=>!g.publisher);
+  if(rest.length) out.push({id:"sub-other", title:"國語（其他）", note:"", subs:[{title:"",items:rest}]});
   return out;
 }
 function render(){
@@ -167,6 +166,7 @@ function render(){
   jump.innerHTML="";
   if(!games.length){ grid.innerHTML='<div class="msg">還沒有遊戲。把遊戲放進 games 資料夾就會出現在這裡。</div>'; return; }
   if(!list.length){ grid.innerHTML='<div class="msg">找不到符合的遊戲。</div>'; return; }
+  if(subject!=="國語"){ grid.innerHTML=`<div class="grid">${list.map(card).join("")}</div>`; return; }
   const gs=groups(list);
   if(gs.length>1) jump.innerHTML=gs.map(x=>`<a href="#${esc(x.id)}">${esc(x.title)}</a>`).join("");
   grid.innerHTML=gs.map(x=>`<section class="sec"><h2 id="${esc(x.id)}">${esc(x.title)}${x.note?`<small>${esc(x.note)}</small>`:""}</h2>${
