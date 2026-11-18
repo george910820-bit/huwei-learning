@@ -56,6 +56,16 @@ header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;
 .s-特需{--c:var(--sp);--c-bg:var(--sp-bg)}
 .s-個別化{--c:var(--ind);--c-bg:var(--ind-bg)}
 .s-其他{--c:var(--oth);--c-bg:var(--oth-bg)}
+.sec{margin:0 0 34px}
+.sec>h2{margin:0 0 14px;font-size:28px;font-weight:900;letter-spacing:.04em;color:#1f4e9c;border-bottom:3px solid #1f4e9c;padding-bottom:4px;scroll-margin-top:12px}
+.sec>h2 small{font-size:15px;font-weight:500;color:var(--soft);margin-left:10px}
+.sub{margin:0 0 22px}
+.sub>h3{margin:0 0 12px;font-size:20px;font-weight:900;color:var(--ink);display:flex;align-items:center;gap:8px}
+.sub>h3:before{content:"";width:8px;height:22px;border-radius:4px;background:#c62828}
+.lno{display:inline-block;font-size:14px;font-weight:900;color:#fff;background:#c62828;border-radius:8px;padding:0 8px;margin-right:6px;vertical-align:2px}
+.jump{display:flex;flex-wrap:wrap;gap:8px;margin:-10px 0 22px;font-size:15px}
+.jump a{color:#1f4e9c;font-weight:700;text-decoration:none;border:2px solid #c9d6ee;background:#fff;border-radius:10px;padding:2px 12px}
+.jump a:hover{border-color:#1f4e9c}
 .msg{grid-column:1/-1;text-align:center;color:var(--soft);padding:48px 0;font-size:17px}
 footer{margin-top:40px;color:var(--soft);font-size:13px;text-align:center}
 @media (max-width:560px){.toggle{margin-left:0}.band h2{font-size:23px}}
@@ -70,7 +80,8 @@ footer{margin-top:40px;color:var(--soft);font-size:13px;text-align:center}
   <div class="bar" id="bar">
     <label class="toggle"><input type="checkbox" id="showDone">顯示已完成的遊戲</label>
   </div>
-  <main class="grid" id="grid"><div class="msg">載入遊戲中…</div></main>
+  <nav class="jump" id="jump" aria-label="跳到分類"></nav>
+  <main id="grid"><div class="msg">載入遊戲中…</div></main>
   <footer>點遊戲卡片的「開始玩」就能進入遊戲。遊戲紀錄存在這台電腦的瀏覽器裡。</footer>
 </div>
 <script>
@@ -106,7 +117,7 @@ async function load(){
     let info={};
     try{ const res=await fetch(`games/${n}/info.json`,{cache:"no-store"}); if(res.ok) info=await res.json(); }catch(e){}
     return { id:n, name:info.name||n, subject:SUBJECTS.includes(info.subject)?info.subject:"其他",
-      grade:info.grade||"", desc:info.desc||"", status:info.status==="已完成"?"已完成":"使用中", updated:info.updated||"", worksheets:Array.isArray(info.worksheets)?info.worksheets:[] };
+      grade:info.grade||"", publisher:info.publisher||"", semester:info.semester||"", lesson:Number(info.lesson)||0, desc:info.desc||"", status:info.status==="已完成"?"已完成":"使用中", updated:info.updated||"", worksheets:Array.isArray(info.worksheets)?info.worksheets:[] };
   }));
   games.sort((a,b)=>(a.status===b.status?0:a.status==="使用中"?-1:1)||String(b.updated).localeCompare(String(a.updated)));
   renderBar(); render();
@@ -122,16 +133,45 @@ function renderBar(){
   });
 }
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const PUBS=["南一","康軒","翰林"];
+const CN={"一":1,"二":2,"三":3,"四":4,"五":5,"六":6};
+const gnum=g=>{const m=String(g.grade).match(/[一二三四五六]/); return m?CN[m[0]]:99;};
+const NUM=["","一","二","三","四","五","六","七","八","九","十","十一","十二","十三","十四"];
+function card(g){
+  return `<article class="card s-${g.subject}${g.status==="已完成"?" done":""}">
+    <div class="band"><div class="tags"><span>${g.subject}</span>${g.grade?`<span>${esc(g.grade)}</span>`:""}<span class="st">${g.status}</span></div><h2>${g.lesson?`<span class="lno">L${g.lesson}</span>`:""}${esc(g.name)}</h2></div>
+    <div class="body">${g.desc?`<p>${esc(g.desc)}</p>`:""}${g.worksheets.length?`<div class="ws"><b>學習單下載</b>${g.worksheets.map(w=>`<a href="games/${encodeURIComponent(g.id)}/${w.file.split("/").map(encodeURIComponent).join("/")}" download>📄 ${esc(w.title||w.file)}</a>`).join("")}</div>`:""}<div class="foot">${g.updated?`<time>更新 ${esc(g.updated)}</time>`:"<span></span>"}<a class="play" href="games/${encodeURIComponent(g.id)}/">${g.subject==="特需"?"打開教材":"開始玩"}</a></div></div>
+  </article>`;
+}
+/* 分組：國語課本教材包依「版本 → 年級學期 → 課次」；其他依科目 */
+function groups(list){
+  const out=[], pubs=[...PUBS, ...new Set(list.map(g=>g.publisher).filter(p=>p&&!PUBS.includes(p)))];
+  pubs.forEach(p=>{
+    const items=list.filter(g=>g.publisher===p); if(!items.length) return;
+    const keys=[...new Set(items.map(g=>gnum(g)*10+(g.semester==="下"?2:1)))].sort((x,y)=>x-y);
+    out.push({id:"pub-"+p, title:p+"版", note:"國語課本教材", subs:keys.map(k=>{
+      const its=items.filter(g=>gnum(g)*10+(g.semester==="下"?2:1)===k).sort((x,y)=>x.lesson-y.lesson||(y.id.startsWith("sentence-")-x.id.startsWith("sentence-"))||x.id.localeCompare(y.id));
+      const g0=its[0]; return {title:(g0.grade||"其他")+(g0.semester?(g0.semester==="下"?"下學期":"上學期"):""), items:its};
+    })});
+  });
+  SUBJECTS.forEach(sj=>{
+    const items=list.filter(g=>!g.publisher&&g.subject===sj); if(!items.length) return;
+    out.push({id:"sub-"+sj, title:sj==="國語"?"國語（其他）":sj, note:"", subs:[{title:"",items}]});
+  });
+  return out;
+}
 function render(){
   const q=$("#q").value.trim(), showDone=$("#showDone").checked;
-  const list=games.filter(g=>(subject==="全部"||g.subject===subject)&&(showDone||g.status!=="已完成")&&(!q||(g.name+g.desc+g.grade).includes(q)));
-  const grid=$("#grid");
+  const list=games.filter(g=>(subject==="全部"||g.subject===subject)&&(showDone||g.status!=="已完成")&&(!q||(g.name+g.desc+g.grade+g.publisher).includes(q)));
+  const grid=$("#grid"), jump=$("#jump");
+  jump.innerHTML="";
   if(!games.length){ grid.innerHTML='<div class="msg">還沒有遊戲。把遊戲放進 games 資料夾就會出現在這裡。</div>'; return; }
   if(!list.length){ grid.innerHTML='<div class="msg">找不到符合的遊戲。</div>'; return; }
-  grid.innerHTML=list.map(g=>`<article class="card s-${g.subject}${g.status==="已完成"?" done":""}">
-    <div class="band"><div class="tags"><span>${g.subject}</span>${g.grade?`<span>${esc(g.grade)}</span>`:""}<span class="st">${g.status}</span></div><h2>${esc(g.name)}</h2></div>
-    <div class="body">${g.desc?`<p>${esc(g.desc)}</p>`:""}${g.worksheets.length?`<div class="ws"><b>學習單下載</b>${g.worksheets.map(w=>`<a href="games/${encodeURIComponent(g.id)}/${w.file.split("/").map(encodeURIComponent).join("/")}" download>📄 ${esc(w.title||w.file)}</a>`).join("")}</div>`:""}<div class="foot">${g.updated?`<time>更新 ${esc(g.updated)}</time>`:"<span></span>"}<a class="play" href="games/${encodeURIComponent(g.id)}/">${g.subject==="特需"?"打開教材":"開始玩"}</a></div></div>
-  </article>`).join("");
+  const gs=groups(list);
+  if(gs.length>1) jump.innerHTML=gs.map(x=>`<a href="#${esc(x.id)}">${esc(x.title)}</a>`).join("");
+  grid.innerHTML=gs.map(x=>`<section class="sec"><h2 id="${esc(x.id)}">${esc(x.title)}${x.note?`<small>${esc(x.note)}</small>`:""}</h2>${
+    x.subs.map(sb=>`<div class="sub">${sb.title?`<h3>${esc(sb.title)}</h3>`:""}<div class="grid">${sb.items.map(card).join("")}</div></div>`).join("")
+  }</section>`).join("");
 }
 $("#q").addEventListener("input",render);
 $("#showDone").addEventListener("change",render);
