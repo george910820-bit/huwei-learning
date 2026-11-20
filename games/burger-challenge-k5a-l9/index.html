@@ -329,9 +329,8 @@ function makeFb(el, hints, mark){
       const btn=$('#hintBtn',el), area=$('#hintArea',el);
       const draw=()=>{
         const rows=[];
-        if(lv>=1) rows.push(`<div><b>① 口語提示：</b>${hints[0]}</div>`);
-        if(lv>=2) rows.push(`<div><b>② 位置提示：</b>${hints[1]}</div>`);
-        if(lv>=3) rows.push(`<div><b>③ 螢光筆：</b>已經用螢光筆標出來了，請找黃色那一個。</div>`);
+        if(lv>=1) rows.push(`<div>${hints[0]}</div>`);
+        if(lv>=2) rows.push(`<div>${hints[1]}</div>`);
         area.innerHTML = rows.length ? `<div class="hintbox">${rows.join('')}</div>` : '';
         if(lv>=3){ btn.disabled=true; btn.textContent='💡 提示已全部給出'; mark(); }
         else btn.textContent = `💡 提示（${lv+1}/3）`;
