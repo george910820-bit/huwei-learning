@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>說服力法庭｜在挫折中成長</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F7F1E6; --ink:#3A2716; --muted:#7D6750; --line:#E3D5BE;
+    --wood:#8A5A33; --wood-d:#5E3A1E; --wood-l:#C99A6B;
+    --gold:#E9B949; --ok:#2E8B57; --ok-l:#E4F4EA; --bad:#C0392B; --bad-l:#FBE7E4;
+    --blue:#2F5D8A; --accent:#C2512B; --marker:#FFF06A;
+    --bun:#E8A94F; --lettuce:#9CCB6B; --patty:#A8653B;
+    --title:'Huninn','Noto Sans TC','Microsoft JhengHei','PingFang TC',sans-serif;
+    --body:'Noto Sans TC','Microsoft JhengHei','PingFang TC',sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body)}
+  body{min-height:100vh;display:flex;flex-direction:column}
+  button{font-family:inherit}
+
+  header{display:flex;align-items:center;gap:10px;padding:10px 18px;background:var(--wood-d);color:#FFF4E2;flex-wrap:wrap}
+  header h1{font-family:var(--title);font-size:28px;margin:0 10px 0 0;font-weight:400;letter-spacing:2px}
+  nav{display:flex;gap:6px;flex-wrap:wrap}
+  .nb{font-family:var(--title);font-size:17px;padding:6px 14px;border-radius:999px;border:2px solid rgba(255,244,226,.35);background:transparent;color:#FFF4E2;cursor:pointer}
+  .nb.on{background:var(--gold);border-color:var(--gold);color:var(--wood-d)}
+  .hbtn{margin-left:auto;font-size:16px;padding:6px 12px;border-radius:10px;border:2px solid rgba(255,244,226,.35);background:transparent;color:#FFF4E2;cursor:pointer}
+
+  /* 法庭 */
+  .court{display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:14px;align-items:end;padding:14px 18px 0;max-width:1280px;width:100%;margin:0 auto}
+  .who{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+  .face{font-size:64px;line-height:1.1;margin-bottom:2px;transition:transform .2s}
+  .face.pop{animation:pop .45s}
+  @keyframes pop{40%{transform:scale(1.25) rotate(-6deg)}}
+  .name{font-family:var(--title);font-size:18px;color:var(--muted)}
+  .bubble{position:relative;background:#fff;border:3px solid var(--line);border-radius:18px;padding:10px 14px;font-family:var(--title);font-size:21px;line-height:1.45;min-height:58px;width:100%;display:flex;align-items:center;justify-content:center}
+  .bubble.bad{border-color:var(--bad);background:var(--bad-l)}
+  .bubble.ok{border-color:var(--ok);background:var(--ok-l)}
+  .judge .bubble{border-color:var(--wood-l)}
+  .bench{background:linear-gradient(var(--wood),var(--wood-d));border-radius:14px 14px 0 0;padding:10px 14px 12px;width:100%;color:#FFF4E2}
+  .meterlab{display:flex;justify-content:space-between;font-family:var(--title);font-size:18px;margin-bottom:6px}
+  .meter{height:22px;border-radius:999px;background:rgba(0,0,0,.3);overflow:hidden}
+  .meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,#F6D776,var(--gold));border-radius:999px;transition:width .6s cubic-bezier(.3,1.4,.5,1)}
+  .team{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+  .chip{font-family:var(--title);font-size:17px;padding:5px 11px;border-radius:999px;border:2px solid var(--line);background:#fff;color:var(--ink);cursor:pointer}
+  .chip.now{background:var(--blue);border-color:var(--blue);color:#fff;transform:scale(1.08)}
+  .turn{font-family:var(--title);font-size:22px;color:var(--blue)}
+
+  main{flex:1;max-width:1280px;width:100%;margin:0 auto;padding:0 18px 24px}
+  .panel{background:#fff;border:3px solid var(--wood-l);border-radius:0 0 18px 18px;padding:20px 22px;min-height:300px}
+  .stage{font-family:var(--title);font-size:20px;color:var(--accent);margin:0 0 4px}
+  .lead{font-size:21px;margin:0 0 14px;color:var(--muted);line-height:1.6}
+  .lead b{color:var(--ink)}
+  .btn{font-family:var(--title);font-size:21px;padding:10px 22px;border-radius:14px;border:none;background:var(--accent);color:#fff;cursor:pointer}
+  .btn.ghost{background:#fff;color:var(--ink);border:2px solid var(--line)}
+  .btn.hint{background:#FFF6CC;color:#6B4E00;border:2px solid var(--gold)}
+  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+
+  /* 選項 */
+  .opts{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .opts.one{grid-template-columns:1fr}
+  .opts.three{grid-template-columns:repeat(3,1fr)}
+  .opt{font-family:var(--title);font-size:22px;line-height:1.5;padding:14px 16px;border-radius:16px;border:3px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;text-align:left;position:relative}
+  .opt:hover:not(:disabled){border-color:var(--blue)}
+  .opt.right{background:var(--ok-l);border-color:var(--ok)}
+  .opt.no{background:var(--bad-l);border-color:var(--bad);opacity:.6;padding-right:38px}
+  .opt.no::after{content:'✗';position:absolute;right:12px;top:8px;color:var(--bad);font-size:22px}
+  .opt:disabled{cursor:default}
+  .opt .ico{font-size:28px;margin-right:6px}
+  .marker{background:linear-gradient(transparent 8%,var(--marker) 8%,var(--marker) 92%,transparent 92%)!important;box-shadow:0 0 0 4px var(--gold)}
+  .quote{background:#FFFDF6;border:2px solid var(--line);border-left:10px solid var(--wood-l);border-radius:12px;padding:16px 22px;font-family:var(--title);font-size:27px;line-height:1.6;margin:6px 0 16px}
+  .shake{animation:shake .4s}
+  @keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+
+  /* 回饋區 */
+  .fb{margin-top:16px;min-height:52px}
+  .fbmsg{font-family:var(--title);font-size:24px;margin-bottom:10px}
+  .fbmsg.ok{color:var(--ok)} .fbmsg.bad{color:var(--bad)}
+  .hintbox{background:#FFFBE6;border:2px dashed var(--gold);border-radius:14px;padding:10px 16px;margin-top:10px;font-size:20px;line-height:1.7}
+  .hintbox div+div{margin-top:4px}
+  .hintbox b{color:#7A5200}
+  .explain{background:#F3EEE5;border-radius:14px;padding:12px 16px;margin-top:10px;font-size:20px;line-height:1.7}
+
+  /* 證據袋 */
+  .evgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .bag{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:#F2E6D3;border:3px dashed var(--wood-l);border-radius:16px;padding:10px 14px;margin-bottom:14px;min-height:64px;font-family:var(--title);font-size:20px}
+  .bag .in{background:#fff;border-radius:12px;padding:4px 12px;border:2px solid var(--ok)}
+  .opt.used{opacity:.35}
+
+  /* 四格表 */
+  .fourgrid{display:grid;grid-template-columns:140px repeat(3,1fr);gap:8px;margin-bottom:16px}
+  .fourgrid .h{font-family:var(--title);font-size:18px;text-align:center;color:#fff;background:var(--wood);border-radius:10px;padding:6px}
+  .fourgrid .w{font-family:var(--title);font-size:20px;display:flex;align-items:center;justify-content:center;gap:4px;background:#F2E6D3;border-radius:10px;padding:6px;text-align:center}
+  .fourgrid .c{border:3px dashed var(--line);border-radius:10px;padding:8px 10px;font-size:18px;line-height:1.5;min-height:58px;background:#fff}
+  .fourgrid .c.cur{border-color:var(--blue);background:#EEF4FA}
+  .fourgrid .c.done{border-style:solid;border-color:var(--ok);background:var(--ok-l)}
+  .fourgrid .c.infer.done{border-style:dashed}
+  .ask{font-family:var(--title);font-size:24px;margin:4px 0 12px}
+
+  /* 卷宗 */
+  .folders{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .folder{font-family:var(--title);font-size:22px;padding:16px 8px 12px;border-radius:6px 16px 16px 16px;border:3px solid var(--wood-l);background:#FCEFD6;cursor:pointer;color:var(--ink);text-align:center;position:relative}
+  .folder::before{content:'';position:absolute;left:-3px;top:-14px;width:46%;height:14px;background:#FCEFD6;border:3px solid var(--wood-l);border-bottom:none;border-radius:8px 8px 0 0}
+  .folder .cnt{display:block;font-size:16px;color:var(--muted);margin-top:4px}
+  .folder.right{background:var(--ok-l);border-color:var(--ok)}
+  .folder.no{background:var(--bad-l);border-color:var(--bad);opacity:.6}
+  .folder:disabled{cursor:default}
+
+  /* 漢堡結辯稿 */
+  .closing{display:grid;grid-template-columns:1.2fr 1fr;gap:22px;align-items:start}
+  .burger{display:flex;flex-direction:column;gap:6px}
+  .layer{position:relative;min-height:84px;padding:10px 16px 10px 132px;display:flex;align-items:center;border:4px solid transparent}
+  .layer .tag{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:114px;font-family:var(--title);font-size:17px;line-height:1.3;text-align:center}
+  .layer .slot{font-family:var(--title);font-size:19px;line-height:1.5;flex:1}
+  .layer .slot:empty::before{content:'？';opacity:.4;font-size:26px}
+  .layer.cur{border-color:var(--blue);animation:glow 1.4s infinite}
+  @keyframes glow{50%{box-shadow:0 0 0 6px rgba(47,93,138,.25)}}
+  .bun-top{background:var(--bun);border-radius:80px 80px 14px 14px;min-height:100px;color:#4A2C0A}
+  .lettuce{background:var(--lettuce);border-radius:14px;color:#24400E}
+  .patty{background:var(--patty);border-radius:14px;color:#FFF3E6}
+  .bun-bot{background:var(--bun);border-radius:14px 14px 46px 46px;color:#4A2C0A}
+
+  /* 開庭、人數、宣判 */
+  .center{text-align:center;padding:10px}
+  .big{font-family:var(--title);font-size:40px;margin:8px 0}
+  .counts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:14px 0 20px}
+  .cnt-btn{font-family:var(--title);font-size:30px;width:76px;height:76px;border-radius:20px;border:3px solid var(--line);background:#fff;cursor:pointer;color:var(--ink)}
+  .cnt-btn.on{background:var(--blue);border-color:var(--blue);color:#fff}
+  .flow{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0;text-align:left}
+  .flow div{background:#FCF5E8;border:2px solid var(--line);border-radius:16px;padding:14px 16px;font-size:19px;line-height:1.6}
+  .flow b{font-family:var(--title);font-size:22px;font-weight:400;color:var(--accent);display:block}
+  .gavel{font-size:90px;display:inline-block;transform-origin:80% 80%;animation:bang 1s ease-out 3}
+  @keyframes bang{0%{transform:rotate(-35deg)}35%{transform:rotate(12deg)}50%{transform:rotate(0)}100%{transform:rotate(-35deg)}}
+  .verdict{display:inline-block;font-family:var(--title);font-size:44px;color:var(--wood-d);border:6px double var(--wood);border-radius:18px;padding:14px 30px;margin:10px 0;background:#FFFBEF}
+  .confetti{position:fixed;top:-20px;width:12px;height:18px;z-index:60;pointer-events:none;animation:fall linear forwards}
+  @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+  @media (prefers-reduced-motion:reduce){.shake,.gavel,.layer.cur,.face.pop{animation:none}.confetti{display:none}}
+  @media (max-width:900px){
+    .court{grid-template-columns:1fr}.opts,.opts.three,.evgrid,.folders,.flow,.closing{grid-template-columns:1fr}
+    .fourgrid{grid-template-columns:90px repeat(3,1fr)}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>⚖️ 說服力法庭</h1>
+  <nav id="nav">
+    <button class="nb" data-go="open">開庭</button>
+    <button class="nb" data-go="s1">第一庭 主張</button>
+    <button class="nb" data-go="ev">第二庭 證據</button>
+    <button class="nb" data-go="cx">第二庭 詰問</button>
+    <button class="nb" data-go="fo">第二庭 卷宗</button>
+    <button class="nb" data-go="s3">第三庭 結辯</button>
+  </nav>
+  <button class="hbtn" id="setupBtn">👥 律師人數</button>
+</header>
+
+<section class="court" id="court">
+  <div class="who">
+    <div class="bubble" id="skB">挫折只會讓人失敗！</div>
+    <div class="face" id="skF">🤨</div>
+    <div class="name">反方・懷疑先生</div>
+  </div>
+  <div class="who judge">
+    <div class="bubble" id="jdB">本庭開庭！</div>
+    <div class="face" id="jdF">👩‍⚖️</div>
+    <div class="bench">
+      <div class="meterlab"><span>說服力量表</span><span id="pct">0%</span></div>
+      <div class="meter"><i id="bar"></i></div>
+    </div>
+  </div>
+  <div class="who">
+    <div class="turn" id="turn"></div>
+    <div class="face">🧑‍💼</div>
+    <div class="team" id="team"></div>
+    <div class="name">律師團（合作）</div>
+  </div>
+</section>
+<main><div class="panel" id="app"></div></main>
+
+<script>
+const $ = (s, el=document) => el.querySelector(s);
+const app = $('#app');
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function flash(el, cls='shake'){ el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+
+/* ================= 題目資料 ================= */
+// 第一庭：主張
+const S1 = {
+  q:'律師，你們今天要證明的主張是什麼？請從第1段選出來。',
+  opts:[
+    {t:'只有在每一次的挫折中勇往直前，接受困境的考驗，才能磨練出堅強的意志。', ok:true},
+    {t:'遇上困難，你會勇敢面對，還是選擇逃避？', why:'這是一個問句，只是讓大家想一想，還沒有說出主張。'},
+    {t:'二○二四年的夏天，她三度參加奧運，終於在巴黎奧運獲得銅牌。', why:'這是陳念琴的故事，是證據，不是主張。'},
+    {t:'葉片也演化為針刺狀來降低水分蒸發。', why:'這是在說仙人掌，是證據，不是主張。'},
+  ],
+  hints:['主張就是作者最想說服大家的「道理」，不是問句，也不是例子。','看第1段的最後一句。'],
+  ex:'這句是第1段的最後一句，也是整篇文章最想說服我們的道理，就是「論點」。開頭的問句只是引起思考；銅牌和仙人掌那兩句是用來證明的例子。'
+};
+
+// 第二庭①：挑證據
+const EV = [
+  {ico:'🥊', t:'陳念琴：奧運失利又得到癌症，仍堅持訓練。', ok:true, ex:'陳念琴遇到挫折，還克服了它，可以證明主張。'},
+  {ico:'🌵', t:'仙人掌：沙漠高溫又缺水，莖存水、葉變成刺。', ok:true, ex:'仙人掌在困境中調適改變自己，可以證明主張。'},
+  {ico:'🍂', t:'落葉樹：天氣低溫時落葉，把能量存起來。', ok:true, ex:'落葉樹用落葉度過寒冬，可以證明主張。'},
+  {ico:'🥥', t:'椰子：在海上漂流數月，厚外皮保護種子。', ok:true, ex:'椰子靠厚外皮撐過漂流，可以證明主張。'},
+  {ico:'🧃', t:'椰子水清涼又好喝。', why:'抗議！這跟挫折、成長都沒有關係，不能證明主張！'},
+  {ico:'🏳️', t:'遇到失敗，就宣告放棄。', why:'抗議！這是放棄的例子，反而幫了我的忙！'},
+];
+const EV_HINTS = ['能用的證據要有「遇到挫折」，而且「克服挫折」。','課文第2段和第3段舉了哪些例子？'];
+
+// 第二庭②：交叉詰問
+const COLS = [['k','遇到什麼困難'],['h','怎麼做'],['r','結果']];
+const CX_ASK = {k:'遇到什麼困難？', h:'怎麼做？', r:'結果呢？'};
+const CX_COLHINT = {
+  k:'找找看，他遇到了什麼不好的事情？',
+  h:'找找看，他用了什麼方法面對？',
+  r:'找找看，最後變得怎麼樣？'
+};
+const CX_EX = {
+  k:'「困難」就是例子裡的挫折，證明他真的遇到了考驗。',
+  h:'「怎麼做」是面對挫折的方法，也就是調適、改變自己。',
+};
+const CX = [
+  {who:'陳念琴', ico:'🥊', para:'第2段', open:'她只是運氣好吧？',
+   slots:{k:'里約奧運在十六強止步；備戰東京奧運時又得到癌症。',
+          h:'調適心情、接受失敗；治療時體能變差，仍堅持不斷的訓練。',
+          r:'找回自信，終於在巴黎奧運獲得銅牌。'},
+   rex:'陳念琴遇到奧運失利和癌症（困難），調適心情、堅持訓練（怎麼做），最後拿到銅牌（結果）。三格都說得出來，證據才完整，懷疑先生就沒話說了。'},
+  {who:'仙人掌', ico:'🌵', para:'第3段講仙人掌的句子', open:'沙漠那麼熱，它怎麼可能活得下去？', infer:true,
+   slots:{k:'沙漠中高溫又缺水的環境。',
+          h:'發展出肥厚的莖存放水分，葉片演化為針刺狀來降低水分蒸發。',
+          r:'在沙漠中生存下來。'},
+   rask:'課文根本沒寫仙人掌的結果！你們說，結果是什麼？',
+   rhint2:'看第3段最後的總結句：「讓自身能在酷熱、嚴寒和缺水的逆境中生存下來」。',
+   rex:'★ 推論：課文寫仙人掌的句子沒有直接寫結果，要往第3段最後的總結句找：「讓自身能在酷熱、嚴寒和缺水的逆境中生存下來」。酷熱、缺水正是仙人掌的困難，所以推論出它的結果是在沙漠中生存下來。'},
+  {who:'落葉樹', ico:'🍂', para:'第3段講落葉樹的句子', open:'冬天葉子都掉光了，不就是失敗了嗎？',
+   slots:{k:'天氣低溫。',
+          h:'秋冬時節落葉，減少樹葉消耗養分，將能量存起來。',
+          r:'開春時節給予幼芽養分。'},
+   rex:'落葉樹遇到低溫（困難），落葉把能量存起來（怎麼做），春天幼芽就有養分（結果）。葉子掉光不是失敗，是在保護自己。'},
+  {who:'椰子', ico:'🥥', para:'第3段講椰子的句子', open:'掉進海裡漂流，不就完蛋了？',
+   slots:{k:'被潮水帶進海裡，漂流可能長達數月。',
+          h:'靠厚厚的外皮保護，種子泡在海水也不會腐爛。',
+          r:'被海浪沖上沙灘，就可以生根發芽。'},
+   rex:'椰子漂流數月（困難），靠厚外皮保護種子（怎麼做），上岸就能生根發芽（結果）。'},
+];
+const LINK = {
+  q:'哼！植物又不是人，跟人有什麼關係？',
+  opts:[
+    {t:'植物遇到困境會調適、改變自己，人也可以這樣面對挫折。', ok:true},
+    {t:'植物比人更厲害，所以人不用努力。', why:'這樣說，反而證明不了「挫折能讓人成長」。'},
+    {t:'作者只是喜歡植物，隨便舉的。', why:'作者舉例是為了證明主張，不是隨便舉的。'},
+  ],
+  hints:['想一想：陳念琴和三種植物，面對挫折時有什麼共同點？','看第3段的最後一句總結句。'],
+  ex:'作者舉了「人物」和「植物」兩種例子：不論是人還是植物，面對挫折都能調適、改變自己而成長。例子的種類愈多，主張就愈有說服力。'
+};
+
+// 第二庭③：整理卷宗
+const FOLDERS = ['論點','人物證據','植物證據','重申論點'];
+const FO = [
+  {q:'遇上困難，你會勇敢面對，還是選擇逃避？', a:'論點', p:'第1段', ex:'這是第1段的開頭。作者先用問句讓讀者思考，再帶出自己的論點。'},
+  {q:'只有在每一次的挫折中勇往直前，接受困境的考驗，才能磨練出堅強的意志。', a:'論點', p:'第1段', ex:'這是第1段的最後一句，也是整篇文章最想說服我們的道理。'},
+  {q:'治療的副作用讓她的體能變差，她仍堅持不斷的訓練。', a:'人物證據', p:'第2段', ex:'這句在說陳念琴的經歷，是第2段用「人」來證明道理的例子。'},
+  {q:'葉片也演化為針刺狀來降低水分蒸發。', a:'植物證據', p:'第3段', ex:'這句在說仙人掌，是第3段用「植物」來證明道理的例子。'},
+  {q:'二○二四年的夏天，她三度參加奧運，終於在巴黎奧運獲得銅牌。', a:'人物證據', p:'第2段', ex:'這是陳念琴克服挫折後的結果，屬於第2段的人物例子。'},
+  {q:'靠著厚厚的外皮保護，種子即使泡在海水也不會腐爛。', a:'植物證據', p:'第3段', ex:'這句在說椰子，是第3段的植物例子。'},
+  {q:'以正向的心態面對逆境，從中發現自己的不足，並尋求解決問題的方法。', a:'重申論點', p:'第4段', ex:'這是第4段。作者在文章最後再說一次道理，告訴我們面對挫折該怎麼做。'},
+];
+const FO_HINT = {
+  '論點':'這句是在提出想法，或說出作者最想說的道理嗎？',
+  '人物證據':'這句在說哪一個「人」的故事？',
+  '植物證據':'這句在說哪一種「植物」？',
+  '重申論點':'這句是不是在文章最後，再說一次道理？'
+};
+
+// 第三庭：結辯稿（漢堡）
+const BG = [
+  {id:'p1', cls:'bun-top', tag:'上層麵包<br>論點', p:'第1段', text:'人生的道路崎嶇不平，只有在每一次的挫折中勇往直前，才能磨練出堅強的意志。', hint:'結辯一開始，要先說出我們的主張。', ex:'上層麵包放論點：結辯先說清楚主張。'},
+  {id:'p2', cls:'lettuce', tag:'中間的料<br>論據：人物', p:'第2段', text:'拳擊手陳念琴在奧運失利、又得了癌症，仍堅持訓練，終於在巴黎奧運獲得銅牌。', hint:'接著拿出用「人」來證明的證據。', ex:'第一層料是人物論據：陳念琴的故事。'},
+  {id:'p3', cls:'patty', tag:'中間的料<br>論據：植物', p:'第3段', text:'仙人掌、落葉樹、椰子接受環境給予的挫折，調適改變自己，在逆境中生存下來。', hint:'再拿出用「植物」來證明的證據。', ex:'第二層料是植物論據：三種植物的例子。'},
+  {id:'p4', cls:'bun-bot', tag:'下層麵包<br>重申論點', p:'第4段', text:'引用伽利略的話，提醒我們以正向的心態面對挫折，化危機為轉機，成長壯大。', hint:'最後，要再說一次道理，把漢堡包起來。', ex:'下層麵包重申論點：最後再說一次道理，和上層麵包前後呼應。'},
+];
+const GAL = {
+  q:'伽利略說：「生命如鍛造的鐵塊，愈被敲打，愈能發出火花。」作者在第4段引用這句話，主要是為了什麼？',
+  opts:[
+    {t:'引用名人的話，讓重申的道理更有說服力', ok:true},
+    {t:'介紹伽利略有哪些科學發現', why:'第4段沒有在介紹伽利略的發現。'},
+    {t:'說明鐵塊是怎麼打造出來的', why:'鐵塊只是比喻，不是要教打鐵。'},
+    {t:'再多舉一個人物的例子', why:'文章沒有說伽利略遇到什麼挫折，所以不是人物例子。'},
+  ],
+  hints:['先想想：第4段在文章裡的功能是什麼？','看第4段，伽利略的話放在哪一個位置？'],
+  ex:'第4段的功能是重申論點。作者借用名人說過的話，讓最後再說一次的道理更有力量、更讓人信服。它不是新的例子，因為文章沒有說伽利略遇到什麼挫折。'
+};
+
+/* ================= 狀態 ================= */
+const TOTAL = 1 + EV.filter(e=>e.ok).length + CX.length*3 + 1 + FO.length + BG.length + 1;
+let N = 4, turn = 0;
+const done = new Set();
+
+/* ================= 法庭角色 ================= */
+function judge(t, mood){ const b=$('#jdB'); b.className='bubble'+(mood?' '+mood:''); b.innerHTML=t; flash($('#jdF'),'pop'); }
+function skeptic(t, mood){
+  const b=$('#skB'); b.className='bubble'+(mood?' '+mood:''); b.innerHTML=t;
+  $('#skF').textContent = mood==='bad' ? '😤' : mood==='ok' ? '😳' : '🤨'; flash($('#skF'),'pop');
+}
+function meter(){ const p=Math.round(done.size/TOTAL*100); $('#bar').style.width=p+'%'; $('#pct').textContent=p+'%'; }
+function renderTeam(){
+  const t=$('#team');
+  if(N===1){ t.innerHTML=''; $('#turn').textContent='🙋 個人挑戰'; return; }
+  t.innerHTML = Array.from({length:N},(_,i)=>`<button class="chip ${i===turn?'now':''}" data-i="${i}">律師${i+1}</button>`).join('');
+  t.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{ turn=+c.dataset.i; renderTeam(); });
+  $('#turn').textContent = `🙋 輪到 律師${turn+1}`;
+}
+function score(id){ done.add(id); meter(); turn=(turn+1)%N; renderTeam(); }
+
+/* ================= 回饋區：提示鍵、解說鍵 ================= */
+// hints: [口語, 段落位置]；第3層＝在正確答案上畫螢光筆（mark 函式）
+function makeFb(el, hints, mark){
+  let lv = 0;
+  const api = {
+    wrong(){
+      el.innerHTML = `<div class="fbmsg bad">再想想看</div>
+        <div class="row"><button class="btn hint" id="hintBtn"></button></div><div id="hintArea"></div>`;
+      const btn=$('#hintBtn',el), area=$('#hintArea',el);
+      const draw=()=>{
+        const rows=[];
+        if(lv>=1) rows.push(`<div><b>① 口語提示：</b>${hints[0]}</div>`);
+        if(lv>=2) rows.push(`<div><b>② 位置提示：</b>${hints[1]}</div>`);
+        if(lv>=3) rows.push(`<div><b>③ 螢光筆：</b>已經用螢光筆標出來了，請找黃色那一個。</div>`);
+        area.innerHTML = rows.length ? `<div class="hintbox">${rows.join('')}</div>` : '';
+        if(lv>=3){ btn.disabled=true; btn.textContent='💡 提示已全部給出'; mark(); }
+        else btn.textContent = `💡 提示（${lv+1}/3）`;
+      };
+      btn.onclick=()=>{ lv++; draw(); };
+      draw();
+    },
+    right(ex, next, nextLabel='下一步 →'){
+      lv = 0;
+      el.innerHTML = `<div class="fbmsg ok">✔ 成立！</div>
+        <div class="row">${ex?'<button class="btn ghost" id="exBtn">💡 看解說</button>':''}${next?`<button class="btn" id="nextBtn">${nextLabel}</button>`:''}</div>
+        ${ex?`<div class="explain" id="exBox" hidden>${ex}</div>`:''}`;
+      if(ex){ const b=$('#exBtn',el), x=$('#exBox',el); b.onclick=()=>{ x.hidden=!x.hidden; b.textContent=x.hidden?'💡 看解說':'收起解說'; }; }
+      if(next) $('#nextBtn',el).onclick=next;
+    },
+    reset(){ lv=0; el.innerHTML=''; }
+  };
+  return api;
+}
+
+/* 一般選擇題 */
+function choice(box, cfg){
+  // cfg: {id, opts, hints, ex, cols, onWrong(o), onRight(), next, nextLabel}
+  box.innerHTML = `<div class="opts ${cfg.cols||''}">${cfg.opts.map((o,k)=>`<button class="opt" data-k="${k}">${o.ico?`<span class="ico">${o.ico}</span>`:''}${esc(o.t)}</button>`).join('')}</div><div class="fb"></div>`;
+  const fb = makeFb($('.fb',box), cfg.hints, ()=>{ box.querySelectorAll('.opt').forEach((b,k)=>{ if(cfg.opts[k].ok) b.classList.add('marker'); }); });
+  box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+    const o=cfg.opts[+b.dataset.k];
+    if(o.ok){
+      b.classList.remove('marker'); b.classList.add('right'); box.querySelectorAll('.opt').forEach(x=>x.disabled=true);
+      score(cfg.id); cfg.onRight && cfg.onRight(); fb.right(cfg.ex, cfg.next, cfg.nextLabel);
+    } else {
+      b.classList.add('no'); b.disabled=true; flash(b);
+      cfg.onWrong && cfg.onWrong(o); fb.wrong();
+    }
+  });
+}
+
+/* ================= 畫面 ================= */
+let stopFx = ()=>{};
+function setNav(k){ document.querySelectorAll('.nb').forEach(b=>b.classList.toggle('on', b.dataset.go===k)); }
+document.querySelectorAll('.nb').forEach(b=>b.onclick=()=>go(b.dataset.go));
+$('#setupBtn').onclick=()=>setup();
+function go(k){ stopFx(); setNav(k); ({open, s1, ev, cx:()=>cx(0,'k'), fo:()=>fo(0), s3, verdict})[k](); window.scrollTo(0,0); }
+
+function setup(){
+  stopFx(); setNav('');
+  judge('請問今天有幾位律師出庭？');
+  skeptic('哼，人再多也說服不了我！');
+  app.innerHTML = `<div class="center">
+    <div class="big">👥 選擇律師人數</div>
+    <p class="lead">大家是同一組律師團，<b>合作</b>讓說服力量表達到 100%。<br>每答對一題，就換下一位律師；也可以直接點上方的名字，指定輪到誰。</p>
+    <div class="counts">${[1,2,3,4,5,6].map(n=>`<button class="cnt-btn ${n===N?'on':''}" data-n="${n}">${n}</button>`).join('')}</div>
+    <button class="btn" id="startBtn">開庭 →</button></div>`;
+  app.querySelectorAll('.cnt-btn').forEach(b=>b.onclick=()=>{ N=+b.dataset.n; turn=0; app.querySelectorAll('.cnt-btn').forEach(x=>x.classList.toggle('on',x===b)); renderTeam(); });
+  $('#startBtn').onclick=()=>{ done.clear(); turn=0; meter(); renderTeam(); go('open'); };
+}
+
+function open(){
+  judge('本庭開庭！今天審理的案子是：<br>「挫折能讓人成長嗎？」');
+  skeptic('挫折只會讓人失敗！');
+  app.innerHTML = `<div class="center">
+    <div class="big">📜 案件：挫折能讓人成長嗎？</div>
+    <p class="lead">懷疑先生說「挫折只會讓人失敗」。律師團要用〈在挫折中成長〉這篇課文當證據，<br>讓法官的<b>說服力量表</b>到 100%！</p>
+    <div class="flow">
+      <div><b>第一庭　主張</b>說出我們要證明的道理（論點）。</div>
+      <div><b>第二庭　證據</b>挑出證據、回答懷疑先生的追問，再把證詞整理進卷宗（論據）。</div>
+      <div><b>第三庭　結辯</b>排好結辯稿，最後再說一次道理（重申論點）。</div>
+    </div>
+    <button class="btn" id="goBtn">進入第一庭 →</button></div>`;
+  $('#goBtn').onclick=()=>go('s1');
+}
+
+function s1(){
+  judge(S1.q); skeptic('我看你們連主張都說不出來！');
+  app.innerHTML = `<p class="stage">第一庭｜說出你的主張</p><p class="lead">法官要先知道律師團想證明什麼。從下面選出<b>第1段的論點</b>。</p><div id="box"></div>`;
+  choice($('#box'), {id:'s1', opts:shuffle(S1.opts), hints:S1.hints, ex:S1.ex, cols:'one',
+    onWrong:o=>skeptic('抗議！'+o.why,'bad'),
+    onRight:()=>{ judge('主張成立！請提出證據。','ok'); skeptic('哼，說得好聽，證據呢？','ok'); },
+    next:()=>go('ev'), nextLabel:'進入第二庭 →'});
+}
+
+function ev(){
+  judge('請律師團從證據袋裡，挑出能證明主張的證據。'); skeptic('隨便拿個例子可騙不了法官！');
+  const list = shuffle(EV);
+  const need = EV.filter(e=>e.ok).length;
+  app.innerHTML = `<p class="stage">第二庭｜提出證據</p>
+    <p class="lead">證據袋裡有 6 張卡，但<b>不是每一張都能用</b>。點一下能證明「挫折能讓人成長」的證據，放進證據袋。</p>
+    <div class="bag" id="bag">🧳 證據袋：</div>
+    <div class="evgrid" id="grid">${list.map((e,k)=>`<button class="opt" data-k="${k}"><span class="ico">${e.ico}</span>${esc(e.t)}</button>`).join('')}</div>
+    <div class="fb" id="fb"></div>`;
+  let got = 0;
+  const fb = makeFb($('#fb'), EV_HINTS, ()=>{ $('#grid').querySelectorAll('.opt').forEach((b,k)=>{ if(list[k].ok && !b.disabled) b.classList.add('marker'); }); });
+  $('#grid').querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+    const e=list[+b.dataset.k];
+    if(e.ok){
+      b.disabled=true; b.classList.remove('marker'); b.classList.add('used');
+      $('#bag').insertAdjacentHTML('beforeend', `<span class="in">${e.ico} ${e.t.split('：')[0]}</span>`);
+      got++; score('ev-'+e.ico); judge(`證據成立！（${got}/${need}）`,'ok');
+      const all = got===need;
+      if(all){ skeptic('四個證據……不過，我還要一個一個問清楚！','ok'); $('#grid').querySelectorAll('.opt').forEach(x=>x.disabled=true); }
+      else skeptic('哼，還有呢？');
+      fb.right(e.ex, all ? ()=>go('cx') : null, '開始交叉詰問 →');
+    } else {
+      b.classList.add('no'); b.disabled=true; flash(b); skeptic(e.why,'bad'); fb.wrong();
+    }
+  });
+}
+
+function cx(i, col){
+  const c = CX[i];
+  const ci = COLS.findIndex(x=>x[0]===col);
+  const ask = (col==='r' && c.rask) ? c.rask : (ci===0 ? `${c.open}<br>${c.who}${CX_ASK[col]}` : `${c.who}${CX_ASK[col]}`);
+  skeptic(ask); judge(`律師，請回答懷疑先生的問題。`);
+  // 已完成的格子
+  const filled = COLS.slice(0,ci).map(x=>x[0]);
+  app.innerHTML = `<div class="row" style="justify-content:space-between"><p class="stage">第二庭｜交叉詰問</p><span class="lead" style="margin:0;font-size:18px">證據 ${i+1} / ${CX.length}</span></div>
+    <div class="fourgrid">
+      <div></div>${COLS.map(([,h])=>`<div class="h">${h}</div>`).join('')}
+      <div class="w"><span>${c.ico}</span>${c.who}</div>
+      ${COLS.map(([k])=>`<div class="c ${filled.includes(k)?'done':''} ${k===col?'cur':''} ${k==='r'&&c.infer?'infer':''}">${filled.includes(k)?esc(c.slots[k]):''}</div>`).join('')}
+    </div>
+    <p class="ask">❓ ${c.who}<b>${CX_ASK[col]}</b></p>
+    <div id="box"></div>`;
+  // 選項：正確＋另外兩個例子同一欄
+  const others = shuffle(CX.filter((_,j)=>j!==i)).slice(0,2).map(o=>({t:o.slots[col], why:`抗議！這是${o.who}的事，不是${c.who}！`}));
+  const opts = shuffle([{t:c.slots[col], ok:true}, ...others]);
+  const h2 = (col==='r' && c.rhint2) ? c.rhint2 : `看${c.para}。`;
+  const last = col==='r';
+  const ex = last ? c.rex : CX_EX[col];
+  const next = () => {
+    if(!last) return cx(i, COLS[ci+1][0]);
+    if(i < CX.length-1) return cx(i+1,'k');
+    link();
+  };
+  choice($('#box'), {id:`cx-${i}-${col}`, opts, hints:[CX_COLHINT[col], h2], ex, cols:'three',
+    onWrong:o=>skeptic(o.why,'bad'),
+    onRight:()=>{
+      const cell = app.querySelectorAll('.fourgrid .c')[ci]; cell.textContent=c.slots[col]; cell.classList.remove('cur'); cell.classList.add('done');
+      if(last){ judge(`${c.who}的證詞完整，證據成立！`,'ok'); skeptic(i<CX.length-1 ? '嗚……那下一個呢？' : '好吧……不過我還有一個問題！','ok'); }
+      else { judge('回答成立！','ok'); skeptic('哼，那我再問……','ok'); }
+    },
+    next, nextLabel: last ? (i<CX.length-1 ? `下一個證據：${CX[i+1].who} →` : '懷疑先生還有問題 →') : '下一個問題 →'});
+}
+
+function link(){
+  setNav('cx');
+  skeptic(LINK.q); judge('律師，請回答。');
+  app.innerHTML = `<p class="stage">第二庭｜交叉詰問・最後一問</p>
+    <p class="lead">懷疑先生不服氣：作者為什麼要同時舉<b>人物</b>和<b>植物</b>兩種例子？</p><div id="box"></div>`;
+  choice($('#box'), {id:'link', opts:shuffle(LINK.opts), hints:LINK.hints, ex:LINK.ex, cols:'one',
+    onWrong:o=>skeptic('抗議！'+o.why,'bad'),
+    onRight:()=>{ judge('回答成立！請把證詞整理進卷宗。','ok'); skeptic('……我、我沒問題了。','ok'); },
+    next:()=>go('fo'), nextLabel:'整理卷宗 →'});
+}
+
+const foCount = {};
+function fo(i){
+  if(i===0) FOLDERS.forEach(f=>foCount[f]=0);
+  if(i>=FO.length){ return go('s3'); }
+  const it = FO[i];
+  judge('這句話應該放進哪一個卷宗？'); skeptic('卷宗亂七八糟，法官可看不懂喔！');
+  app.innerHTML = `<div class="row" style="justify-content:space-between"><p class="stage">第二庭｜整理卷宗</p><span class="lead" style="margin:0;font-size:18px">第 ${i+1} / ${FO.length} 份</span></div>
+    <p class="lead">把課文裡的句子歸到正確的資料夾。</p>
+    <div class="quote">「${esc(it.q)}」</div>
+    <div class="folders">${FOLDERS.map(f=>`<button class="folder" data-f="${f}">📁 ${f}<span class="cnt">已放 ${foCount[f]} 份</span></button>`).join('')}</div>
+    <div class="fb" id="fb"></div>`;
+  const fb = makeFb($('#fb'), [FO_HINT[it.a], `這句在${it.p}。`], ()=>{ app.querySelector(`.folder[data-f="${it.a}"]`).classList.add('marker'); });
+  app.querySelectorAll('.folder').forEach(b=>b.onclick=()=>{
+    if(b.dataset.f===it.a){
+      b.classList.remove('marker'); b.classList.add('right'); app.querySelectorAll('.folder').forEach(x=>x.disabled=true);
+      foCount[it.a]++; $('.cnt',b).textContent=`已放 ${foCount[it.a]} 份`;
+      score('fo-'+i); judge('歸檔成立！','ok'); skeptic('嗯……','ok');
+      fb.right(it.ex, ()=>fo(i+1), i<FO.length-1 ? '下一份 →' : '進入第三庭 →');
+    } else {
+      b.classList.add('no'); b.disabled=true; flash(b); skeptic(`抗議！這句不屬於「${b.dataset.f}」！`,'bad'); fb.wrong();
+    }
+  });
+}
+
+function s3(){
+  judge('最後是結辯。請律師團由上到下排好結辯稿。'); skeptic('順序亂掉，說服力就不見了！');
+  const cards = shuffle(BG);
+  app.innerHTML = `<p class="stage">第三庭｜結辯</p>
+    <p class="lead">結辯稿就是一個<b>漢堡</b>。從最上面那一層開始，一層一層選出正確的卡片。</p>
+    <div class="closing">
+      <div class="burger">${BG.map(p=>`<div class="layer ${p.cls}" data-id="${p.id}"><div class="tag">${p.tag}</div><div class="slot"></div></div>`).join('')}</div>
+      <div><div class="opts one" id="cards">${cards.map(p=>`<button class="opt" data-id="${p.id}" style="font-size:19px">${esc(p.text)}</button>`).join('')}</div></div>
+    </div>
+    <div class="fb" id="fb"></div>`;
+  let cur = 0, fb;
+  const layers = app.querySelectorAll('.layer');
+  const setCur = () => {
+    layers.forEach((l,k)=>l.classList.toggle('cur', k===cur));
+    const p = BG[cur];
+    fb = makeFb($('#fb'), [p.hint, `這一層的內容在${p.p}。`], ()=>{ app.querySelector(`#cards .opt[data-id="${p.id}"]`).classList.add('marker'); });
+    // 換層時，之前打錯的卡恢復可選
+    app.querySelectorAll('#cards .opt.no').forEach(b=>{ b.classList.remove('no'); b.disabled=false; });
+  };
+  setCur();
+  app.querySelectorAll('#cards .opt').forEach(b=>b.onclick=()=>{
+    const p = BG[cur];
+    if(b.dataset.id===p.id){
+      $('.slot',layers[cur]).textContent=p.text; layers[cur].classList.remove('cur');
+      b.remove(); score('bg-'+p.id); cur++;
+      if(cur<BG.length){
+        judge('這一層成立！下一層呢？','ok'); skeptic('哼……','ok');
+        const ex=p.ex; setCur(); fb.right(ex, null);
+      } else {
+        judge('結辯稿完成！本庭還有最後一個問題。','ok'); skeptic('漢、漢堡完整了……','ok');
+        fb.right(p.ex, gal, '回答法官的最後一題 →');
+      }
+    } else {
+      b.classList.add('no'); b.disabled=true; flash(b); flash(layers[cur]); skeptic('抗議！這張不是放在這一層！','bad'); fb.wrong();
+    }
+  });
+}
+
+function gal(){
+  setNav('s3');
+  judge('最後一題：'+'作者為什麼在結尾引用伽利略的話？'); skeptic('名人說的話，有什麼了不起？');
+  app.innerHTML = `<p class="stage">第三庭｜法官的最後一題</p><div class="quote" style="font-size:24px">${esc(GAL.q)}</div><div id="box"></div>`;
+  choice($('#box'), {id:'gal', opts:shuffle(GAL.opts), hints:GAL.hints, ex:GAL.ex,
+    onWrong:o=>skeptic('抗議！'+o.why,'bad'),
+    onRight:()=>{ judge('說服力滿點！準備宣判。','ok'); skeptic('我……我被說服了。','ok'); },
+    next:()=>go('verdict'), nextLabel:'⚖️ 宣判 →'});
+}
+
+function verdict(){
+  setNav('');
+  const p = Math.round(done.size/TOTAL*100);
+  judge(p>=100 ? '本庭宣判！' : `說服力目前 ${p}%，還有題目沒完成喔。`, p>=100?'ok':'');
+  skeptic(p>=100 ? '我服了！挫折真的能讓人成長。' : '哈！還沒說服我！', p>=100?'ok':'');
+  const team = N===1 ? '律師' : Array.from({length:N},(_,i)=>`律師${i+1}`).join('、');
+  app.innerHTML = `<div class="center">
+    <div class="gavel">🔨</div>
+    <div><div class="verdict">${p>=100?'判決：挫折能讓人成長——主張成立！':'尚未宣判'}</div></div>
+    <p class="lead">律師團：<b>${team}</b>　說服力 <b>${p}%</b></p>
+    <p class="lead">上層麵包說出<b>論點</b>，中間用<b>人物</b>和<b>植物</b>兩種論據來證明，<br>下層麵包<b>重申論點</b>，還引用伽利略的話，讓道理更有說服力。</p>
+    <div class="row" style="justify-content:center;margin-top:12px"><button class="btn" id="againBtn">再開一次庭</button></div></div>`;
+  $('#againBtn').onclick=()=>setup();
+  if(p>=100) confetti();
+}
+function confetti(){
+  const cols=['#E9B949','#C2512B','#2F5D8A','#9CCB6B','#E8A94F'];
+  for(let k=0;k<70;k++){
+    const d=document.createElement('div'); d.className='confetti';
+    d.style.left=Math.random()*100+'vw'; d.style.background=cols[k%cols.length];
+    d.style.animationDuration=(2.2+Math.random()*2)+'s'; d.style.animationDelay=Math.random()*.8+'s';
+    document.body.appendChild(d);
+  }
+  stopFx = ()=>{ document.querySelectorAll('.confetti').forEach(x=>x.remove()); stopFx=()=>{}; };
+}
+
+meter(); renderTeam(); setup();
+</script>
+</body>
+</html>
