@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>椰子四格表｜在挫折中成長</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F3FAFD; --ink:#2B3440; --muted:#6B7785; --line:#D5E3EC; --sea:#2F7FB5; --sand:#F6E7C8;
+    --c-k:#E2574C; --c-h:#2F7FB5; --c-r:#3E8E4A;
+    --c-k-l:#FDE4E1; --c-h-l:#E1EEF8; --c-r-l:#E3F3E5;
+    --title:'Huninn','Noto Sans TC','PingFang TC','Microsoft JhengHei',sans-serif;
+    --body:'Noto Sans TC','PingFang TC','Microsoft JhengHei',sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
+  body{min-height:100vh;display:flex;flex-direction:column}
+  button{font-family:inherit;color:inherit}
+  [hidden]{display:none!important}
+  header{display:flex;align-items:center;gap:10px;padding:8px 16px;background:#fff;border-bottom:2px solid var(--line)}
+  header h1{font-family:var(--title);font-weight:400;font-size:26px;margin:0}
+  .who{font-family:var(--title);font-size:22px;color:#fff;border-radius:999px;padding:3px 16px}
+  .hb{margin-left:auto;display:flex;gap:8px}
+  .tbtn{font-size:16px;padding:7px 12px;border-radius:12px;border:2px solid var(--line);background:#fff;cursor:pointer}
+  main{flex:1;padding:12px 16px 18px;max-width:1240px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+  .task{font-family:var(--title);font-size:23px;line-height:1.5;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .task b{font-weight:400;padding:0 3px;border-radius:6px}
+  .spk{flex:none;width:44px;height:44px;border-radius:50%;border:2px solid var(--line);background:#fff;font-size:20px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+  .spk.on{background:#E1EEF8;border-color:var(--sea)}
+  body.notts .spk{opacity:.25;pointer-events:none}
+
+  /* 開始畫面 */
+  .start{display:flex;flex-direction:column;align-items:center;gap:18px;padding-top:20px;text-align:center}
+  .start .big{font-family:var(--title);font-size:46px}
+  .start .sub{font-size:20px;color:var(--muted)}
+  .roles{display:grid;grid-template-columns:1fr 1fr;gap:22px;width:min(900px,100%)}
+  .role{background:#fff;border:4px solid var(--line);border-radius:26px;padding:26px 18px;cursor:pointer;text-align:center}
+  .role .e{font-size:62px}
+  .role .n{font-family:var(--title);font-size:38px;margin:6px 0}
+  .role .d{font-size:19px;color:var(--muted);line-height:1.6}
+
+  /* 四格表 */
+  table.grid{width:100%;border-collapse:separate;border-spacing:8px;table-layout:fixed}
+  .grid th{font-family:var(--title);font-weight:400;font-size:24px;color:#fff;border-radius:12px;padding:8px}
+  .grid th.w{background:#7A8A99;width:13%}
+  .grid th.k{background:var(--c-k)} .grid th.h{background:var(--c-h)} .grid th.r{background:var(--c-r)}
+  .grid td{vertical-align:top;border-radius:16px;height:178px;padding:8px;background:#fff;border:3px dashed var(--line)}
+  .grid td.wcell{border:none;background:var(--sand);text-align:center;vertical-align:middle;font-family:var(--title);font-size:30px}
+  .grid td.wcell .e{font-size:54px;display:block}
+  .grid td.drop.over{border-color:var(--sea);background:#EEF6FC}
+  .grid td.k.act{border:4px solid var(--c-k);background:var(--c-k-l)}
+  .grid td.h.act{border:4px solid var(--c-h);background:var(--c-h-l)}
+  .grid td.r.act{border:4px solid var(--c-r);background:var(--c-r-l)}
+  .grid td.pick{cursor:pointer}
+  .cnt{font-size:15px;color:var(--muted);margin-bottom:6px}
+
+  /* 字卡 */
+  .tray{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;min-height:120px;background:#E8F2F8;border-radius:18px;padding:12px}
+  .card{background:#fff;border:3px solid #C9D8E2;border-radius:16px;padding:12px 10px 12px 16px;font-family:var(--title);font-size:23px;line-height:1.45;width:270px;display:flex;align-items:center;gap:6px;box-shadow:0 4px 0 rgba(0,0,0,.12);cursor:grab;touch-action:none}
+  .card .tx{flex:1}
+  .card.sel{border-color:var(--sea);box-shadow:0 0 0 5px rgba(47,127,181,.3)}
+  .grid td .card{width:100%;font-size:21px;box-shadow:none}
+  .card.drag{position:fixed;z-index:50;pointer-events:none;box-shadow:0 12px 24px rgba(0,0,0,.25);transform:rotate(-2deg)}
+  .card.ghost{opacity:.3}
+  .say{background:#fff;border:2px solid var(--line);border-radius:16px;padding:12px 18px;font-family:var(--title);font-size:24px;line-height:1.9}
+  .say .bl{display:inline-block;min-width:110px;border-bottom:3px solid #9FB3C2;margin:0 4px}
+
+  /* 關鍵詞 */
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{font-family:var(--title);font-size:24px;color:#fff;border-radius:10px;padding:3px 12px}
+  .chip.k{background:var(--c-k)} .chip.h{background:var(--c-h)} .chip.r{background:var(--c-r)}
+  .passage{background:#fff;border:2px solid var(--line);border-radius:18px;padding:10px 18px;font-family:var(--title);font-size:28px;line-height:2.05}
+  .gridB td{height:130px}
+  .passage .ph{display:flex;justify-content:space-between;align-items:center;font-size:18px;color:var(--muted);font-family:var(--body);margin-bottom:2px}
+  .tok{display:inline-block;line-height:1.35;margin:4px 1px;padding:2px 3px;border-radius:8px;cursor:pointer;border-bottom:3px dotted #BFD0DC}
+  .tok.k{background:var(--c-k);color:#fff;border-bottom-color:transparent}
+  .tok.h{background:var(--c-h);color:#fff;border-bottom-color:transparent}
+  .tok.r{background:var(--c-r);color:#fff;border-bottom-color:transparent}
+  .pu{color:#8A97A3}
+  .tip{font-size:19px;color:var(--muted);min-height:26px}
+  .checks{display:flex;flex-direction:column;gap:6px;background:#fff;border:2px solid var(--line);border-radius:16px;padding:10px 16px}
+  .checks h3{font-family:var(--title);font-weight:400;font-size:22px;margin:0}
+  .ck{display:flex;align-items:center;gap:10px;font-size:21px;cursor:pointer}
+  .ck .bx{width:30px;height:30px;border-radius:8px;border:3px solid #9FB3C2;display:grid;place-items:center;font-size:22px;color:#fff;flex:none}
+  .ck.on .bx{background:var(--c-r);border-color:var(--c-r)}
+  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .two{display:grid;grid-template-columns:1.6fr 1fr;gap:12px;align-items:start}
+
+  .done{font-family:var(--title);font-size:28px;padding:8px 34px;border-radius:999px;border:none;background:#E07A3B;color:#fff;box-shadow:0 5px 0 #A9541F;cursor:pointer}
+  .done:disabled{opacity:.45}
+  .locked .card,.locked .tok,.locked td.pick,.locked .ck{pointer-events:none}
+  .banner{font-family:var(--title);font-size:26px;color:var(--c-r);background:var(--c-r-l);border-radius:16px;padding:10px 18px;text-align:center}
+  /* 連線燈號 */
+  .net{font-size:16px;color:var(--muted);background:#F1F5F8;border-radius:999px;padding:4px 12px}
+  .net.on{color:#2E7D32;background:#E6F5EC}
+  .boardbtn{font-size:18px;color:var(--muted);background:none;border:2px dashed var(--line);border-radius:14px;padding:8px 16px;cursor:pointer}
+
+  /* 大屏（老師） */
+  body.boardmode main{max-width:none;padding:12px}
+  .board{display:grid;grid-template-columns:1fr 1fr;gap:14px;flex:1}
+  .pane{background:#fff;border:4px solid var(--line);border-radius:22px;padding:12px 14px;display:flex;flex-direction:column;gap:10px;min-height:calc(100vh - 110px)}
+  .pane.on{border-color:var(--pc)}
+  .pane.pop{animation:joined .9s ease-out}
+  @keyframes joined{0%{box-shadow:0 0 0 0 rgba(46,125,50,.6)}100%{box-shadow:0 0 0 30px rgba(46,125,50,0)}}
+  .ph2{display:flex;align-items:center;gap:10px}
+  .ph2 .nm{font-family:var(--title);font-size:30px;color:#fff;background:var(--pc);border-radius:999px;padding:2px 20px}
+  .st{font-family:var(--title);font-size:22px;color:var(--muted)}
+  .st.on{color:#2E7D32}.st.done{color:#E07A3B}
+  .ph2 .tbtn{margin-left:auto}
+  .qrbox{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center}
+  .qrbox svg{width:min(52vh,38vw);height:auto;border:10px solid #fff;outline:4px solid var(--pc);border-radius:10px}
+  .qrbox .h{font-family:var(--title);font-size:30px}
+  .qrbox .s{font-size:20px;color:var(--muted)}
+  .wait{display:inline-block;animation:blink2 1.4s infinite}
+  @keyframes blink2{50%{opacity:.3}}
+  .mg{width:100%;border-collapse:separate;border-spacing:6px;table-layout:fixed}
+  .mg th{font-family:var(--title);font-weight:400;font-size:26px;color:#fff;border-radius:10px;padding:6px}
+  .mg th.w{background:#7A8A99;width:13%} .mg th.k{background:var(--c-k)} .mg th.h{background:var(--c-h)} .mg th.r{background:var(--c-r)}
+  .mg td{vertical-align:top;border:3px dashed var(--line);border-radius:12px;padding:8px;height:230px;font-family:var(--title);font-size:27px;line-height:1.45}
+  .mg td.wc{border:none;background:var(--sand);text-align:center;vertical-align:middle;font-size:30px}
+  .mg td.filled{border-style:solid;border-color:#B9CAD6}
+  .mini{background:#E8F2F8;border-radius:12px;padding:8px;display:flex;flex-wrap:wrap;gap:6px}
+  .mini span{background:#fff;border:2px solid #C9D8E2;border-radius:10px;padding:6px 10px;font-family:var(--title);font-size:23px}
+  .mp{font-family:var(--title);font-size:30px;line-height:1.9;border:2px solid var(--line);border-radius:14px;padding:6px 12px}
+  .mp .tok{margin:2px 1px;padding:0 3px;cursor:default}
+  .mck{font-size:24px;color:var(--muted)} .mck b{color:var(--c-r)}
+  .warn{background:#FFF3D6;border:2px solid #E2B34A;border-radius:14px;padding:10px 16px;font-size:18px}
+  @media (max-width:820px){.roles,.two{grid-template-columns:1fr}.card{width:230px;font-size:21px}.passage{font-size:26px}}
+</style>
+</head>
+<body class="notts">
+<header>
+  <h1>🥥 椰子四格表</h1>
+  <span class="who" id="who" hidden></span><span class="net" id="net" hidden></span>
+  <div class="hb"><button class="tbtn" id="reset" hidden>重新作答</button><button class="tbtn" id="back" hidden>換人</button></div>
+</header>
+<main id="app"></main>
+<script>
+const $ = (s, el=document) => el.querySelector(s);
+const app = $('#app');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+/* ===== 學生名單（教學演示） ===== */
+const ROLES = {
+  A:{name:'吃炮', color:'#E07A3B', e:'🃏', d:'把字卡拖到<br>對的格子裡'},
+  B:{name:'林哲',     color:'#2F7FB5', e:'🔍', d:'在課文裡點選<br>關鍵詞'},
+};
+const COLS = [['k','遇到的困難'],['h','怎麼做'],['r','結果']];
+
+/* ===== 課文（康軒五上第九課第三段，講椰子的句子） ===== */
+const PASSAGE = '沙灘上|椰子樹|掉落的|椰子|，|常|被|潮水|帶進海裡|，|漂流|的|過程|可能|長達數月|，|還好|靠著|厚厚的外皮|保護|，|種子|即使|泡在|海水|也|不會腐爛|。|只要|被|海浪|沖上了沙灘|，|就可以|生根發芽|。'.split('|');
+const PASSAGE_TEXT = PASSAGE.join('');
+/* ===== 字卡（3張正確、1張干擾） ===== */
+const CARDS = [
+  {id:'k', t:'被潮水帶進海裡，漂流的過程可能長達數月。'},
+  {id:'h', t:'靠著厚厚的外皮保護，種子即使泡在海水也不會腐爛。'},
+  {id:'r', t:'被海浪沖上了沙灘，就可以生根發芽。'},
+  {id:'x', t:'秋冬時節落葉，將能量存起來。'},
+];
+
+/* ===== 存檔：重新整理也不會不見 ===== */
+const KEY = 'coconut4grid.v1';
+let S = {role:null, A:{place:{}, order:null, done:false}, B:{pick:{k:[],h:[],r:[]}, checks:[false,false,false], done:false}};
+try{ const raw = localStorage.getItem(KEY); if(raw) S = Object.assign(S, JSON.parse(raw)); }catch(e){}
+const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} publish(); };
+/* 掃 QR code 開啟（網址帶 ?who=A 或 ?who=B）時，直接進到該學生的作答畫面 */
+{ const w = new URLSearchParams(location.search).get('who'); if(w && ROLES[w]){ S.role = w; save(); } }
+
+/* ===== 朗讀 ===== */
+let voice = null;
+if('speechSynthesis' in window){
+  const pick = () => { const vs = speechSynthesis.getVoices();
+    voice = vs.find(v=>/zh[-_]TW/i.test(v.lang)) || vs.find(v=>/zh[-_](HK|Hant)/i.test(v.lang)) || vs.find(v=>/^zh/i.test(v.lang)) || null;
+    document.body.classList.toggle('notts', !voice); };
+  pick(); speechSynthesis.onvoiceschanged = pick;
+}
+function speak(text, btn){
+  if(!voice) return; speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(String(text).replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu,'')); u.voice = voice; u.lang = voice.lang; u.rate = .85;
+  document.querySelectorAll('.spk.on').forEach(b=>b.classList.remove('on')); if(btn) btn.classList.add('on');
+  u.onend = u.onerror = () => btn && btn.classList.remove('on'); speechSynthesis.speak(u);
+}
+const spk = t => `<button class="spk" data-say="${esc(t)}">🔊</button>`;
+document.addEventListener('click', e => { const b = e.target.closest('.spk'); if(!b) return; e.stopPropagation(); speak(b.dataset.say, b); }, true);
+
+
+/* ===== 雲端同步（Firebase Realtime Database）：學生平板 → 老師大屏 ===== */
+const FIREBASE_CONFIG = /*FB*/{
+  apiKey: "AIzaSyDJ6TbNkYhAHL16toXpwLxNPNSTQ-NHTCY",
+  authDomain: "project-5198307311591666978.firebaseapp.com",
+  databaseURL: "https://project-5198307311591666978-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "project-5198307311591666978",
+  storageBucket: "project-5198307311591666978.firebasestorage.app",
+  messagingSenderId: "847387386467",
+  appId: "1:847387386467:web:87d1aba9eee7e8cb734e56"
+}/*FB*/;
+const ROOM = 'demo';
+const QS = new URLSearchParams(location.search);
+const BOARD = QS.get('view') === 'board';
+const MOCK = QS.has('mock');            // 測試用：同一個瀏覽器的分頁之間互傳
+const PAGE_URL = 'https://george910820-bit.github.io/huwei-learning/games/coconut-4grid-k5a-l9/';
+const QR = {"A": {"n": 45, "d": "M4 4h7v1h-7zM15 4h2v1h-2zM18 4h1v1h-1zM20 4h4v1h-4zM27 4h1v1h-1zM32 4h1v1h-1zM34 4h7v1h-7zM4 5h1v1h-1zM10 5h1v1h-1zM13 5h2v1h-2zM16 5h2v1h-2zM21 5h1v1h-1zM24 5h1v1h-1zM26 5h1v1h-1zM28 5h1v1h-1zM31 5h2v1h-2zM34 5h1v1h-1zM40 5h1v1h-1zM4 6h1v1h-1zM6 6h3v1h-3zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM18 6h1v1h-1zM25 6h1v1h-1zM27 6h2v1h-2zM30 6h1v1h-1zM32 6h1v1h-1zM34 6h1v1h-1zM36 6h3v1h-3zM40 6h1v1h-1zM4 7h1v1h-1zM6 7h3v1h-3zM10 7h1v1h-1zM12 7h2v1h-2zM16 7h3v1h-3zM21 7h3v1h-3zM26 7h1v1h-1zM28 7h2v1h-2zM32 7h1v1h-1zM34 7h1v1h-1zM36 7h3v1h-3zM40 7h1v1h-1zM4 8h1v1h-1zM6 8h3v1h-3zM10 8h1v1h-1zM12 8h2v1h-2zM15 8h2v1h-2zM20 8h5v1h-5zM27 8h2v1h-2zM30 8h1v1h-1zM34 8h1v1h-1zM36 8h3v1h-3zM40 8h1v1h-1zM4 9h1v1h-1zM10 9h1v1h-1zM12 9h2v1h-2zM19 9h1v1h-1zM21 9h1v1h-1zM24 9h2v1h-2zM28 9h2v1h-2zM31 9h2v1h-2zM34 9h1v1h-1zM40 9h1v1h-1zM4 10h7v1h-7zM12 10h1v1h-1zM14 10h1v1h-1zM16 10h1v1h-1zM18 10h1v1h-1zM20 10h1v1h-1zM22 10h1v1h-1zM24 10h1v1h-1zM26 10h1v1h-1zM28 10h1v1h-1zM30 10h1v1h-1zM32 10h1v1h-1zM34 10h7v1h-7zM12 11h1v1h-1zM16 11h1v1h-1zM20 11h1v1h-1zM25 11h2v1h-2zM30 11h2v1h-2zM4 12h1v1h-1zM6 12h5v1h-5zM13 12h2v1h-2zM16 12h1v1h-1zM18 12h1v1h-1zM21 12h4v1h-4zM26 12h1v1h-1zM29 12h2v1h-2zM34 12h5v1h-5zM8 13h1v1h-1zM11 13h5v1h-5zM18 13h4v1h-4zM23 13h1v1h-1zM25 13h1v1h-1zM27 13h1v1h-1zM32 13h1v1h-1zM35 13h1v1h-1zM37 13h1v1h-1zM39 13h1v1h-1zM5 14h3v1h-3zM10 14h4v1h-4zM15 14h2v1h-2zM21 14h1v1h-1zM26 14h1v1h-1zM31 14h10v1h-10zM5 15h1v1h-1zM7 15h3v1h-3zM12 15h1v1h-1zM14 15h4v1h-4zM20 15h1v1h-1zM24 15h4v1h-4zM33 15h1v1h-1zM35 15h1v1h-1zM40 15h1v1h-1zM4 16h1v1h-1zM7 16h5v1h-5zM13 16h1v1h-1zM16 16h1v1h-1zM18 16h1v1h-1zM21 16h1v1h-1zM23 16h1v1h-1zM26 16h1v1h-1zM29 16h1v1h-1zM31 16h4v1h-4zM36 16h5v1h-5zM4 17h3v1h-3zM9 17h1v1h-1zM15 17h1v1h-1zM18 17h1v1h-1zM20 17h6v1h-6zM27 17h1v1h-1zM29 17h2v1h-2zM35 17h1v1h-1zM39 17h1v1h-1zM5 18h2v1h-2zM8 18h6v1h-6zM18 18h4v1h-4zM25 18h2v1h-2zM29 18h4v1h-4zM34 18h4v1h-4zM39 18h2v1h-2zM4 19h2v1h-2zM8 19h2v1h-2zM12 19h1v1h-1zM14 19h1v1h-1zM17 19h4v1h-4zM23 19h3v1h-3zM28 19h1v1h-1zM30 19h7v1h-7zM39 19h2v1h-2zM6 20h3v1h-3zM10 20h2v1h-2zM13 20h4v1h-4zM21 20h1v1h-1zM23 20h1v1h-1zM27 20h5v1h-5zM33 20h2v1h-2zM36 20h1v1h-1zM38 20h1v1h-1zM40 20h1v1h-1zM4 21h1v1h-1zM6 21h1v1h-1zM9 21h1v1h-1zM12 21h1v1h-1zM17 21h3v1h-3zM21 21h1v1h-1zM23 21h2v1h-2zM27 21h1v1h-1zM29 21h1v1h-1zM32 21h1v1h-1zM35 21h1v1h-1zM38 21h2v1h-2zM7 22h1v1h-1zM10 22h1v1h-1zM13 22h1v1h-1zM15 22h1v1h-1zM17 22h1v1h-1zM19 22h2v1h-2zM22 22h1v1h-1zM24 22h2v1h-2zM28 22h1v1h-1zM31 22h10v1h-10zM7 23h3v1h-3zM11 23h3v1h-3zM15 23h1v1h-1zM19 23h1v1h-1zM22 23h1v1h-1zM24 23h3v1h-3zM32 23h5v1h-5zM40 23h1v1h-1zM6 24h1v1h-1zM8 24h1v1h-1zM10 24h2v1h-2zM13 24h1v1h-1zM15 24h5v1h-5zM21 24h1v1h-1zM23 24h1v1h-1zM26 24h1v1h-1zM28 24h2v1h-2zM33 24h2v1h-2zM36 24h3v1h-3zM4 25h2v1h-2zM8 25h2v1h-2zM12 25h2v1h-2zM16 25h3v1h-3zM23 25h1v1h-1zM26 25h2v1h-2zM29 25h2v1h-2zM32 25h1v1h-1zM37 25h1v1h-1zM5 26h1v1h-1zM8 26h1v1h-1zM10 26h4v1h-4zM15 26h2v1h-2zM19 26h3v1h-3zM25 26h2v1h-2zM28 26h6v1h-6zM35 26h3v1h-3zM39 26h2v1h-2zM4 27h1v1h-1zM6 27h2v1h-2zM9 27h1v1h-1zM11 27h3v1h-3zM16 27h2v1h-2zM19 27h1v1h-1zM23 27h1v1h-1zM25 27h4v1h-4zM32 27h5v1h-5zM39 27h2v1h-2zM5 28h2v1h-2zM10 28h2v1h-2zM13 28h1v1h-1zM21 28h1v1h-1zM26 28h1v1h-1zM29 28h3v1h-3zM33 28h2v1h-2zM36 28h1v1h-1zM38 28h3v1h-3zM4 29h1v1h-1zM12 29h4v1h-4zM17 29h4v1h-4zM22 29h2v1h-2zM25 29h1v1h-1zM27 29h2v1h-2zM30 29h1v1h-1zM37 29h2v1h-2zM4 30h1v1h-1zM6 30h1v1h-1zM8 30h4v1h-4zM14 30h1v1h-1zM16 30h1v1h-1zM18 30h3v1h-3zM24 30h3v1h-3zM29 30h1v1h-1zM31 30h3v1h-3zM35 30h2v1h-2zM39 30h2v1h-2zM4 31h1v1h-1zM6 31h1v1h-1zM13 31h2v1h-2zM16 31h1v1h-1zM19 31h2v1h-2zM25 31h1v1h-1zM33 31h1v1h-1zM35 31h1v1h-1zM39 31h1v1h-1zM4 32h1v1h-1zM6 32h1v1h-1zM9 32h7v1h-7zM18 32h1v1h-1zM21 32h1v1h-1zM26 32h4v1h-4zM31 32h8v1h-8zM40 32h1v1h-1zM12 33h2v1h-2zM15 33h2v1h-2zM20 33h2v1h-2zM23 33h2v1h-2zM27 33h1v1h-1zM30 33h3v1h-3zM36 33h2v1h-2zM4 34h7v1h-7zM13 34h2v1h-2zM18 34h3v1h-3zM22 34h1v1h-1zM24 34h1v1h-1zM30 34h1v1h-1zM32 34h1v1h-1zM34 34h1v1h-1zM36 34h1v1h-1zM38 34h3v1h-3zM4 35h1v1h-1zM10 35h1v1h-1zM12 35h9v1h-9zM22 35h1v1h-1zM24 35h3v1h-3zM30 35h1v1h-1zM32 35h1v1h-1zM36 35h2v1h-2zM40 35h1v1h-1zM4 36h1v1h-1zM6 36h3v1h-3zM10 36h1v1h-1zM12 36h1v1h-1zM14 36h1v1h-1zM16 36h6v1h-6zM27 36h10v1h-10zM38 36h2v1h-2zM4 37h1v1h-1zM6 37h3v1h-3zM10 37h1v1h-1zM12 37h2v1h-2zM15 37h1v1h-1zM17 37h1v1h-1zM22 37h3v1h-3zM26 37h3v1h-3zM30 37h5v1h-5zM36 37h1v1h-1zM38 37h3v1h-3zM4 38h1v1h-1zM6 38h3v1h-3zM10 38h1v1h-1zM12 38h1v1h-1zM14 38h1v1h-1zM17 38h1v1h-1zM19 38h3v1h-3zM24 38h2v1h-2zM28 38h1v1h-1zM31 38h1v1h-1zM33 38h1v1h-1zM37 38h4v1h-4zM4 39h1v1h-1zM10 39h1v1h-1zM14 39h1v1h-1zM16 39h1v1h-1zM18 39h1v1h-1zM20 39h1v1h-1zM24 39h2v1h-2zM32 39h3v1h-3zM36 39h1v1h-1zM40 39h1v1h-1zM4 40h7v1h-7zM12 40h1v1h-1zM14 40h1v1h-1zM16 40h2v1h-2zM21 40h1v1h-1zM24 40h1v1h-1zM26 40h1v1h-1zM28 40h2v1h-2zM33 40h2v1h-2zM36 40h5v1h-5z"}, "B": {"n": 45, "d": "M4 4h7v1h-7zM14 4h1v1h-1zM16 4h1v1h-1zM18 4h6v1h-6zM27 4h1v1h-1zM32 4h1v1h-1zM34 4h7v1h-7zM4 5h1v1h-1zM10 5h1v1h-1zM13 5h2v1h-2zM16 5h2v1h-2zM21 5h1v1h-1zM24 5h1v1h-1zM26 5h1v1h-1zM28 5h1v1h-1zM31 5h2v1h-2zM34 5h1v1h-1zM40 5h1v1h-1zM4 6h1v1h-1zM6 6h3v1h-3zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h2v1h-2zM25 6h1v1h-1zM27 6h2v1h-2zM30 6h1v1h-1zM32 6h1v1h-1zM34 6h1v1h-1zM36 6h3v1h-3zM40 6h1v1h-1zM4 7h1v1h-1zM6 7h3v1h-3zM10 7h1v1h-1zM12 7h2v1h-2zM15 7h5v1h-5zM21 7h3v1h-3zM26 7h1v1h-1zM28 7h2v1h-2zM32 7h1v1h-1zM34 7h1v1h-1zM36 7h3v1h-3zM40 7h1v1h-1zM4 8h1v1h-1zM6 8h3v1h-3zM10 8h1v1h-1zM12 8h2v1h-2zM15 8h2v1h-2zM20 8h5v1h-5zM27 8h2v1h-2zM30 8h1v1h-1zM34 8h1v1h-1zM36 8h3v1h-3zM40 8h1v1h-1zM4 9h1v1h-1zM10 9h1v1h-1zM12 9h3v1h-3zM18 9h2v1h-2zM21 9h1v1h-1zM24 9h2v1h-2zM28 9h2v1h-2zM31 9h2v1h-2zM34 9h1v1h-1zM40 9h1v1h-1zM4 10h7v1h-7zM12 10h1v1h-1zM14 10h1v1h-1zM16 10h1v1h-1zM18 10h1v1h-1zM20 10h1v1h-1zM22 10h1v1h-1zM24 10h1v1h-1zM26 10h1v1h-1zM28 10h1v1h-1zM30 10h1v1h-1zM32 10h1v1h-1zM34 10h7v1h-7zM12 11h2v1h-2zM16 11h1v1h-1zM18 11h1v1h-1zM20 11h1v1h-1zM25 11h2v1h-2zM30 11h2v1h-2zM4 12h1v1h-1zM6 12h5v1h-5zM14 12h1v1h-1zM18 12h1v1h-1zM21 12h4v1h-4zM26 12h1v1h-1zM29 12h2v1h-2zM34 12h5v1h-5zM7 13h2v1h-2zM13 13h4v1h-4zM19 13h3v1h-3zM23 13h1v1h-1zM25 13h1v1h-1zM27 13h1v1h-1zM32 13h1v1h-1zM35 13h1v1h-1zM37 13h1v1h-1zM39 13h1v1h-1zM5 14h3v1h-3zM10 14h1v1h-1zM12 14h2v1h-2zM21 14h1v1h-1zM26 14h1v1h-1zM31 14h10v1h-10zM5 15h1v1h-1zM7 15h3v1h-3zM12 15h1v1h-1zM14 15h4v1h-4zM20 15h1v1h-1zM24 15h4v1h-4zM33 15h1v1h-1zM35 15h1v1h-1zM40 15h1v1h-1zM4 16h1v1h-1zM6 16h6v1h-6zM13 16h1v1h-1zM16 16h1v1h-1zM18 16h1v1h-1zM21 16h1v1h-1zM23 16h1v1h-1zM26 16h1v1h-1zM29 16h1v1h-1zM31 16h4v1h-4zM36 16h5v1h-5zM5 17h2v1h-2zM8 17h2v1h-2zM15 17h1v1h-1zM18 17h1v1h-1zM20 17h6v1h-6zM27 17h1v1h-1zM29 17h2v1h-2zM35 17h1v1h-1zM39 17h1v1h-1zM4 18h1v1h-1zM6 18h1v1h-1zM8 18h5v1h-5zM18 18h4v1h-4zM25 18h2v1h-2zM29 18h4v1h-4zM34 18h4v1h-4zM39 18h2v1h-2zM4 19h1v1h-1zM8 19h1v1h-1zM12 19h1v1h-1zM19 19h2v1h-2zM23 19h3v1h-3zM28 19h1v1h-1zM30 19h7v1h-7zM39 19h2v1h-2zM6 20h2v1h-2zM10 20h3v1h-3zM15 20h2v1h-2zM18 20h1v1h-1zM21 20h1v1h-1zM23 20h1v1h-1zM27 20h5v1h-5zM33 20h2v1h-2zM36 20h1v1h-1zM38 20h1v1h-1zM40 20h1v1h-1zM4 21h4v1h-4zM9 21h1v1h-1zM12 21h1v1h-1zM14 21h2v1h-2zM17 21h1v1h-1zM19 21h1v1h-1zM21 21h1v1h-1zM23 21h2v1h-2zM27 21h1v1h-1zM29 21h1v1h-1zM32 21h1v1h-1zM35 21h1v1h-1zM38 21h2v1h-2zM6 22h2v1h-2zM10 22h1v1h-1zM13 22h1v1h-1zM15 22h3v1h-3zM19 22h1v1h-1zM22 22h1v1h-1zM24 22h2v1h-2zM28 22h1v1h-1zM31 22h10v1h-10zM6 23h1v1h-1zM8 23h2v1h-2zM11 23h1v1h-1zM13 23h1v1h-1zM22 23h1v1h-1zM24 23h3v1h-3zM32 23h5v1h-5zM40 23h1v1h-1zM8 24h1v1h-1zM10 24h1v1h-1zM13 24h1v1h-1zM16 24h4v1h-4zM21 24h1v1h-1zM23 24h1v1h-1zM26 24h1v1h-1zM28 24h2v1h-2zM33 24h2v1h-2zM36 24h3v1h-3zM5 25h1v1h-1zM8 25h2v1h-2zM12 25h2v1h-2zM16 25h3v1h-3zM23 25h1v1h-1zM26 25h2v1h-2zM29 25h2v1h-2zM32 25h1v1h-1zM37 25h1v1h-1zM5 26h1v1h-1zM9 26h4v1h-4zM14 26h4v1h-4zM19 26h3v1h-3zM25 26h2v1h-2zM28 26h6v1h-6zM35 26h3v1h-3zM39 26h2v1h-2zM6 27h3v1h-3zM11 27h3v1h-3zM16 27h2v1h-2zM19 27h1v1h-1zM23 27h1v1h-1zM25 27h4v1h-4zM32 27h5v1h-5zM39 27h2v1h-2zM4 28h1v1h-1zM6 28h3v1h-3zM10 28h2v1h-2zM13 28h2v1h-2zM17 28h2v1h-2zM21 28h1v1h-1zM26 28h1v1h-1zM29 28h3v1h-3zM33 28h2v1h-2zM36 28h1v1h-1zM38 28h3v1h-3zM4 29h3v1h-3zM9 29h1v1h-1zM11 29h1v1h-1zM13 29h1v1h-1zM15 29h6v1h-6zM22 29h2v1h-2zM25 29h1v1h-1zM27 29h2v1h-2zM30 29h1v1h-1zM37 29h2v1h-2zM4 30h1v1h-1zM6 30h7v1h-7zM14 30h2v1h-2zM18 30h3v1h-3zM24 30h3v1h-3zM29 30h1v1h-1zM31 30h3v1h-3zM35 30h2v1h-2zM39 30h2v1h-2zM4 31h1v1h-1zM6 31h1v1h-1zM11 31h5v1h-5zM19 31h2v1h-2zM25 31h1v1h-1zM33 31h1v1h-1zM35 31h1v1h-1zM39 31h1v1h-1zM4 32h1v1h-1zM6 32h1v1h-1zM9 32h6v1h-6zM18 32h1v1h-1zM21 32h1v1h-1zM26 32h4v1h-4zM31 32h8v1h-8zM40 32h1v1h-1zM12 33h2v1h-2zM15 33h2v1h-2zM20 33h2v1h-2zM23 33h2v1h-2zM27 33h1v1h-1zM30 33h3v1h-3zM36 33h2v1h-2zM4 34h7v1h-7zM17 34h1v1h-1zM19 34h2v1h-2zM22 34h1v1h-1zM24 34h1v1h-1zM30 34h1v1h-1zM32 34h1v1h-1zM34 34h1v1h-1zM36 34h1v1h-1zM38 34h3v1h-3zM4 35h1v1h-1zM10 35h1v1h-1zM12 35h1v1h-1zM15 35h6v1h-6zM22 35h1v1h-1zM24 35h3v1h-3zM30 35h1v1h-1zM32 35h1v1h-1zM36 35h2v1h-2zM40 35h1v1h-1zM4 36h1v1h-1zM6 36h3v1h-3zM10 36h1v1h-1zM12 36h2v1h-2zM16 36h1v1h-1zM18 36h4v1h-4zM27 36h10v1h-10zM38 36h2v1h-2zM4 37h1v1h-1zM6 37h3v1h-3zM10 37h1v1h-1zM12 37h2v1h-2zM15 37h1v1h-1zM17 37h2v1h-2zM22 37h3v1h-3zM26 37h3v1h-3zM30 37h5v1h-5zM36 37h1v1h-1zM38 37h3v1h-3zM4 38h1v1h-1zM6 38h3v1h-3zM10 38h1v1h-1zM12 38h1v1h-1zM14 38h4v1h-4zM19 38h3v1h-3zM24 38h2v1h-2zM28 38h1v1h-1zM31 38h1v1h-1zM33 38h1v1h-1zM37 38h4v1h-4zM4 39h1v1h-1zM10 39h1v1h-1zM14 39h3v1h-3zM18 39h1v1h-1zM20 39h1v1h-1zM24 39h2v1h-2zM32 39h3v1h-3zM36 39h1v1h-1zM40 39h1v1h-1zM4 40h7v1h-7zM12 40h1v1h-1zM14 40h1v1h-1zM16 40h2v1h-2zM21 40h1v1h-1zM24 40h1v1h-1zM26 40h1v1h-1zM28 40h2v1h-2zM33 40h2v1h-2zM36 40h5v1h-5z"}};
+const qrSVG = w => `<svg viewBox="0 0 ${QR[w].n} ${QR[w].n}" shape-rendering="crispEdges"><rect width="${QR[w].n}" height="${QR[w].n}" fill="#fff"/><path d="${QR[w].d}" fill="#000"/></svg>`;
+var DB = null;
+function loadScript(src){ return new Promise((ok,no)=>{ const t=document.createElement('script'); t.src=src; t.onload=ok; t.onerror=no; document.head.appendChild(t); }); }
+function mockDB(){
+  const ch = new BroadcastChannel('coconut-mock'), store = {A:{},B:{}}, ws = {A:[],B:[]}, cs = [];
+  const emit = w => ws[w].forEach(cb => cb(JSON.parse(JSON.stringify(store[w]))));
+  const put = (w,d,local) => { Object.assign(store[w], d); if(!local) ch.postMessage({w,d}); emit(w); };
+  ch.onmessage = e => { if(e.data.hello){ publish(true); return; } put(e.data.w, e.data.d, true); };
+  return { update:(w,d)=>put(w,d), set:(w,k,v)=>put(w,{[k]:v}),
+    watch:(w,cb)=>{ ws[w].push(cb); cb(JSON.parse(JSON.stringify(store[w]))); if(BOARD) ch.postMessage({hello:1}); },
+    offlineOnExit:w=>addEventListener('pagehide',()=>ch.postMessage({w,d:{online:false}})), connected:cb=>cb(true) };
+}
+async function initSync(){
+  if(MOCK){ DB = mockDB(); return; }
+  if(!FIREBASE_CONFIG) return;
+  try{
+    await loadScript('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
+    await loadScript('https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js');
+    firebase.initializeApp(FIREBASE_CONFIG);
+    const db = firebase.database(), ref = w => db.ref(`coconut/${ROOM}/${w}`);
+    DB = { update:(w,d)=>ref(w).update(d), set:(w,k,v)=>ref(w).child(k).set(v),
+      watch:(w,cb)=>ref(w).on('value', sn => cb(sn.val() || {})),
+      offlineOnExit:w=>ref(w).child('online').onDisconnect().set(false),
+      connected:cb=>db.ref('.info/connected').on('value', sn => cb(!!sn.val())) };
+  }catch(e){ console.warn('雲端連線失敗', e); DB = null; }
+}
+
+/* 學生端：把目前作答送到大屏 */
+var pubTimer = null, onlineAs = null, netOK = false;
+function publish(now){
+  if(!DB || BOARD || !S.role) return;
+  clearTimeout(pubTimer);
+  pubTimer = setTimeout(() => {
+    const st = S.role==='A' ? {place:S.A.place||{}, order:S.A.order||[], done:!!S.A.done}
+                            : {pick:S.B.pick, checks:S.B.checks, done:!!S.B.done};
+    DB.update(S.role, {...st, name:ROLES[S.role].name, online:true, at:Date.now()});
+  }, now ? 0 : 120);
+}
+function showNet(){
+  const n = $('#net'); if(!n) return;
+  n.hidden = !DB || BOARD || !S.role;
+  n.className = 'net' + (netOK ? ' on' : '');
+  n.textContent = netOK ? '🟢 已連上大屏' : '⚪ 連線中…';
+}
+const watching = {};
+function goOnline(){
+  if(!DB || BOARD || !S.role) return;
+  if(onlineAs && onlineAs !== S.role) DB.update(onlineAs, {online:false});
+  onlineAs = S.role;
+  DB.offlineOnExit(onlineAs); publish(true); showNet();
+  if(!watching._net){ watching._net = true;
+    // 斷線又連回來（例如平板休眠後）時，重新上線並送出目前作答
+    DB.connected(ok => { netOK = ok; if(ok && onlineAs){ DB.offlineOnExit(onlineAs); publish(true); } showNet(); }); }
+  if(watching[onlineAs]) return;
+  const who = onlineAs; watching[who] = true;
+  // 老師在大屏按「清空兩人作答」時，平板也一起清空
+  DB.watch(who, v => {
+    if(S.role !== who) return;
+    const r = v.reset || 0;
+    if(S.lastReset === undefined){ S.lastReset = r; try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} return; }
+    if(r !== S.lastReset){ S.lastReset = r; resetRole(who); }
+  });
+}
+function resetRole(who){
+  if(who==='A') S.A = {place:{}, order:null, done:false}; else S.B = {pick:{k:[],h:[],r:[]}, checks:[false,false,false], done:false};
+  save(); render();
+}
+
+/* ===== 頁首按鈕（老師用） ===== */
+function confirmBtn(btn, label, fn){
+  btn.onclick = () => { if(btn.dataset.sure){ delete btn.dataset.sure; btn.textContent = label; fn(); return; }
+    btn.dataset.sure = '1'; btn.textContent = '再按一次確定'; setTimeout(()=>{ if(btn.dataset.sure){ delete btn.dataset.sure; btn.textContent = label; } }, 3000); };
+}
+confirmBtn($('#reset'), '重新作答', () => resetRole(S.role));
+confirmBtn($('#back'), '換人', () => { if(DB && onlineAs){ DB.update(onlineAs, {online:false}); onlineAs = null; } S.role = null; save(); render(); });
+
+function render(){
+  if(BOARD) return board();
+  const r = S.role ? ROLES[S.role] : null;
+  $('#who').hidden = !r; $('#reset').hidden = !r; $('#back').hidden = !r;
+  if(r){ $('#who').textContent = r.name; $('#who').style.background = r.color; }
+  if(!S.role){ showNet(); return start(); }
+  goOnline(); showNet();
+  S.role === 'A' ? viewA() : viewB();
+}
+
+/* ===== 開始畫面 ===== */
+function start(){
+  app.innerHTML = `<div class="start">
+    <div class="big">🥥 椰子遇到挫折了！</div>
+    <div class="sub">請老師幫這台平板選擇作答的偵探</div>
+    <div class="roles">${Object.entries(ROLES).map(([k,r])=>`<button class="role" data-r="${k}" style="border-color:${r.color}">
+      <div class="e">${r.e}</div><div class="n" style="color:${r.color}">${r.name}</div><div class="d">${r.d}</div></button>`).join('')}</div>
+    <button class="boardbtn" id="toBoard">🖥️ 大屏畫面（老師用：顯示 QR code 和兩人作答）</button></div>`;
+  $('#toBoard').onclick = () => { location.href = location.pathname + '?view=board' + (MOCK ? '&mock=1' : ''); };
+  app.querySelectorAll('.role').forEach(b => b.onclick = () => { S.role = b.dataset.r; save(); render(); });
+}
+
+/* ===== 表頭 ===== */
+const gridHead = () => `<tr><th class="w">誰</th>${COLS.map(([c,t])=>`<th class="${c}">${t}</th>`).join('')}</tr>`;
+const whoCell = `<td class="wcell"><span class="e">🥥</span>椰子</td>`;
+const doneBar = locked => locked
+  ? `<div class="banner">✔ 完成了！等一下和老師一起討論 <button class="tbtn" id="edit" style="margin-left:10px">我要修改</button></div>`
+  : `<div class="row" style="justify-content:center"><button class="done" id="done">完成 ✔</button></div>`;
+function bindDone(st){
+  if($('#done')) $('#done').onclick = () => { st.done = true; save(); render(); };
+  if($('#edit')) $('#edit').onclick = () => { st.done = false; save(); render(); };
+}
+
+/* ===== 版本A：拖曳字卡 ===== */
+function viewA(){
+  const A = S.A;
+  if(!A.order) { A.order = shuffle(CARDS.map(c=>c.id)); save(); }
+  const T = '找出椰子的「遇到的困難」「怎麼做」「結果」，把字卡拖到對的格子裡。';
+  const placed = Object.values(A.place);
+  const cardHTML = id => { const c = CARDS.find(x=>x.id===id); return `<div class="card" data-c="${id}"><span class="tx">${esc(c.t)}</span>${spk(c.t)}</div>`; };
+  app.innerHTML = `<div class="${A.done?'locked':''}" style="display:flex;flex-direction:column;gap:12px">
+    <div class="task">${esc(T)}${spk(T)}</div>
+    <table class="grid">${gridHead()}<tr>${whoCell}${COLS.map(([c])=>`<td class="drop ${c}" data-cell="${c}">${A.place[c]?cardHTML(A.place[c]):''}</td>`).join('')}</tr></table>
+    <div class="tray" id="tray">${A.order.filter(id=>!placed.includes(id)).map(cardHTML).join('') || '<span class="tip" style="align-self:center">字卡都放好了！把字卡拖回這裡可以重新放。</span>'}</div>
+    <div class="say">唸一唸：<span class="bl"></span>遇到<span class="bl" style="min-width:190px"></span>，它<span class="bl" style="min-width:190px"></span>，結果<span class="bl" style="min-width:190px"></span>。</div>
+    ${doneBar(A.done)}</div>`;
+  bindDone(A);
+  if(A.done) return;
+
+  // 點一下選卡、再點格子；或直接拖曳
+  let sel = null;
+  const put = (id, cell) => {
+    for(const k in A.place) if(A.place[k]===id) delete A.place[k];   // 從原來的格子拿起
+    if(cell) A.place[cell] = id;                                       // 格子原本的卡會回到下方
+    save(); viewA();
+  };
+  app.querySelectorAll('.card').forEach(card => {
+    const id = card.dataset.c;
+    let sx=0, sy=0, moved=false, ghost=null;
+    card.addEventListener('pointerdown', e => {
+      if(e.target.closest('.spk')) return;
+      sx=e.clientX; sy=e.clientY; moved=false; card.setPointerCapture(e.pointerId);
+    });
+    card.addEventListener('pointermove', e => {
+      if(!card.hasPointerCapture(e.pointerId)) return;
+      if(!moved && Math.hypot(e.clientX-sx, e.clientY-sy) < 10) return;
+      if(!moved){ moved=true; const r=card.getBoundingClientRect(); ghost=card.cloneNode(true); ghost.classList.add('drag'); ghost.style.width=r.width+'px';
+        ghost.dataset.ox = sx - r.left; ghost.dataset.oy = sy - r.top; document.body.appendChild(ghost); card.classList.add('ghost'); }
+      ghost.style.left = (e.clientX - ghost.dataset.ox) + 'px'; ghost.style.top = (e.clientY - ghost.dataset.oy) + 'px';
+      app.querySelectorAll('td.drop').forEach(td => td.classList.remove('over'));
+      const t = document.elementFromPoint(e.clientX, e.clientY); const td = t && t.closest('td.drop'); if(td) td.classList.add('over');
+    });
+    const up = e => {
+      if(!card.hasPointerCapture(e.pointerId)) return; card.releasePointerCapture(e.pointerId);
+      if(ghost){ ghost.remove(); ghost=null; card.classList.remove('ghost'); }
+      if(moved){
+        const t = document.elementFromPoint(e.clientX, e.clientY);
+        const td = t && t.closest('td.drop'), tray = t && t.closest('#tray');
+        if(td) put(id, td.dataset.cell); else if(tray) put(id, null); else viewA();
+      } else {
+        if(sel === id){ sel = null; card.classList.remove('sel'); return; }
+        const inCell = card.closest('td.drop');
+        if(sel && inCell) return put(sel, inCell.dataset.cell);   // 已選好卡片，點格子裡的卡＝換掉它
+        app.querySelectorAll('.card.sel').forEach(c=>c.classList.remove('sel')); sel = id; card.classList.add('sel');
+      }
+    };
+    card.addEventListener('pointerup', up); card.addEventListener('pointercancel', up);
+  });
+  app.querySelectorAll('td.drop').forEach(td => td.addEventListener('click', e => { if(sel && !e.target.closest('.card')) put(sel, td.dataset.cell); }));
+  $('#tray').addEventListener('click', e => { if(sel && !e.target.closest('.card')) put(sel, null); });
+}
+
+/* ===== 版本B：點選關鍵詞 ===== */
+let actCol = 'k';
+const MAX = 2;
+function viewB(){
+  const B = S.B;
+  const T = '讀課文第三段講椰子的句子，找出椰子的「遇到的困難」「怎麼做」「結果」，每一格點選 1～2 個關鍵詞。';
+  const owner = i => COLS.map(c=>c[0]).find(c => B.pick[c].includes(i));
+  const CHECKS = ['我選的關鍵詞都可以在第三段找到','「怎麼做」選的是椰子做的事，不是別種植物的','「結果」選的是最後發生的事'];
+  app.innerHTML = `<div class="${B.done?'locked':''}" style="display:flex;flex-direction:column;gap:12px">
+    <div class="task">${esc(T)}${spk(T)}</div>
+    <table class="grid gridB">${gridHead()}<tr>${whoCell}${COLS.map(([c,t])=>`<td class="pick ${c} ${actCol===c && !B.done?'act':''}" data-cell="${c}">
+      <div class="cnt">${actCol===c && !B.done ? '👉 現在選這一格' : '點這裡選這一格'}（${B.pick[c].length}/${MAX}）</div>
+      <div class="chips">${B.pick[c].slice().sort((a,b)=>a-b).map(i=>`<span class="chip ${c}">${esc(PASSAGE[i])}</span>`).join('')}</div></td>`).join('')}</tr></table>
+    <div class="two">
+      <div class="passage"><div class="ph"><span>第三段（椰子）</span>${spk(PASSAGE_TEXT)}</div>${PASSAGE.map((w,i)=> /^[，。]$/.test(w) ? `<span class="pu">${w}</span>` : `<span class="tok ${owner(i)||''}" data-i="${i}">${esc(w)}</span>`).join('')}</div>
+      <div class="checks"><h3>自我檢查</h3>${CHECKS.map((t,i)=>`<div class="ck ${B.checks[i]?'on':''}" data-i="${i}"><span class="bx">${B.checks[i]?'✔':''}</span>${t}</div>`).join('')}</div>
+    </div>
+    <div class="tip" id="tip"></div>
+    ${doneBar(B.done)}</div>`;
+  bindDone(B);
+  if(B.done) return;
+  app.querySelectorAll('td.pick').forEach(td => td.onclick = () => { actCol = td.dataset.cell; viewB(); });
+  app.querySelectorAll('.tok').forEach(el => el.onclick = () => {
+    const i = +el.dataset.i, o = owner(i);
+    if(o){ B.pick[o] = B.pick[o].filter(x=>x!==i); save(); return viewB(); }
+    if(B.pick[actCol].length >= MAX){ const tip=$('#tip'); tip.textContent = `這一格已經選了 ${MAX} 個，想換的話先點一下要拿掉的詞。`; return; }
+    B.pick[actCol].push(i); save(); viewB();
+  });
+  app.querySelectorAll('.ck').forEach(el => el.onclick = () => { const i=+el.dataset.i; B.checks[i] = !B.checks[i]; save(); viewB(); });
+}
+
+
+/* ===== 大屏（老師）：先顯示 QR code，學生連上後自動切換成他的作答畫面 ===== */
+function board(){
+  document.body.classList.add('boardmode');
+  document.title = '椰子四格表｜大屏';
+  $('#who').hidden = true; $('#reset').hidden = true; $('#back').hidden = true; $('#net').hidden = true;
+  const hb = $('.hb');
+  hb.innerHTML = `<button class="tbtn" id="clearAll">清空兩人作答</button><button class="tbtn" id="fs">全螢幕</button><button class="tbtn" id="leave">離開大屏</button>`;
+  confirmBtn($('#clearAll'), '清空兩人作答', () => { if(!DB) return; const t = Date.now(); DB.set('A','reset',t); DB.set('B','reset',t); });
+  $('#fs').onclick = () => { const d = document.documentElement; (d.requestFullscreen || d.webkitRequestFullscreen || (()=>{})).call(d); };
+  $('#leave').onclick = () => { location.href = location.pathname + (MOCK ? '?mock=1' : ''); };
+  app.innerHTML = (DB ? '' : `<div class="warn">⚠️ 目前沒有連上雲端，大屏只能顯示 QR code，看不到學生作答。請確認網路，或改用 AirPlay 投影。</div>`)
+    + `<div class="board"><section class="pane" id="paneA"></section><section class="pane" id="paneB"></section></div>`;
+  const st = {A:{}, B:{}}, showQR = {A:false, B:false}, was = {A:false, B:false};
+  const draw = w => {
+    const v = st[w], r = ROLES[w], on = !!v.online, pane = $('#pane'+w);
+    pane.style.setProperty('--pc', r.color); pane.classList.toggle('on', on);
+    const status = !on ? '<span class="st"><span class="wait">⏳</span> 等待連線…</span>'
+      : v.done ? '<span class="st done">✔ 已完成</span>' : '<span class="st on">🟢 已連線・作答中</span>';
+    const body = (!on || showQR[w])
+      ? `<div class="qrbox">${qrSVG(w)}<div class="h" style="color:${r.color}">${r.name}　請用 iPad 相機掃描</div><div class="s">${on ? '已經連上了，按右上角「看作答」回到作答畫面' : '連上後，這裡會自動切換成你的作答畫面'}</div></div>`
+      : (w==='A' ? liveA(v) : liveB(v));
+    pane.innerHTML = `<div class="ph2"><span class="nm">${r.name}</span>${status}${on ? `<button class="tbtn" data-t="${w}">${showQR[w] ? '看作答' : '顯示 QR code'}</button>` : ''}</div>${body}`;
+    const t = pane.querySelector('[data-t]'); if(t) t.onclick = () => { showQR[w] = !showQR[w]; draw(w); };
+  };
+  ['A','B'].forEach(w => {
+    draw(w);
+    if(DB) DB.watch(w, v => {
+      st[w] = v || {};
+      const on = !!st[w].online;
+      if(on && !was[w]){ showQR[w] = false; setTimeout(()=>{ const p=$('#pane'+w); p.classList.remove('pop'); void p.offsetWidth; p.classList.add('pop'); }, 0); }
+      was[w] = on; draw(w);
+    });
+  });
+}
+const cellOf = (obj, c) => obj && obj[c];
+function liveA(v){
+  const place = v.place || {}, placed = Object.values(place);
+  const txt = id => (CARDS.find(c=>c.id===id) || {}).t || '';
+  const left = (v.order || CARDS.map(c=>c.id)).filter(id => !placed.includes(id));
+  return `<table class="mg"><tr><th class="w">誰</th>${COLS.map(([c,t])=>`<th class="${c}">${t}</th>`).join('')}</tr>
+    <tr><td class="wc">🥥<br>椰子</td>${COLS.map(([c])=>`<td class="${place[c]?'filled':''}">${esc(txt(place[c]))}</td>`).join('')}</tr></table>
+    <div class="mini">${left.length ? left.map(id=>`<span>${esc(txt(id))}</span>`).join('') : '<span style="border:none;background:none;color:var(--muted)">字卡都放好了</span>'}</div>`;
+}
+function liveB(v){
+  const pick = v.pick || {}, get = c => (pick[c] ? Object.values(pick[c]) : []).map(Number).sort((a,b)=>a-b);
+  const owner = i => COLS.map(c=>c[0]).find(c => get(c).includes(i));
+  const checks = v.checks ? Object.values(v.checks) : [];
+  return `<table class="mg"><tr><th class="w">誰</th>${COLS.map(([c,t])=>`<th class="${c}">${t}</th>`).join('')}</tr>
+    <tr><td class="wc">🥥<br>椰子</td>${COLS.map(([c])=>`<td class="${get(c).length?'filled':''}"><div class="chips">${get(c).map(i=>`<span class="chip ${c}" style="font-size:27px">${esc(PASSAGE[i])}</span>`).join('')}</div></td>`).join('')}</tr></table>
+    <div class="mp">${PASSAGE.map((w,i)=> /^[，。]$/.test(w) ? `<span class="pu">${w}</span>` : `<span class="tok ${owner(i)||''}">${esc(w)}</span>`).join('')}</div>
+    <div class="mck">自我檢查：已勾 <b>${checks.filter(Boolean).length}</b> / 3 項</div>`;
+}
+
+// 大屏等雲端連好再畫；平板先畫出作答頁，連上後再同步
+if(BOARD) initSync().then(render);
+else { render(); initSync().then(render); }
+</script>
+</body>
+</html>
