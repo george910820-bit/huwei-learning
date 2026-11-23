@@ -132,6 +132,8 @@ const KEY = 'coconut4grid.v1';
 let S = {role:null, A:{place:{}, order:null, done:false}, B:{pick:{k:[],h:[],r:[]}, checks:[false,false,false], done:false}};
 try{ const raw = localStorage.getItem(KEY); if(raw) S = Object.assign(S, JSON.parse(raw)); }catch(e){}
 const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} };
+/* 掃 QR code 開啟（網址帶 ?who=A 或 ?who=B）時，直接進到該學生的作答畫面 */
+{ const w = new URLSearchParams(location.search).get('who'); if(w && ROLES[w]){ S.role = w; save(); } }
 
 /* ===== 朗讀 ===== */
 let voice = null;
