@@ -159,7 +159,9 @@
   @media (prefers-reduced-motion:reduce){.calf,.scrollbg,.chapter,.badges span{animation:none!important}}
   @media (max-width:1000px){.boardwrap{grid-template-columns:1fr}}
   /* ===== v2：第一視角、小精靈、開場設定、回顧影片、推薦卡 ===== */
-  .fpv{position:absolute;inset:0;transform:scale(1.06);transform-origin:50% 60%}
+  .fpv{position:absolute;inset:0;transform-origin:50% 60%}
+  /* 舞台永遠維持 16:9，整個畫面都看得到 */
+  .stage{max-height:none!important;border:none!important;box-shadow:0 0 0 4px #fff,0 6px 20px rgba(0,0,0,.12)!important;flex:none}
   .fpv svg.scene{position:absolute;inset:0;width:100%;height:100%}
   .v-run{animation:bob .45s ease-in-out infinite}
   .v-slow{animation:bob 1.3s ease-in-out infinite}
@@ -319,6 +321,8 @@
   .playfor{position:absolute;top:2.5%;left:50%;transform:translateX(-50%);z-index:4;background:rgba(30,20,10,.7);color:#fff;font-family:var(--title);font-size:clamp(18px,2vw,30px);padding:4px 20px;border-radius:999px;white-space:nowrap}
   #seeAll{margin-top:6px}
   .thead .mem{font-size:18px;color:var(--muted)}
+  .start .boardgo{font-size:34px;padding:18px 64px}
+  @media (max-width:1300px) and (min-width:1001px){.boardwrap{grid-template-columns:minmax(0,1fr) 250px}.qrs svg{max-width:110px}}
   .cheerdot{animation:cheer .6s ease-in-out infinite;transform-box:fill-box}
 
 </style>
@@ -800,6 +804,12 @@ function boardMain(){
   document.addEventListener('keydown', e => { if(e.target.tagName==='INPUT' || $('.setup')) return;
     if(['ArrowRight','PageDown',' ','Enter'].includes(e.key)){ e.preventDefault(); step(1); }
     if(['ArrowLeft','PageUp'].includes(e.key)){ e.preventDefault(); step(-1); } });
+  // 依視窗大小調整舞台：寬高比固定 16:9，不會被切掉
+  const fit = () => { const st = $('#stage'); if(!st) return; const col = st.parentElement;
+    const top = st.getBoundingClientRect().top + scrollY, ctrl = ($('.controls')||{}).offsetHeight || 60;
+    const availH = Math.max(240, innerHeight - top - ctrl - 26);
+    st.style.width = Math.floor(Math.min(col.clientWidth, availH * 16 / 9)) + 'px'; };
+  addEventListener('resize', fit); document.addEventListener('fullscreenchange', () => setTimeout(fit, 120)); setTimeout(fit, 0);
   G.parts = {};
   window.onHello = () => publishBoard();   // 平板剛打開時，把目前狀態再送一次
   render(true, true);
@@ -1301,11 +1311,8 @@ function startPage(){
   $('#root').innerHTML = `<div class="start">
     <svg viewBox="-110 -110 220 330" style="width:170px">${calf('happy')}</svg>
     <div class="big">漢堡偵探社 第三號案件<br>勇氣漢堡</div>
-    <button class="boardgo" id="bg">🖥️ 開啟大屏（老師用）</button>
-    <div style="color:var(--muted);font-size:18px">學生平板請掃大屏上的 QR code；或在這裡選擇第幾台平板：</div>
-    <div class="roles">${[1,2,3,4,5,6].map(n=>`<button data-p="${n}" style="border-color:${PCOL['P'+n]}">平板 ${n}</button>`).join('')}</div></div>`;
+    <button class="boardgo" id="bg">▶ 開始</button></div>`;
   $('#bg').onclick = () => { location.href = location.pathname + '?view=board' + (MOCK?'&mock=1':''); };
-  document.querySelectorAll('.roles [data-p]').forEach(b => b.onclick = () => { location.href = location.pathname + '?p=' + b.dataset.p + (MOCK?'&mock=1':''); });
 }
 
 /* =====================================================================
