@@ -294,6 +294,31 @@
   .rdone{display:flex;gap:12px;justify-content:center;align-items:center;margin-top:4px}
   .rwgrid.few .mb{font-size:clamp(16px,1.7vw,26px)}.rwgrid.few .rb .nm{font-size:clamp(18px,1.8vw,26px)}
   .rwgrid.mid .mb{font-size:clamp(13px,1.25vw,19px)}
+  /* 設定：小組組員、未選能力 */
+  .prow .nmcol{display:flex;flex-direction:column;gap:6px;min-width:0}
+  .prow input.mem{font-size:17px;padding:5px 10px}
+  .prow.miss{border-color:#E2483B;box-shadow:0 0 0 3px rgba(226,72,59,.18)}
+  .setup .seg button:not(.on){color:var(--ink)}
+  /* 分割畫面 */
+  .split{position:absolute;inset:0;z-index:5;background:rgba(251,246,236,.97);display:flex;flex-direction:column;padding:1.4% 1.8%;gap:8px}
+  .split .hd{display:flex;align-items:center;gap:10px;font-family:var(--title);font-size:clamp(18px,2vw,30px)}
+  .split .hd .tbtn{margin-left:auto;font-family:var(--title)}
+  .sgrid{flex:1;display:grid;gap:10px;min-height:0}
+  .pane{background:#fff;border:4px solid var(--pc);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;min-height:0}
+  .pane .th{position:relative;flex:1;min-height:0;background:#EFE7DA}
+  .pane .th svg{position:absolute;inset:0;width:100%;height:100%}
+  .pane .th .wt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--title);font-size:clamp(18px,2vw,30px);color:var(--muted)}
+  .pane .pn{position:absolute;top:8px;left:8px;background:var(--pc);color:#fff;font-family:var(--title);font-size:clamp(16px,1.7vw,26px);border-radius:999px;padding:2px 14px}
+  .pane .seen{position:absolute;top:8px;right:8px;background:rgba(46,139,87,.92);color:#fff;font-family:var(--title);font-size:clamp(13px,1.2vw,18px);border-radius:999px;padding:2px 12px}
+  .pane .play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:clamp(54px,6vw,96px);height:clamp(54px,6vw,96px);border-radius:50%;border:5px solid #fff;background:rgba(217,98,43,.93);color:#fff;font-size:clamp(24px,2.8vw,44px);cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,.3);padding-left:.2em}
+  .pane .play:hover{transform:translate(-50%,-50%) scale(1.08)}
+  .pane .info{display:flex;gap:10px;align-items:center;padding:8px 12px;font-family:var(--title);font-size:clamp(14px,1.45vw,22px);line-height:1.35}
+  .pane .info .ic{font-size:1.6em;flex:none}.pane .info .ic svg{width:1.8em;height:auto}
+  .pane .info small{display:block;color:var(--muted);font-size:.85em}
+  .pane.empty{border-style:dashed}
+  .playfor{position:absolute;top:2.5%;left:50%;transform:translateX(-50%);z-index:4;background:rgba(30,20,10,.7);color:#fff;font-family:var(--title);font-size:clamp(18px,2vw,30px);padding:4px 20px;border-radius:999px;white-space:nowrap}
+  #seeAll{margin-top:6px}
+  .thead .mem{font-size:18px;color:var(--muted)}
   .cheerdot{animation:cheer .6s ease-in-out infinite;transform-box:fill-box}
 
 </style>
@@ -467,16 +492,19 @@ const RECAP = {
   trash:{sc:'lunch', tray:'empty', v:'slow', a:'把豆腐和青菜倒掉', b:'下午沒力氣，食物也浪費了'},
 };
 function recapBeats(){
-  const out = [{clip:'title', s:'牛', m:'happy', t:'來看一段回顧影片：你做了哪些選擇？結果怎麼樣？'}];
+  const out = [{clip:'title', s:'牛', m:'happy', t:'來看一段回顧影片：大家做了哪些選擇？結果怎麼樣？'}];
   ['d1','d2'].forEach(d => {
-    const list = (G && G.played && G.played[d]) || [], mine = G && G.chosen[d];
-    const order = mine && list.includes(mine) ? [mine, ...list.filter(o => o!==mine)] : list.slice();
-    order.forEach(o => { const r = RECAP[o], good = !!DEC[d].opts[o].good, isMine = o===mine;
-      out.push({clip:'res', d, o, mine:isMine, good, s:'旁', t:`${isMine ? '你的選擇' : '倒帶看過'}：${r.a}。結果：${r.b}。`}); });
+    const list = (G && G.played && G.played[d]) || [], who = (G && G.pickers && G.pickers[d]) || [], last = G && G.chosen[d];
+    const names = o => who.filter(p => p.pick===o).map(p => pName(p.k)).join('、');
+    // 有人選的排前面，倒帶看過的排後面
+    const order = [...list.filter(o => names(o)), ...list.filter(o => !names(o))];
+    order.forEach(o => { const r = RECAP[o], good = !!DEC[d].opts[o].good, nm = names(o);
+      const label = nm ? `${nm} 選的` : (!who.length && o===last ? '最後的選擇' : '倒帶看過');
+      out.push({clip:'res', d, o, mine:!!nm || (!who.length && o===last), label, good, s:'旁', t:`${label}：${r.a}。結果：${r.b}。`}); });
   });
-  out.push({clip:'burger', s:'旁', t:'你做的勇氣漢堡：全穀、豆類、蔬菜、堅果種子、水果，我的餐盤裡的五類都有了。'});
+  out.push({clip:'burger', s:'旁', t:'大家做的勇氣漢堡：全穀、豆類、蔬菜、堅果種子、水果，我的餐盤裡的五類都有了。'});
   out.push({clip:'race', s:'旁', t:'運動會上跌倒了，你站起來跑完，沒有放棄。'});
-  out.push({clip:'end', s:'牛', m:'determined', t:'這些結果，就是你推薦勇氣漢堡的理由！等一下做推薦卡，要用上它們喔！'});
+  out.push({clip:'end', s:'牛', m:'determined', t:'這些結果，就是推薦勇氣漢堡的理由！等一下做推薦卡，要用上它們喔！'});
   return out;
 }
 
@@ -724,16 +752,18 @@ const spk = t => `<button class="spk" data-say="${esc(t)}">🔊</button>`;
 /* =====================================================================
    設定（參加方式、名單、旁白；存在這台電腦）
    ===================================================================== */
-const KEY = 'niuCourage.v2';
+const KEY = 'niuCourage.v3';
 const defName = (kind, i) => kind==='grp' ? `第${i+1}組` : `學生${i+1}`;
-let S = {kind:'ind', n:2, narr:'game', ps:Array.from({length:6},(_,i)=>({n:defName('ind',i), lv:i===0?2:3, tts:i!==0}))};
+// 能力（lv）一開始不預設：0＝還沒選、2＝基礎、3＝進階
+let S = {kind:'ind', n:2, narr:'game', ps:Array.from({length:6},()=>({n:'', m:'', lv:0, tts:true}))};
 try{ const raw = localStorage.getItem(KEY); if(raw){ const o = JSON.parse(raw); S = Object.assign(S, o); } }catch(e){}
 const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} };
 const PCOL = {P1:'#E07A3B', P2:'#2F7FB5', P3:'#3E8E4A', P4:'#8E4FB0', P5:'#C2185B', P6:'#B07A00'};
 const partList = () => Array.from({length:S.n},(_,i)=>'P'+(i+1));
 const pCfg = k => S.ps[+k.slice(1)-1];
-const pName = k => (pCfg(k)||{}).n || ('平板'+k.slice(1));
-const cfgObj = () => Object.fromEntries(partList().map(k => [k, {n:pName(k), lv:pCfg(k).lv, tts:!!pCfg(k).tts}]));
+const pName = k => (pCfg(k)||{}).n || defName(S.kind, +k.slice(1)-1);
+const pMem = k => S.kind==='grp' ? ((pCfg(k)||{}).m || '') : '';
+const cfgObj = () => Object.fromEntries(partList().map(k => [k, {n:pName(k), m:pMem(k), lv:pCfg(k).lv || 3, tts:!!pCfg(k).tts}]));
 
 /* =====================================================================
    大屏
@@ -779,28 +809,36 @@ function boardMain(){
 function setupScreen(first){
   const old = $('.setup'); if(old) old.remove();
   const m = document.createElement('div'); m.className = 'setup';
+  let warn = false;
   const draw = () => {
+    const grp = S.kind==='grp';
     m.innerHTML = `<div class="box"><h2>${first ? '🐮 開始前，先設定參加的人' : '⚙️ 設定'}</h2>
-      <div class="lead">設定好按「產生 QR code」，學生用平板掃自己的 QR code 就能加入。</div>
-      <div class="row">參加方式<div class="seg" data-k="kind"><button data-v="ind" class="${S.kind==='ind'?'on':''}">👤 個人</button><button data-v="grp" class="${S.kind==='grp'?'on':''}">👥 小組</button></div></div>
-      <div class="row">${S.kind==='grp' ? '組數' : '人數'}<div class="seg" data-k="n">${[1,2,3,4,5,6].map(n=>`<button data-v="${n}" class="${S.n===n?'on':''}">${n}</button>`).join('')}</div></div>
-      ${partList().map((k,i) => { const p = S.ps[i]; return `<div class="prow"><span class="dot" style="background:${PCOL[k]}"></span>
-        <input data-i="${i}" maxlength="8" value="${esc(p.n)}" placeholder="${defName(S.kind,i)}" aria-label="名字">
-        <div><span class="lab">選項</span><div class="seg" data-lv="${i}"><button data-v="2" class="${p.lv===2?'on':''}">2 個</button><button data-v="3" class="${p.lv===3?'on':''}">3 個＋說理由</button></div></div>
+      <div class="lead">資源班、普通班都可以用：選好人數或組數、填名字、選能力，再按「產生 QR code」。</div>
+      <div class="row">參加方式<div class="seg" data-k="kind"><button data-v="ind" class="${!grp?'on':''}">👤 個人</button><button data-v="grp" class="${grp?'on':''}">👥 小組</button></div></div>
+      <div class="row">${grp ? '組數' : '人數'}<div class="seg" data-k="n">${[1,2,3,4,5,6].map(n=>`<button data-v="${n}" class="${S.n===n?'on':''}">${n}</button>`).join('')}</div></div>
+      <div class="row" style="font-size:18px">能力說明：<span style="color:var(--muted);flex:1">基礎＝2 個選項；進階＝3 個選項＋說理由</span>
+        <span>全部設為 <span class="seg" data-all="1"><button data-v="2">基礎</button><button data-v="3">進階</button></span></span></div>
+      ${partList().map((k,i) => { const p = S.ps[i], miss = warn && !p.lv; return `<div class="prow${grp ? ' grp' : ''}${miss ? ' miss' : ''}"><span class="dot" style="background:${PCOL[k]}"></span>
+        <div class="nmcol"><input data-i="${i}" maxlength="10" value="${esc(p.n)}" placeholder="${grp ? '組名：' : '名字：'}${defName(S.kind,i)}" aria-label="${grp?'組名':'名字'}">
+          ${grp ? `<input data-mi="${i}" maxlength="40" value="${esc(p.m||'')}" placeholder="組員名字（可不填，例如：小明、小華）" aria-label="組員" class="mem">` : ''}</div>
+        <div><span class="lab">能力${miss ? '<b style="color:#C0392B">（請選）</b>' : ''}</span><div class="seg" data-lv="${i}"><button data-v="2" class="${p.lv===2?'on':''}">基礎</button><button data-v="3" class="${p.lv===3?'on':''}">進階</button></div></div>
         <div><span class="lab">平板朗讀</span><div class="seg" data-tts="${i}"><button data-v="1" class="${p.tts?'on':''}">🔊 開</button><button data-v="0" class="${!p.tts?'on':''}">關</button></div></div></div>`; }).join('')}
+      ${warn && partList().some((k,i) => !S.ps[i].lv) ? '<div class="warn" style="text-align:center">請幫每一位（每一組）選「基礎」或「進階」</div>' : ''}
       <div class="go">${first ? '' : '<button class="bigbtn ghost" id="restart">↺ 從頭開始</button>'}
         <button class="bigbtn" id="toQR">產生 QR code ▶</button>${first ? '' : '<button class="bigbtn ghost" id="close">完成</button>'}</div></div>`;
-    m.querySelectorAll('[data-k] button').forEach(b => b.onclick = () => { const k = b.parentElement.dataset.k; readNames();
-      if(k==='kind'){ const nk = b.dataset.v; S.ps.forEach((p,i) => { if(!p.n || p.n===defName(S.kind,i)) p.n = defName(nk,i); }); S.kind = nk; }
-      else S.n = +b.dataset.v;
+    m.querySelectorAll('[data-k] button').forEach(b => b.onclick = () => { readNames(); const k = b.parentElement.dataset.k;
+      if(k==='kind') S.kind = b.dataset.v; else S.n = +b.dataset.v;
       save(); draw(); });
+    m.querySelectorAll('[data-all] button').forEach(b => b.onclick = () => { readNames(); S.ps.slice(0, S.n).forEach(p => p.lv = +b.dataset.v); save(); draw(); });
     m.querySelectorAll('[data-lv] button').forEach(b => b.onclick = () => { readNames(); S.ps[+b.parentElement.dataset.lv].lv = +b.dataset.v; save(); draw(); });
     m.querySelectorAll('[data-tts] button').forEach(b => b.onclick = () => { readNames(); S.ps[+b.parentElement.dataset.tts].tts = b.dataset.v==='1'; save(); draw(); });
-    $('#toQR',m).onclick = () => { readNames(); save(); m.remove(); afterSetup(); qrScreen(first); };
-    if($('#close',m)) $('#close',m).onclick = () => { readNames(); save(); m.remove(); afterSetup(); render(false, true); };
-    if($('#restart',m)) $('#restart',m).onclick = () => { readNames(); save(); m.remove(); afterSetup(); restart(); };
+    const ready = () => { readNames(); save(); if(partList().some((k,i) => !S.ps[i].lv)){ warn = true; draw(); return false; } return true; };
+    $('#toQR',m).onclick = () => { if(!ready()) return; m.remove(); afterSetup(); qrScreen(first); };
+    if($('#close',m)) $('#close',m).onclick = () => { if(!ready()) return; m.remove(); afterSetup(); render(false, true); };
+    if($('#restart',m)) $('#restart',m).onclick = () => { if(!ready()) return; m.remove(); afterSetup(); restart(); };
   };
-  const readNames = () => m.querySelectorAll('input[data-i]').forEach(inp => { S.ps[+inp.dataset.i].n = inp.value.trim() || defName(S.kind, +inp.dataset.i); });
+  const readNames = () => { m.querySelectorAll('input[data-i]').forEach(inp => { S.ps[+inp.dataset.i].n = inp.value.trim(); });
+    m.querySelectorAll('input[data-mi]').forEach(inp => { S.ps[+inp.dataset.mi].m = inp.value.trim(); }); };
   draw();
   document.body.appendChild(m);
 }
@@ -812,7 +850,7 @@ function qrScreen(first){
   const m = document.createElement('div'); m.className = 'setup'; m.id = 'qrScreen';
   m.innerHTML = `<div class="box" style="width:min(1300px,100%)"><h2>📱 請用平板掃描自己的 QR code</h2>
     <div class="lead">掃好的會顯示「🟢 已連線」。大家都連上了，就可以開始！</div>
-    <div class="qrgrid">${partList().map(k => `<div class="q" style="--pc:${PCOL[k]}">${qrSVG(k)}<div style="color:${PCOL[k]}">${esc(pName(k))}</div><div class="st" data-st="${k}"></div></div>`).join('')}</div>
+    <div class="qrgrid">${partList().map(k => `<div class="q" style="--pc:${PCOL[k]}">${qrSVG(k)}<div style="color:${PCOL[k]}">${esc(pName(k))}</div>${pMem(k) ? `<div style="font-size:16px;color:var(--muted)">${esc(pMem(k))}</div>` : ''}<div class="st" data-st="${k}"></div></div>`).join('')}</div>
     <div class="go"><button class="bigbtn ghost" id="back">◀ 修改名單</button><button class="bigbtn" id="play">${first ? '開始播放 ▶' : '關閉'}</button></div></div>`;
   document.body.appendChild(m);
   $('#back',m).onclick = () => { m.remove(); setupScreen(first); };
@@ -822,7 +860,8 @@ function qrScreen(first){
 function watchPart(k){
   if(!DB || (G.watched||(G.watched={}))[k]) return; G.watched[k] = true;
   const {room, who} = PART(k);
-  DB.watch(room, who, v => { G.parts[k] = v || {}; drawParts(); drawVotes(); if((curBeat()||{}).rec) render(false, true); });
+  DB.watch(room, who, v => { G.parts[k] = v || {}; drawParts(); drawVotes();
+    const b = curBeat() || {}; if(b.rec || (G.view==='split' && curDec() && !G.queue)) render(false, true); else maybeAutoSplit(); });
 }
 function drawParts(){
   const list = partList(), d = curDec(), b = curBeat() || {};
@@ -838,6 +877,20 @@ function drawParts(){
 }
 
 /* ---------- 播放 ---------- */
+const SPLIT = ['d1','d2'];          // 這兩個決定點會切成每人一塊的畫面
+function picksFor(d){
+  return partList().map(k => { const v = (G.parts||{})[k] || {}; return v.dec===d && v.ask===G.ask && v.pick ? {k, pick:v.pick, why:v.why||''} : null; }).filter(Boolean);
+}
+function allPicked(d){
+  const ps = picksFor(d); if(!ps.length || ps.length < partList().length) return false;
+  return ps.every(p => (pCfg(p.k).lv||3)===2 || !DEC[d].why || p.why);
+}
+function maybeAutoSplit(){
+  const d = curDec(); if(!d || !SPLIT.includes(d) || G.queue || G.view==='split') return;
+  G.autoDone = G.autoDone || {};
+  if(G.autoDone[d+G.ask] || !allPicked(d)) return;
+  G.autoDone[d+G.ask] = true; G.view = 'split'; render(false, true);
+}
 function curBeat(){ if(G.queue) return G.queue[G.qi]; return CH[G.ci].beats[G.bi]; }
 function curDec(){ const b = curBeat(); return b && b.dec ? b.dec : null; }
 function curScene(){
@@ -863,7 +916,7 @@ function baseMeters(ci){
 function resetAct3(){ G.burger = []; G.plate = []; G.popDone = null; ['b1','b2','b3','b4','b5'].forEach(k => delete G.chosen[k]); }
 function jump(ci, bi){
   if(window.speechSynthesis) speechSynthesis.cancel();
-  G.ci = ci; G.bi = bi || 0; G.queue = null; G.qi = 0; G.post = false; G.pauseShow = null; G.showHint = false; G.returnTo = null; G.recZoom = null; G.ask++;
+  G.ci = ci; G.bi = bi || 0; G.queue = null; G.qi = 0; G.post = false; G.pauseShow = null; G.showHint = false; G.returnTo = null; G.recZoom = null; G.ask++; G.view = 'ask'; G.playingFor = '';
   if(CH[ci].id==='act3') resetAct3();
   [G.pow, G.cou] = baseMeters(ci);
   applyFx(CH[ci].beats[G.bi]);
@@ -889,7 +942,7 @@ function step(dir){
   if(dir<0){
     if(G.post){ G.post = false; if(G.queue.pause){ G.pauseShow = G.queue.pause; } render(false); return; }
     if(G.pauseShow){ G.pauseShow = null; G.queue.pausePending = true; render(false); return; }
-    if(G.queue){ if(G.qi>0){ G.qi--; render(false); } else { G.queue = null; G.ask++; [G.pow, G.cou] = baseMeters(G.ci); render(false); } return; }
+    if(G.queue){ if(G.qi>0){ G.qi--; render(false); } else { const d = G.queue.dec; G.queue = null; G.playingFor = ''; G.view = d && SPLIT.includes(d) && picksFor(d).length ? 'split' : 'ask'; [G.pow, G.cou] = baseMeters(G.ci); render(false); } return; }
     if(G.bi>0){ G.bi--; render(false); } else if(G.ci>0){ G.ci--; G.bi = CH[G.ci].beats.length-1; render(true); }
     return;
   }
@@ -905,7 +958,7 @@ function step(dir){
   advance();
 }
 function advance(){
-  const ch = CH[G.ci];
+  const ch = CH[G.ci]; G.view = 'ask'; G.playingFor = '';
   if(G.bi < ch.beats.length-1){ G.bi++; applyFx(ch.beats[G.bi]); render(false); return; }
   if(G.ci < CH.length-1){ G.ci++; G.bi = 0; if(CH[G.ci].id==='act3') resetAct3(); applyFx(CH[G.ci].beats[0]); render(true); }
 }
@@ -919,12 +972,16 @@ function choose(d, oid){
     G.qi = 0; render(false); publishBoard(); return;
   }
   (G.played[d] = G.played[d] || []); if(!G.played[d].includes(oid)) G.played[d].push(oid);
+  const ps = picksFor(d); if(ps.length) (G.pickers = G.pickers || {})[d] = ps;
+  G.playingFor = ps.filter(p => p.pick===oid).map(p => pName(p.k)).join('、');
   [G.pow, G.cou] = baseMeters(G.ci);
   G.queue = dec.res[oid].map(x=>x); G.queue.isDec = true; G.queue.dec = d; G.queue.pause = dec.pause && dec.pause[oid]; G.queue.pausePending = !!G.queue.pause;
   G.qi = 0; applyFx(G.queue[0]); render(false); publishBoard();
 }
 function rewind(){
-  G.queue = null; G.post = false; G.pauseShow = null; G.showHint = false; G.ask++; G.tok++;
+  const d = G.queue && G.queue.dec;
+  G.queue = null; G.post = false; G.pauseShow = null; G.showHint = false; G.tok++; G.playingFor = '';
+  G.view = d && SPLIT.includes(d) && picksFor(d).length ? 'split' : 'ask';
   [G.pow, G.cou] = baseMeters(G.ci);
   render(false); publishBoard();
 }
@@ -946,12 +1003,13 @@ function render(newChapter, quiet){
   if(newChapter) over += `<div class="chapter">${ch.name}<small>${ch.sub}</small></div>`;
   if(G.pauseShow) over += pauseCard(G.pauseShow.q, G.pauseShow.hint);
   else if(b.badges) over += badgeScreen();
-  else if(d && !G.queue) over += askOverlay(d);
+  else if(d && !G.queue) over += G.view==='split' && SPLIT.includes(d) ? splitView(d) : askOverlay(d);
   else if(b.pause) over += pauseCard(b.pause, b.hint);
   if(b.guide != null) over += recGuide(b.guide);
   if(b.rec) over += recWall();
   if(b.clip) over += filmOverlay(b);
-  if(G.post) over += `<div class="post"><button class="bigbtn ghost" id="rw">⏪ 倒帶，看看另一種選擇</button><button class="bigbtn" id="go">${G.returnTo ? '回到徽章 ▶' : '繼續 ▶'}</button></div>`;
+  if(G.queue && G.queue.isDec && G.playingFor) over += `<div class="playfor">▶ ${esc(G.playingFor)} 的選擇</div>`;
+  if(G.post) over += `<div class="post"><button class="bigbtn ghost" id="rw">${SPLIT.includes(G.queue.dec) && picksFor(G.queue.dec).length ? '◀ 回到大家的選擇' : '⏪ 倒帶，看看另一種選擇'}</button><button class="bigbtn" id="go">${G.returnTo ? '回到徽章 ▶' : '繼續 ▶'}</button></div>`;
   const sp = spriteOn();
   const talking = b.s==='牛' && b.t;
   const spMood = talking ? (b.m || 'happy') : 'happy';
@@ -968,6 +1026,9 @@ function render(newChapter, quiet){
   // 綁定
   document.querySelectorAll('.opt[data-o]').forEach(el => el.onclick = () => choose(el.dataset.d, el.dataset.o));
   if($('#rw')) $('#rw').onclick = rewind;
+  if($('#seeAll')) $('#seeAll').onclick = () => { G.view = 'split'; render(false, true); };
+  if($('#backQ')) $('#backQ').onclick = () => { G.view = 'ask'; render(false, true); };
+  document.querySelectorAll('.pane [data-play]').forEach(el => el.onclick = () => choose(curDec(), el.dataset.play));
   if($('#go')) $('#go').onclick = () => { G.post = false; G.queue = null; G.showHint = false;
     if(G.returnTo){ const r = G.returnTo; G.returnTo = null; G.ci = r.ci; G.bi = r.bi; G.ask++; [G.pow, G.cou] = baseMeters(r.ci); render(true); return; }
     advance(); };
@@ -998,10 +1059,27 @@ function askOverlay(d){
   return `<div class="ask"><div class="q">${esc(dec.q)}</div>
     <div class="opts" style="grid-template-columns:repeat(${ids.length},1fr)">${ids.map(o => { const op = dec.opts[o];
       const tried = d[0]==='b' && G.chosen[d]===o && !op.good;
-      return `<div class="opt ${tried?'no':''}" data-d="${d}" data-o="${o}"><div class="ic">${icon(op.ic)}</div><div class="t">${esc(op.t)}</div><div class="who-chips" data-chips="${o}"></div></div>`; }).join('')}</div></div>`;
+      return `<div class="opt ${tried?'no':''}" data-d="${d}" data-o="${o}"><div class="ic">${icon(op.ic)}</div><div class="t">${esc(op.t)}</div><div class="who-chips" data-chips="${o}"></div></div>`; }).join('')}</div>
+    ${SPLIT.includes(d) && DB ? `<button class="bigbtn ghost" id="seeAll">👀 看大家的選擇（已選 <span id="pickN">${picksFor(d).length}</span>/${partList().length}）</button>` : ''}</div>`;
+}
+/* 分割畫面：每個人／每組一塊，按 ▶ 播放他的選擇 */
+function thumb(d, o){
+  const b = DEC[d].res[o][0], ci = CH.findIndex(c => c.beats.some(x => x.dec===d)), sc = b.sc || CH[ci].sc;
+  return `<svg viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid slice">${SC[sc](b)}${hands(b)}</svg>`;
+}
+function splitView(d){
+  const list = partList(), n = list.length, cols = n<=3 ? n : n===4 ? 2 : 3;
+  const ps = Object.fromEntries(picksFor(d).map(p => [p.k, p])), played = G.played[d] || [];
+  return `<div class="split"><div class="hd">👀 大家的選擇：${esc(DEC[d].q)}<button class="tbtn" id="backQ">◀ 回到題目</button></div>
+    <div class="sgrid" style="grid-template-columns:repeat(${cols},minmax(0,1fr));grid-template-rows:repeat(${Math.ceil(n/cols)},minmax(0,1fr))">${list.map(k => { const p = ps[k], op = p && DEC[d].opts[p.pick];
+      return `<div class="pane${p ? '' : ' empty'}" style="--pc:${PCOL[k]}"><div class="th">${p ? thumb(d, p.pick) : '<div class="wt">⏳ 還沒選</div>'}
+          ${p ? `<button class="play" data-play="${p.pick}" aria-label="播放${esc(pName(k))}的選擇">▶</button>${played.includes(p.pick) ? '<span class="seen">✔ 播過了</span>' : ''}` : ''}
+          <span class="pn">${esc(pName(k))}</span></div>
+        <div class="info">${p ? `<span class="ic">${icon(op.ic)}</span><span>${esc(op.t)}${p.why ? `<small>理由：${esc(p.why)}</small>` : ''}</span>` : '<span style="color:var(--muted)">等他在平板上選</span>'}</div></div>`; }).join('')}</div></div>`;
 }
 function drawVotes(){
   const d = curDec(); if(!d || G.queue) return;
+  if($('#pickN')) $('#pickN').textContent = picksFor(d).length;
   document.querySelectorAll('[data-chips]').forEach(el => {
     const o = el.dataset.chips;
     el.innerHTML = partList().filter(k => { const v = (G.parts||{})[k]; return v && v.dec===d && v.ask===G.ask && v.pick===o; })
@@ -1023,7 +1101,7 @@ function filmOverlay(b){
     return `<div class="film">${tag}<div class="title"><div class="b">${b.clip==='title' ? '🎬 你的選擇，帶來什麼結果？' : '🍔 這些結果，就是推薦的理由！'}</div><div class="s">${b.clip==='title' ? '一起看看你做過的每一個選擇' : '等一下做推薦卡，把它們放進「論據」'}</div></div></div>${btn}`;
   let ic = '', a = '', r = '', kind = '';
   if(b.clip==='res'){ const R = RECAP[b.o], op = DEC[b.d].opts[b.o]; ic = icon(op.ic); a = R.a; r = R.b;
-    kind = `<div class="kind ${b.mine?'mine':'tried'}">${b.mine ? '你的選擇' : '倒帶看過'} ${b.good ? '👍' : '👎'}</div>`; }
+    kind = `<div class="kind ${b.good?'mine':'tried'}">${esc(b.label)} ${b.good ? '👍' : '👎'}</div>`; }
   if(b.clip==='burger'){ ic = '🍔'; a = '勇氣漢堡：全穀、豆類、蔬菜、堅果種子、水果'; r = '我的餐盤五類都亮了'; }
   if(b.clip==='race'){ ic = '🏃'; a = '運動會跌倒了也不放棄'; r = '站起來跑完，在挫折中成長'; }
   return `<div class="film">${tag}${kind}<div class="cap" style="--pc:${b.clip==='res' ? (b.good ? '#2E8B57' : '#B0896A') : '#E0CBA6'}"><span class="ic">${ic}</span><span>${esc(a)} <span class="arrow">➜</span> ${esc(r)}</span></div></div>${btn}`;
@@ -1130,7 +1208,7 @@ function tabletMain(k){
   const draw = () => {
     const c = cfg();
     document.title = '牛小勇的勇氣漢堡｜' + (c ? c.n : '平板' + k.slice(1));
-    const head = `<div class="thead"><span class="nm" style="background:${col}">${esc(c ? c.n : '平板 ' + k.slice(1))}</span><span class="net ${DB?'on':''}" id="net">${DB?'🟢 已連上大屏':'⚪ 連線中…'}</span></div>`;
+    const head = `<div class="thead"><span class="nm" style="background:${col}">${esc(c ? c.n : '平板 ' + k.slice(1))}</span>${c && c.m ? `<span class="mem">${esc(c.m)}</span>` : ''}<span class="net ${DB?'on':''}" id="net">${DB?'🟢 已連上大屏':'⚪ 連線中…'}</span></div>`;
     const waitBox = (t, s) => `<div class="tab">${head}<div class="wait"><svg viewBox="-110 -110 220 330" style="width:130px">${calf('happy')}</svg><div class="t">${t}</div><div class="s">${s}</div></div></div>`;
     if(!c){ $('#root').innerHTML = waitBox('請看大屏', BS.parts ? `老師的名單裡沒有第 ${k.slice(1)} 台平板，請跟老師確認` : '等老師設定好名單'); return; }
     const d = BS.dec;
@@ -1207,9 +1285,12 @@ function tabletMain(k){
     if(ok){ DB.offlineOnExit(room, who); DB.update(room, who, {online:true, at:Date.now()}); } });
   window.onHello = () => { DB.update(room, who, {online:true, dec:MY.dec||'', ask:MY.ask||0, pick:MY.pick||'', why:MY.why||''}); if(MR) sendRec(); };
   DB.update(room, who, {online:true, at:Date.now()});
-  DB.watch(BOARD_NODE.room, BOARD_NODE.who, v => { const prevDec = BS.dec; BS = v || {};
-    // 推薦卡拖拉中，大屏只是更新時間就不要重畫（避免打斷拖曳）
-    if(prevDec==='rec' && BS.dec==='rec' && MR && MR.ask===BS.ask && document.querySelector('.rcard.ghost')) return;
+  let lastKey = '';
+  DB.watch(BOARD_NODE.room, BOARD_NODE.who, v => { BS = v || {};
+    // 大屏只是更新時間、內容沒變就不要重畫（避免打斷學生點選、拖曳）
+    const key = JSON.stringify([BS.dec, BS.ask, BS.tried, BS.ch, BS.parts]);
+    if(key === lastKey) return; lastKey = key;
+    if(document.querySelector('.rcard.ghost')) return;
     draw(); });
 }
 
