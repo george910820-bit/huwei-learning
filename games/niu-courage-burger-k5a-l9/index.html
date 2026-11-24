@@ -46,6 +46,7 @@
   .chapter{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);background:rgba(59,42,26,.82);color:#fff;font-family:var(--title);font-size:46px;padding:18px 40px;border-radius:22px;z-index:4;animation:fadeio 2.2s forwards;pointer-events:none;text-align:center}
   .chapter small{display:block;font-size:24px;opacity:.85}
   @keyframes fadeio{0%{opacity:0;transform:translate(-50%,-40%)}15%,75%{opacity:1;transform:translate(-50%,-50%)}100%{opacity:0}}
+  .sub.withplate{right:31%}
   .sub{position:absolute;left:3%;right:3%;bottom:3%;background:rgba(255,255,255,.95);border-radius:18px;padding:12px 18px 14px;z-index:3;border:3px solid var(--line);min-height:96px}
   .sub .who{display:inline-block;font-family:var(--title);font-size:20px;color:#fff;border-radius:999px;padding:1px 14px;margin-bottom:4px}
   .sub .tx{font-family:var(--title);font-size:clamp(20px,2.2vw,34px);line-height:1.45}
@@ -59,13 +60,19 @@
   .opt .t{font-family:var(--title);font-size:clamp(18px,1.8vw,28px);line-height:1.35}
   .opt .base{position:absolute;top:8px;left:10px;font-size:14px;color:var(--muted)}
   .opt.no{opacity:.45;border-style:dashed}
+  .layerpop{animation:layerDrop .6s cubic-bezier(.3,1.4,.5,1) both}
+  @keyframes layerDrop{from{transform:translateY(-120px);opacity:0}to{transform:none;opacity:1}}
+  .platepop{animation:plateGlow 1.2s ease both}
+  @keyframes plateGlow{0%{opacity:.2}40%{opacity:1}60%{opacity:.6}100%{opacity:1}}
+  .badgebox{display:flex;flex-direction:column;gap:10px;align-items:center}.badgebox .opt{width:100%}.badgebox .bigbtn{font-size:19px;padding:8px 18px}
   .who-chips{position:absolute;left:8px;right:8px;bottom:8px;display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
   .who-chips span{font-family:var(--title);font-size:15px;color:#fff;border-radius:999px;padding:2px 10px;animation:pop .4s}
   .pause{position:absolute;inset:0;background:rgba(59,42,26,.55);z-index:5;display:flex;align-items:center;justify-content:center}
   .pause .card{background:#fff;border-radius:26px;padding:28px 40px;max-width:80%;text-align:center;border:6px solid var(--pow)}
   .pause .lab{font-family:var(--title);font-size:24px;color:var(--accent)}
   .pause .q{font-family:var(--title);font-size:clamp(26px,3vw,44px);line-height:1.5;margin:10px 0}
-  .pause .hint{font-size:20px;color:var(--muted)}
+  .pause .hint{font-size:22px;color:#2E6B3A;background:#EAF5E4;border-radius:14px;padding:8px 16px;margin:6px 0 12px}
+  .hintbtn{font-family:var(--title);font-size:18px;padding:8px 18px;border-radius:999px;border:2px dashed #CDBB9F;background:#FFF8EC;color:var(--muted);cursor:pointer}
   .post{position:absolute;left:50%;bottom:calc(3% + 150px);transform:translateX(-50%);display:flex;gap:14px;z-index:6}
   .bigbtn{font-family:var(--title);font-size:24px;padding:12px 28px;border-radius:999px;border:none;background:var(--accent);color:#fff;box-shadow:0 5px 0 #9C3F14;cursor:pointer}
   .bigbtn.ghost{background:#fff;color:var(--ink);box-shadow:0 5px 0 #CDBB9F;border:2px solid var(--line)}
@@ -206,7 +213,8 @@ const CH = [
   {id:'act3', name:'第三幕', sub:'做一份勇氣漢堡', sc:'kitchen', beats:[
     {s:'旁', t:'放學後，牛小勇又來到漢堡偵探社。'},
     {s:'牛', m:'happy', a:'bounce', t:'明天就是運動會了！我想要一個讓我有力氣、也有勇氣的漢堡！'},
-    {s:'旁', t:'偵探們，一層一層幫牛小勇選食材，看看餐盤量表會不會全部亮起來！'},
+    {s:'旁', t:'右邊是國民健康署的「我的餐盤」。它把每天要吃的食物分成六大類：全穀雜糧、豆魚蛋肉、蔬菜、水果、乳品、堅果種子。'},
+    {s:'旁', t:'偵探們，一層一層幫牛小勇選食材。選對了，漢堡就多一層，餐盤也會亮起一格！'},
     {dec:'b1'},{dec:'b2'},{dec:'b3'},{dec:'b4'},{dec:'b5'},
     {s:'牛', m:'happy', a:'cheer', t:'哇！一個滿滿植物力量的勇氣漢堡！', badge:'b3', fx:{pow:100}},
     {pause:'這個漢堡裡，哪一種食物幫牛小勇長肌肉、有力氣？', hint:'豆腐排：豆類有蛋白質'},
@@ -255,7 +263,10 @@ const DEC = {
         {s:'旁', m:'dizzy', a:'wobble', sc:'track', t:'沒吃早餐就運動，身體可能會「低血糖」。這時候要馬上停下來，告訴老師！'},
       ],
     },
-    pause:{q:'如果運動時覺得頭暈、手發抖，要怎麼辦？', hint:'馬上停下來、告訴老師、到保健室'}},
+    pause:{
+      toast:{q:'牛小勇的早餐裡，有哪些植物在幫他？', hint:'全麥吐司（全穀）、花生醬（堅果種子）、香蕉（水果）、豆漿（黃豆）'},
+      donut:{q:'為什麼吃了甜甜圈，跑到一半就沒力了？', hint:'甜甜的食物很快給力氣，也很快用完，撐不久'},
+      skip:{q:'如果運動時覺得頭暈、手發抖，要怎麼辦？', hint:'馬上停下來、告訴老師、到保健室'}}},
   d2:{q:'牛小勇不敢吃豆腐和青菜，他可以怎麼做？', base:['bite','trash'],
     opts:{
       bite:{ic:'👅', t:'先吃一小口，試試看', good:true},
@@ -281,7 +292,10 @@ const DEC = {
         {s:'旁', m:'frown', t:'逃避沒有讓挫折消失，食物也浪費了。'},
       ],
     },
-    pause:{q:'你也有不敢吃的食物嗎？你會選哪一個方法？', hint:'說說看自己的經驗'}},
+    pause:{
+      bite:{q:'牛小勇怎麼面對不敢吃的豆腐？你也有不敢吃的食物嗎？', hint:'先吃一小口試試看；說說自己的經驗'},
+      burger:{q:'牛小勇換了什麼方法？你還想到什麼方法？', hint:'把豆腐煎成豆腐排夾進漢堡；換個方式吃也是調適改變自己'},
+      trash:{q:'把食物倒掉，挫折有消失嗎？還可以怎麼做？', hint:'沒有消失，還浪費了食物；可以先吃一小口，或換個方式吃'}}},
   // 第三幕：漢堡一層一層選
   b1:{q:'勇氣漢堡：麵包要用哪一種？', build:'grain', base:['wbun','donut2'],
     opts:{ wbun:{ic:'bun', t:'全麥麵包', good:true, cat:'grain'}, donut2:{ic:'🍩', t:'糖霜甜甜圈'}, chips:{ic:'chips', t:'洋芋片'} }},
@@ -389,20 +403,21 @@ const SC = {
     <rect x="700" y="380" width="380" height="80" rx="14" fill="#C9D3DA" stroke="#9AA8B5" stroke-width="5"/>
     <ellipse cx="760" cy="420" rx="44" ry="24" fill="#fff"/><g transform="translate(840 388) scale(.75)">${sIcon('tofu')}</g><ellipse cx="1010" cy="420" rx="50" ry="24" fill="#5FB04C"/><path d="M975 415q35 -18 70 0" stroke="#3E8E4A" stroke-width="6" fill="none"/>`,
   kitchen:()=>`<rect width="1280" height="720" fill="#FFE9C7"/><rect y="0" width="1280" height="90" fill="#E07A3B"/>${Array.from({length:12},(_,k)=>`<path d="M${k*110} 90q55 40 110 0z" fill="#E07A3B"/>`).join('')}
-    <rect x="80" y="150" width="360" height="200" rx="14" fill="#fff" stroke="#D9622B" stroke-width="6"/><text x="260" y="210" text-anchor="middle" font-size="36" fill="#D9622B" font-family="Huninn,'Noto Sans TC',sans-serif">今日推薦</text><text x="260" y="270" text-anchor="middle" font-size="40" fill="#3B2A1A" font-family="Huninn,'Noto Sans TC',sans-serif">勇氣漢堡</text>
+    <rect x="80" y="110" width="360" height="160" rx="14" fill="#fff" stroke="#D9622B" stroke-width="6"/><text x="260" y="168" text-anchor="middle" font-size="36" fill="#D9622B" font-family="Huninn,'Noto Sans TC',sans-serif">今日推薦</text><text x="260" y="232" text-anchor="middle" font-size="40" fill="#3B2A1A" font-family="Huninn,'Noto Sans TC',sans-serif">勇氣漢堡</text>
     <rect y="500" width="1280" height="220" fill="#A8653B"/><rect y="490" width="1280" height="20" fill="#7A4424"/>
     <ellipse cx="400" cy="500" rx="150" ry="22" fill="#fff" stroke="#D8CBB5" stroke-width="6"/><g id="buildStack"></g>`,
   race:()=>SC.track(true) + `<rect x="1080" y="440" width="12" height="240" fill="#fff"/><rect x="1180" y="440" width="12" height="240" fill="#fff"/><rect x="1080" y="440" width="112" height="40" fill="#fff"/><text x="1136" y="469" text-anchor="middle" font-size="24" fill="#D9573C" font-family="Huninn,'Noto Sans TC',sans-serif">大隊接力</text>`,
   finish:()=>SC.track(false) + `<path d="M0 470h1280" stroke="#fff" stroke-width="10" stroke-dasharray="30 30"/>${Array.from({length:30},(_,k)=>`<rect x="${(k*43)%1280}" y="${40+((k*71)%180)}" width="12" height="18" rx="3" fill="${['#E2483B','#2F7FB5','#F4CF4A','#3E8E4A'][k%4]}" transform="rotate(${k*23} ${(k*43)%1280} ${40+((k*71)%180)})"/>`).join('')}`,
 };
-const POS = {shop:[1010,300,1.15], home:[1110,330,1.0], track:[560,300,1.1], race:[560,300,1.1], finish:[640,280,1.15], lunch:[230,250,1.0], kitchen:[860,260,1.1]};
+const POS = {shop:[1010,300,1.15], home:[1110,330,1.0], track:[560,300,1.1], race:[560,300,1.1], finish:[640,280,1.15], lunch:[230,250,1.0], kitchen:[690,262,1.0]};
 function sceneSVG(sc, mood, anim){
   const [x,y,s] = POS[sc] || [640,300,1];
   const run = sc==='race' || (sc==='track' && anim==='run');
   const bg = sc==='track' ? SC.track(run) : SC[sc]();
   return `<svg class="scene" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid slice">${bg}
     <g transform="translate(${x} ${y}) scale(${s})"><g class="calf ${anim||''}">${calf(mood)}</g></g>
-    ${sc==='kitchen' ? `<g id="burgerLayers" transform="translate(400 488)">${burgerLayers()}</g>` : ''}</svg>`;
+    ${sc==='kitchen' ? `<g id="burgerLayers" transform="translate(400 488)">${burgerLayers()}</g>` : ''}
+    ${sc==='kitchen' && G && CH[G.ci].id==='act3' ? myPlate() : ''}</svg>`;
 }
 
 /* =====================================================================
@@ -582,13 +597,43 @@ function applyFx(b){
   if(b.fx){ if(b.fx.pow!=null) G.pow = b.fx.pow < 0 ? Math.max(0, G.pow + b.fx.pow) : b.fx.pow; if(b.fx.cou!=null) G.cou = b.fx.cou; }
   if(b.badge && !G.badges.includes(b.badge)) G.badges.push(b.badge);
 }
-function jump(ci){ if(window.speechSynthesis) speechSynthesis.cancel(); G.ci = ci; G.bi = 0; G.queue = null; G.qi = 0; G.post = false; render(true); }
+/* 進到某一幕之前的力氣、勇氣（依目前的選擇重算） */
+function baseMeters(ci){
+  let pow = 50, cou = 30;
+  const ap = b => { if(b && b.fx){ if(b.fx.pow!=null) pow = b.fx.pow < 0 ? Math.max(0, pow + b.fx.pow) : b.fx.pow; if(b.fx.cou!=null) cou = b.fx.cou; } };
+  for(let i=0;i<ci;i++) CH[i].beats.forEach(b => {
+    if(b.dec && DEC[b.dec].res){ const c = G.chosen[b.dec]; if(c) DEC[b.dec].res[c].forEach(ap); }
+    else ap(b);
+  });
+  return [pow, cou];
+}
+function resetAct3(){ G.burger = []; G.plate = []; G.popDone = null; ['b1','b2','b3','b4','b5'].forEach(k => delete G.chosen[k]); }
+function jump(ci, bi){
+  if(window.speechSynthesis) speechSynthesis.cancel();
+  G.ci = ci; G.bi = bi || 0; G.queue = null; G.qi = 0; G.post = false; G.pauseShow = null; G.showHint = false; G.returnTo = null; G.ask++;
+  if(CH[ci].id==='act3') resetAct3();
+  [G.pow, G.cou] = baseMeters(ci);
+  applyFx(CH[ci].beats[G.bi]);
+  render(true);
+}
+/* 從徽章畫面回去補：只重播那一個決定，播完回到徽章畫面 */
+function replayFor(k){
+  const target = {b1:'d1', b2:'d2', b3:'b1'}[k];
+  const ci = CH.findIndex(c => c.beats.some(b => b.dec===target));
+  const back = {ci:G.ci, bi:G.bi};
+  if(k==='b3'){ jump(ci); G.returnTo = Object.assign(back, {dec:'b3'}); return; }
+  jump(ci, CH[ci].beats.findIndex(b => b.dec===target));
+  G.returnTo = Object.assign(back, {dec:target});
+  render(false);
+}
 function step(dir){
   if(window.speechSynthesis) speechSynthesis.cancel();
   if(G.post && dir>0) return;                         // 結果後的按鈕要老師選
+  G.showHint = false;
   if(dir<0){
-    if(G.post){ G.post = false; render(false); return; }
-    if(G.queue){ if(G.qi>0){ G.qi--; render(false); } else { G.queue = null; render(false); } return; }
+    if(G.post){ G.post = false; if(G.queue.pause){ G.pauseShow = G.queue.pause; } render(false); return; }
+    if(G.pauseShow){ G.pauseShow = null; G.queue.pausePending = true; render(false); return; }
+    if(G.queue){ if(G.qi>0){ G.qi--; render(false); } else { G.queue = null; G.ask++; [G.pow, G.cou] = baseMeters(G.ci); render(false); } return; }
     if(G.bi>0){ G.bi--; render(false); } else if(G.ci>0){ G.ci--; G.bi = CH[G.ci].beats.length-1; render(true); }
     return;
   }
@@ -607,7 +652,7 @@ function step(dir){
 function advance(){
   const ch = CH[G.ci];
   if(G.bi < ch.beats.length-1){ G.bi++; const nb = ch.beats[G.bi]; applyFx(nb); render(false); return; }
-  if(G.ci < CH.length-1){ G.ci++; G.bi = 0; applyFx(CH[G.ci].beats[0]); render(true); }
+  if(G.ci < CH.length-1){ G.ci++; G.bi = 0; if(CH[G.ci].id==='act3') resetAct3(); applyFx(CH[G.ci].beats[0]); render(true); }
 }
 /* 老師在大屏點選（或依學生選擇）播放某個選項 */
 function choose(d, oid){
@@ -619,29 +664,63 @@ function choose(d, oid){
     G.qi = 0; render(false); publishBoard(); return;
   }
   if(d==='rec'){ G.rec = oid; G.queue = [{s:'牛', m:'happy', a:'cheer', t:'謝謝偵探們的推薦！我會多吃植物，在挫折中成長！'}]; G.qi = 0; render(false); publishBoard(); return; }
-  G.queue = dec.res[oid].map(x=>x); G.queue.isDec = true; G.queue.dec = d; G.queue.pause = dec.pause; G.queue.pausePending = !!dec.pause;
+  [G.pow, G.cou] = baseMeters(G.ci);
+  G.queue = dec.res[oid].map(x=>x); G.queue.isDec = true; G.queue.dec = d; G.queue.pause = dec.pause && dec.pause[oid]; G.queue.pausePending = !!G.queue.pause;
   G.qi = 0; applyFx(G.queue[0]); render(false); publishBoard();
 }
 function rewind(){
-  const d = G.queue && G.queue.dec; G.queue = null; G.post = false; G.pauseShow = null; G.ask++;
+  const d = G.queue && G.queue.dec; G.queue = null; G.post = false; G.pauseShow = null; G.showHint = false; G.ask++;
+  [G.pow, G.cou] = baseMeters(G.ci);
   render(false); publishBoard();
 }
 function burgerLayers(){
   if(!G) return '';
-  const order = ['grain','bean','veg','nut'];
-  let y = 0, out = '';
-  const cols = {grain:'#B9773C', bean:'#F2C46B', veg:'#5FB04C', nut:'#C79A5B'};
-  // 由下往上疊：底麵包、豆腐排、生菜、醬、頂麵包
+  // 由下往上疊：選了麵包先出現下層麵包 → 豆腐排 → 生菜番茄 → 芝麻醬 → 蓋上上層麵包；水果放旁邊
   const has = c => G.burger.some(o => o.cat===c);
-  if(has('grain')) { out += `<rect x="-110" y="-26" width="220" height="26" rx="13" fill="#9C6131"/>`; y = -26; }
-  if(has('bean')) { out += `<ellipse cx="0" cy="${y-14}" rx="104" ry="18" fill="#F2C46B" stroke="#D98E2E" stroke-width="4"/>`; y -= 30; }
-  if(has('veg')) { out += `<path d="M-116 ${y} ${Array.from({length:8},(_,k)=>`q14 -18 29 0`).join(' ')}" fill="#5FB04C"/><circle cx="-40" cy="${y-10}" r="16" fill="#E2483B"/><circle cx="30" cy="${y-10}" r="16" fill="#E2483B"/>`; y -= 26; }
-  if(has('nut')) { out += `<rect x="-100" y="${y-10}" width="200" height="10" rx="5" fill="#C79A5B"/>`; y -= 10; }
-  if(has('grain')) { out += `<path d="M-112 ${y} q0 -70 112 -70 q112 0 112 70z" fill="#B9773C"/><g fill="#F3E3C3"><circle cx="-40" cy="${y-40}" r="5"/><circle cx="10" cy="${y-52}" r="5"/><circle cx="50" cy="${y-36}" r="5"/></g>`; }
-  if(G.burger.some(o=>o.cat==='fruit')) out += `<text x="150" y="-6" font-size="70">🍌</text>`;
+  const pop = c => c===G.popNow ? ' class="layerpop"' : '';
+  let y = 0, out = '';
+  if(has('grain')) { out += `<g${pop('grain')}><rect x="-110" y="-26" width="220" height="26" rx="13" fill="#9C6131"/></g>`; y = -26; }
+  if(has('bean')) { out += `<g${pop('bean')}><ellipse cx="0" cy="${y-14}" rx="104" ry="18" fill="#F2C46B" stroke="#D98E2E" stroke-width="4"/></g>`; y -= 30; }
+  if(has('veg')) { out += `<g${pop('veg')}><path d="M-116 ${y} ${Array.from({length:8},()=>`q14 -18 29 0`).join(' ')}" fill="#5FB04C"/><circle cx="-40" cy="${y-10}" r="16" fill="#E2483B"/><circle cx="30" cy="${y-10}" r="16" fill="#E2483B"/></g>`; y -= 26; }
+  if(has('nut')) { out += `<g${pop('nut')}><rect x="-100" y="${y-10}" width="200" height="10" rx="5" fill="#C79A5B"/><g fill="#F3E3C3">${[-70,-30,10,50,80].map(x=>`<circle cx="${x}" cy="${y-5}" r="2.5"/>`).join('')}</g></g>`; y -= 10; }
+  if(has('grain') && has('nut')) { out += `<g${pop('nut')}><path d="M-112 ${y} q0 -70 112 -70 q112 0 112 70z" fill="#B9773C"/><g fill="#F3E3C3"><circle cx="-40" cy="${y-40}" r="5"/><circle cx="10" cy="${y-52}" r="5"/><circle cx="50" cy="${y-36}" r="5"/></g></g>`; }
+  if(has('fruit')) out += `<g${pop('fruit')}><text x="-260" y="-6" font-size="70">🍌</text><text x="-200" y="-6" font-size="60">🍎</text></g>`;
   return out;
 }
-function render(newChapter){
+/* 我的餐盤（參考國民健康署「我的餐盤」六大類與口訣，自行繪製） */
+const MYPLATE = {
+  grain:{n:'全穀雜糧', c:'#F2B33D', a:[0,105], say:'飯跟蔬菜一樣多'},
+  bean:{n:'豆魚蛋肉', c:'#E5674F', a:[105,180], say:'豆魚蛋肉一掌心'},
+  veg:{n:'蔬菜', c:'#5FB04C', a:[180,285], say:'菜比水果多一點'},
+  fruit:{n:'水果', c:'#EE8FB0', a:[285,360], say:'每餐水果拳頭大'},
+  milk:{n:'乳品', c:'#7FB6E0', say:'每天早晚一杯奶'},
+  nut:{n:'堅果種子', c:'#B07A4A', say:'堅果種子一茶匙'},
+};
+function myPlate(){
+  const cx = 1080, cy = 282, r = 108, F = "font-family=\"Huninn,'Noto Sans TC',sans-serif\"";
+  const pt = (a, rr) => [cx + rr*Math.sin(a*Math.PI/180), cy - rr*Math.cos(a*Math.PI/180)];
+  const on = k => G.plate.includes(k), newest = G.popNow;
+  const food = k => { const o = G.burger.find(x => x.cat===k); return o ? o.t : ''; };
+  const OFF = '#EFE7DA', OFFT = '#B9A88F';
+  let secs = '';
+  ['grain','bean','veg','fruit'].forEach(k => { const p = MYPLATE[k], [a0,a1] = p.a, lit = on(k);
+    const [x0,y0] = pt(a0,r), [x1,y1] = pt(a1,r), [lx,ly] = pt((a0+a1)/2, k==='bean'||k==='fruit' ? 66 : 58);
+    const fs = p.n.length > 2 ? 18 : 22;
+    secs += `<g${k===newest?' class="platepop"':''}><path d="M${cx} ${cy}L${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}z" fill="${lit?p.c:OFF}" stroke="#fff" stroke-width="5"/>
+      <text x="${lx.toFixed(1)}" y="${(ly+(lit?-3:7)).toFixed(1)}" text-anchor="middle" font-size="${fs}" fill="${lit?'#fff':OFFT}" ${F} font-weight="700">${p.n}</text>
+      ${lit ? `<text x="${lx.toFixed(1)}" y="${(ly+17).toFixed(1)}" text-anchor="middle" font-size="13" fill="#fff" ${F}>${esc(food(k))}</text>` : ''}</g>`; });
+  const nutOn = on('nut');
+  const extra = `<g><path d="M1208 302h40l-5 50h-30z" fill="${MYPLATE.milk.c}" opacity=".6" stroke="#fff" stroke-width="3"/><text x="1228" y="374" text-anchor="middle" font-size="17" fill="#6E8FA8" ${F}>乳品</text></g>
+    <g${newest==='nut'?' class="platepop"':''}><path d="M917 330a28 18 0 0 0 56 0z" fill="${nutOn?MYPLATE.nut.c:OFF}" stroke="#fff" stroke-width="3"/><text x="945" y="370" text-anchor="middle" font-size="16" fill="${nutOn?'#7A4E28':OFFT}" ${F} font-weight="${nutOn?700:400}">堅果種子</text>
+    ${nutOn ? `<text x="945" y="320" text-anchor="middle" font-size="13" fill="#7A4E28" ${F}>${esc(food('nut'))}</text>` : ''}</g>`;
+  const says = ['milk','fruit','veg','grain','bean','nut'].map((k,i) => { const lit = k==='milk' ? false : on(k);
+    return `<circle cx="938" cy="${420+i*27}" r="8" fill="${lit?MYPLATE[k].c:OFF}"/><text x="954" y="${427+i*27}" font-size="19" fill="${lit?'#3B2A1A':OFFT}" ${F} font-weight="${lit?700:400}">${MYPLATE[k].say}</text>`; }).join('');
+  return `<g transform="translate(0 30)"><rect x="900" y="100" width="365" height="492" rx="22" fill="#fff" stroke="#E0CBA6" stroke-width="5"/>
+    <text x="1082" y="142" text-anchor="middle" font-size="30" fill="#D9622B" ${F} font-weight="700">🍽️ 我的餐盤</text>
+    <circle cx="${cx}" cy="${cy}" r="${r+10}" fill="#F7F2EA" stroke="#E0CBA6" stroke-width="3"/>${secs}${extra}
+    <text x="1082" y="580" text-anchor="middle" font-size="12" fill="#B9A88F" ${F}>參考：衛生福利部國民健康署「我的餐盤」</text>${says}</g>`;
+}
+function render(newChapter, quiet){
   const ch = CH[G.ci], b = curBeat() || {};
   document.querySelectorAll('.ch').forEach(x => x.classList.toggle('on', +x.dataset.c === G.ci));
   const sc = (b.sc) || curScene();
@@ -649,35 +728,46 @@ function render(newChapter){
   const d = curDec() || (ch.id==='rec' ? 'rec' : null);
   let over = '';
   if(newChapter) over += `<div class="chapter">${ch.name}<small>${ch.sub}</small></div>`;
-  if(G.pauseShow) over += `<div class="pause"><div class="card"><div class="lab">⏸ 老師提問</div><div class="q">${esc(G.pauseShow.q)}</div><div class="hint">（參考：${esc(G.pauseShow.hint)}）</div></div></div>`;
+  if(G.pauseShow) over += pauseCard(G.pauseShow.q, G.pauseShow.hint);
   else if(b.badges) over += badgeScreen();
   else if(d && (!G.queue || d==='rec')) over += askOverlay(d);
-  else if(b.pause) over += `<div class="pause"><div class="card"><div class="lab">⏸ 老師提問</div><div class="q">${esc(b.pause)}</div><div class="hint">（參考：${esc(b.hint)}）</div></div></div>`;
+  else if(b.pause) over += pauseCard(b.pause, b.hint);
   if(G.post){
     const dd = G.queue.dec, others = Object.keys(DEC[dd].opts).filter(o => o !== G.chosen[dd]);
-    over += `<div class="post"><button class="bigbtn ghost" id="rw">⏪ 倒帶，看看另一種選擇</button><button class="bigbtn" id="go">繼續 ▶</button></div>`;
+    over += `<div class="post"><button class="bigbtn ghost" id="rw">⏪ 倒帶，看看另一種選擇</button><button class="bigbtn" id="go">${G.returnTo ? '回到徽章 ▶' : '繼續 ▶'}</button></div>`;
   }
-  const line = (b.t && !(d && !G.queue)) ? `<div class="sub"><span class="who" style="background:${b.s==='牛'?'#B97D4B':'#5B6470'}">${b.s==='牛'?'牛小勇':'旁白'}</span><div class="tx">${esc(b.t)}</div></div>` : '';
+  const line = (b.t && !(d && !G.queue)) ? `<div class="sub${sc==='kitchen' && ch.id==='act3' ? ' withplate' : ''}"><span class="who" style="background:${b.s==='牛'?'#B97D4B':'#5B6470'}">${b.s==='牛'?'牛小勇':'旁白'}</span><div class="tx">${esc(b.t)}</div></div>` : '';
   const meters = `<div class="meters"><div class="meter">⚡ 力氣<span class="bx"><i style="width:${G.pow}%;background:var(--pow)"></i></span></div><div class="meter">💪 勇氣<span class="bx"><i style="width:${G.cou}%;background:var(--cou)"></i></span></div></div>`;
   const badges = `<div class="badges">${G.badges.map(k=>`<span>${BADGE[k]}</span>`).join('')}</div>`;
-  const plate = sc==='kitchen' && ch.id==='act3' ? `<div class="plate">🍽️ 我的餐盤${PLATE.map(([c,n])=>`<div class="${G.plate.includes(c)?'on':''}"><b></b>${n}</div>`).join('')}</div>` : '';
+  const plate = '';
+  { const nw = (G.burger[G.burger.length-1] || {}).cat || null; G.popNow = nw && nw !== G.popDone ? nw : null; G.popDone = nw; }
   $('#stage').innerHTML = sceneSVG(sc, (G.queue && G.queue.retry) ? 'worried' : mood, anim) + meters + badges + plate + line + over;
   // 綁定
   document.querySelectorAll('.opt[data-o]').forEach(el => el.onclick = () => choose(el.dataset.d, el.dataset.o));
   if($('#rw')) $('#rw').onclick = rewind;
-  if($('#go')) $('#go').onclick = () => { G.post = false; G.queue = null; advance(); };
+  if($('#go')) $('#go').onclick = () => { G.post = false; G.queue = null; G.showHint = false;
+    if(G.returnTo){ const r = G.returnTo; G.returnTo = null; G.ci = r.ci; G.bi = r.bi; G.ask++; [G.pow, G.cou] = baseMeters(r.ci); render(true); return; }
+    advance(); };
+  if($('#hintBtn')) $('#hintBtn').onclick = () => { G.showHint = !G.showHint; render(false, true); };
+  document.querySelectorAll('[data-replay]').forEach(el => el.onclick = () => replayFor(el.dataset.replay));
   if(G.queue && G.queue.retry && G.qi === G.queue.length-1){ /* 選錯食材：下一步回到同一題 */ }
   $('#next').disabled = !!(d && !G.queue) || !!G.post;
   $('#tip').innerHTML = tipText(d, b);
   drawParts();
   // 朗讀
-  if(S.narr==='game' && b.t && !(d && !G.queue) && !G.pauseShow) setTimeout(() => speak(b.t, b.s), newChapter ? 1600 : 150);
+  if(!quiet && S.narr==='game' && b.t && !(d && !G.queue) && !G.pauseShow) setTimeout(() => speak(b.t, b.s), newChapter ? 1600 : 150);
   publishBoard();
+}
+function pauseCard(q, hint){
+  return `<div class="pause"><div class="card"><div class="lab">⏸ 老師提問</div><div class="q">${esc(q)}</div>
+    ${G.showHint ? `<div class="hint">參考答案：${esc(hint)}</div>` : ''}
+    <button class="hintbtn" id="hintBtn">${G.showHint ? '🙈 收起參考答案' : '💡 顯示參考答案'}</button></div></div>`;
 }
 function tipText(d, b){
   if(G.post) return '可以按「倒帶」讓學生看看別的選擇會怎樣，再按「繼續」。';
   if(d && !G.queue) return '等學生在平板上選好，再點大屏上的選項播放結果（可以播學生選的，也可以先播別的做比較）。';
-  if(G.pauseShow || b.pause) return '暫停討論，讓學生說說看，再按「下一句」。';
+  if(G.pauseShow || b.pause) return '暫停討論，讓學生說說看。需要時再按「💡 顯示參考答案」，討論完按「下一句」。';
+  if(b.badges) return G.badges.length < 3 ? '灰色徽章下面有按鈕，可以直接回到那個選擇重新玩，玩完會回到這裡。' : '三枚徽章都拿到了，按「下一句」做推薦卡。';
   return '按「下一句」或簡報筆的 → 前進；旁白可切換成老師自己念。';
 }
 function askOverlay(d){
@@ -698,8 +788,9 @@ function drawVotes(){
 }
 function badgeScreen(){
   return `<div class="ask"><div class="q">🏅 本集收穫</div>
-    <div class="opts" style="grid-template-columns:repeat(3,1fr)">${Object.entries(BADGE).map(([k,n]) => `<div class="opt ${G.badges.includes(k)?'':'no'}"><div class="ic">${n.split(' ')[0]}</div><div class="t">${n.split(' ')[1]}</div></div>`).join('')}</div>
-    <div style="font-family:var(--title);font-size:24px;color:var(--muted)">${G.badges.length===3 ? '三枚徽章全部到手！' : '灰色的徽章，可以回到那一幕「倒帶」再試試看！'}</div></div>`;
+    <div class="opts" style="grid-template-columns:repeat(3,1fr)">${Object.entries(BADGE).map(([k,n]) => { const got = G.badges.includes(k);
+      return `<div class="badgebox"><div class="opt ${got?'':'no'}"><div class="ic">${n.split(' ')[0]}</div><div class="t">${n.split(' ')[1]}</div></div>${got ? '' : `<button class="bigbtn ghost" data-replay="${k}">⏪ 回去再試一次</button>`}</div>`; }).join('')}</div>
+    <div style="font-family:var(--title);font-size:24px;color:var(--muted)">${G.badges.length===3 ? '三枚徽章全部到手！' : '灰色的徽章，按下面的按鈕回去再試一次！'}</div></div>`;
 }
 /* 推薦卡（片尾） */
 const _askOverlay = askOverlay;
