@@ -323,6 +323,43 @@
   .thead .mem{font-size:18px;color:var(--muted)}
   .start .boardgo{font-size:34px;padding:18px 64px}
   @media (max-width:1300px) and (min-width:1001px){.boardwrap{grid-template-columns:minmax(0,1fr) 250px}.qrs svg{max-width:110px}}
+  .v-drop{animation:dropv .7s ease-out 1 both}
+  @keyframes dropv{0%{transform:none}20%{transform:translate(-14px,10px) rotate(-1.5deg)}40%{transform:translate(12px,4px) rotate(1.2deg)}60%{transform:translate(-8px,6px)}100%{transform:translateY(8px)}}
+  .pane .pns{position:absolute;top:8px;left:8px;display:flex;flex-wrap:wrap;gap:6px;right:90px}
+  .pane .pns .pn{position:static}
+  .klegend{font-family:var(--title);font-size:clamp(12px,1.1vw,16px);color:var(--muted)}
+  .mb .x.k-feel{color:#8A6A00;border-color:#D9B24A}.mb .x.k-abs{color:#B5561C;border-color:#E07A3B}
+  /* 偵探任務 */
+  .sortwall,.pollv{position:absolute;inset:0;z-index:5;background:rgba(251,246,236,.97);display:flex;flex-direction:column;padding:1.6% 2%;gap:10px}
+  .sortwall .hd,.pollv .hd{display:flex;align-items:center;gap:12px;font-family:var(--title);font-size:clamp(20px,2.2vw,32px)}
+  .sortwall .hd small,.pollv .hd small{font-size:.6em;color:var(--muted)}
+  .sortwall .hd .tbtn{margin-left:auto;font-family:var(--title)}
+  .sgrid4{flex:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:10px;min-height:0}
+  .sc{background:#fff;border:4px solid var(--line);border-radius:18px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:4px;font-family:var(--title);min-height:0;overflow:hidden}
+  .sc.pl{border-color:#3E8E4A;background:#F1F8EC}.sc.an{border-color:#B07A4A;background:#FBF3EA}
+  .sc .si{font-size:clamp(30px,3.6vw,54px);line-height:1}.sc .si svg{width:1.4em;height:auto}
+  .sc .sn{font-size:clamp(18px,1.9vw,28px)}
+  .sc .sv{display:flex;gap:8px;font-size:clamp(12px,1.15vw,17px)}
+  .sc .vp{color:#3E8E4A}.sc .va{color:#8A5A33}
+  .sc .sw,.pc .sw{display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
+  .sc .sw i,.pc .sw i{font-style:normal;color:#fff;border-radius:999px;padding:0 8px;font-size:clamp(11px,1vw,14px)}
+  .sc .sa{margin-top:auto;font-size:clamp(15px,1.5vw,22px);font-weight:700;color:#3B2A1A}
+  /* 前後測 */
+  .pollv .pq{font-family:var(--title);font-size:clamp(22px,2.6vw,40px);text-align:center}
+  .pcs{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;min-height:0}
+  .pc{background:#fff;border:3px solid var(--line);border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-family:var(--title);padding:10px}
+  .pc .pe{font-size:clamp(44px,5vw,80px);line-height:1}.pc .pl{font-size:clamp(18px,1.8vw,28px)}
+  .pc .pp{color:var(--muted);font-size:clamp(14px,1.3vw,20px)}.pc .pn2{font-size:clamp(18px,1.8vw,28px)}
+  .pollv .pf{font-family:var(--title);font-size:clamp(16px,1.6vw,24px);text-align:center;color:#8A5A33;padding-bottom:4px}
+  /* 平板：偵探任務、前後測 */
+  .srow{display:grid;grid-template-columns:70px 1fr auto auto;gap:10px;align-items:center;background:#fff;border:3px solid var(--line);border-radius:16px;padding:8px 12px;font-family:var(--title);font-size:24px}
+  .srow .si{font-size:40px;line-height:1;text-align:center}.srow .si svg{width:56px;height:auto}
+  .srow button{font-family:var(--title);font-size:21px;padding:10px 14px;border-radius:14px;border:3px solid var(--line);background:#fff;cursor:pointer}
+  .srow button.on.p{background:#3E8E4A;color:#fff;border-color:#3E8E4A}.srow button.on.a{background:#B07A4A;color:#fff;border-color:#B07A4A}
+  .slist{display:flex;flex-direction:column;gap:8px}
+  .tpoll{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .tpoll .topt{flex-direction:column;justify-content:center;text-align:center;font-size:24px;padding:18px 10px}
+  .tpoll .topt .em{font-size:56px;line-height:1}
   .cheerdot{animation:cheer .6s ease-in-out infinite;transform-box:fill-box}
 
 </style>
@@ -354,10 +391,11 @@ const em = e => `<span>${e}</span>`;
 const sIcon = k => ICON[k].replace('<svg ', '<svg width="80" height="80" ');
 const icon = k => ICON[k] || em(k);
 /* =====================================================================
-   劇本（第一視角：你是主角；牛小勇是旁邊的勇氣小精靈）
+   劇本（純植教育為主軸＋社會情緒學習；第一視角：你是主角，牛小勇是勇氣小精靈）
    s：旁＝旁白、你＝你自己、牛＝小精靈牛小勇
-   sc：場景；v：視角動作（run 跑、slow 沒力、dizzy 頭暈、fall 跌倒、down 倒地、eat 吃、cheer 歡呼）
+   sc：場景；v：視角動作（run 跑、slow 沒力、dizzy 不舒服、drop 掉棒、eat 吃、cheer 歡呼）
    hold：你手上拿的東西；m：小精靈的表情
+   特殊句：poll 前後測、sort 食物偵探任務、dec 決定點、guide／rec 推薦卡
    ===================================================================== */
 const CH = [
   {id:'intro', name:'序幕', sub:'勇氣小精靈出現了', sc:'shop', beats:[
@@ -365,8 +403,15 @@ const CH = [
     {s:'你', t:'可是……我最近一跑就好累。而且，我不喜歡吃青菜和豆腐。'},
     {s:'旁', sprite:'in', t:'這時候，漢堡偵探社的招牌上，跳下來一隻小牛！'},
     {s:'牛', m:'happy', t:'你好！我是勇氣小精靈——牛小勇。我會在旁邊提醒你！'},
-    {s:'牛', m:'thinking', t:'我們牛只吃植物，也長得又高又壯。可是人跟牛不一樣：牛有特別的胃可以消化草，人要靠豆子、全穀這些植物性食物來長力氣。'},
+    {s:'牛', m:'thinking', poll:'pre', t:'先考考你：只吃植物性的食物，也能讓我們有力氣、有勇氣嗎？'},
+    {s:'牛', m:'thinking', t:'我們牛只吃植物，也長得又高又壯。可是人跟牛不一樣：人要靠豆子、全穀、堅果這些不同的植物性食物搭配，才能有力氣。'},
     {s:'牛', m:'happy', t:'而且，選擇植物性的食物，不只照顧自己的身體，也對動物和地球更溫柔喔！'},
+  ]},
+  {id:'detect', name:'偵探任務', sub:'食物從哪裡來？', sc:'shop', beats:[
+    {s:'牛', m:'determined', t:'偵探們，第一個案件來了！這些早餐食物，哪些來自植物？哪些來自動物？請在平板上分分看。'},
+    {sort:true, t:'食物偵探：哪些來自植物？'},
+    {s:'牛', m:'happy', t:'原來豆漿、豆腐、花生醬、全麥吐司都來自植物！植物性的食物不是只有青菜，還有全穀、豆類、堅果和水果。'},
+    {pause:'植物性的食物，除了青菜，還有哪些？它們原本是什麼植物？', hint:'全穀（小麥、糙米）、豆類（黃豆、毛豆）、堅果種子（花生、芝麻）、水果（香蕉、蘋果）'},
     {s:'牛', m:'determined', t:'接下來的每一個選擇，都由你決定。出發吧！'},
   ]},
   {id:'act1', name:'第一幕', sub:'早餐吃什麼？', sc:'home', beats:[
@@ -383,20 +428,22 @@ const CH = [
   {id:'act3', name:'第三幕', sub:'做一份勇氣漢堡', sc:'kitchen', beats:[
     {s:'旁', t:'放學後，你來到漢堡偵探社的廚房。'},
     {s:'你', t:'明天就是運動會了！我想做一個讓我有力氣、也有勇氣的漢堡！'},
-    {s:'牛', m:'happy', t:'右邊是國民健康署的「我的餐盤」。它把每天要吃的食物分成六大類：全穀雜糧、豆魚蛋肉、蔬菜、水果、乳品、堅果種子。'},
-    {s:'牛', m:'determined', t:'一層一層選食材。選對了，漢堡就多一層，餐盤也會亮起一格！'},
+    {s:'牛', m:'happy', t:'右邊是「植物力量盤」：全穀、豆類、蔬菜、堅果種子、水果，全部都來自植物。'},
+    {s:'牛', m:'determined', t:'我們的勇氣漢堡想全部用植物來做！選到來自植物的食材，漢堡就多一層，力量盤也會亮起一格。'},
     {dec:'b1'},{dec:'b2'},{dec:'b3'},{dec:'b4'},{dec:'b5'},
-    {s:'你', t:'哇！一個滿滿植物力量的勇氣漢堡！', badge:'b3', fx:{pow:100}},
-    {pause:'這個漢堡裡，哪一種食物幫你長肌肉、有力氣？', hint:'豆腐排：豆類有蛋白質'},
+    {s:'你', t:'哇！一個全部來自植物的勇氣漢堡！', badge:'b3', fx:{pow:100}},
+    {pause:'這個漢堡全部來自植物，裡面有哪幾種不同的植物？', hint:'小麥（全麥麵包）、黃豆（豆腐排）、生菜和番茄、芝麻（芝麻醬）、水果'},
   ]},
   {id:'end', name:'結局', sub:'大隊接力', sc:'race', beats:[
     {s:'旁', t:'運動會當天，大隊接力開始了！'},
     {s:'旁', v:'run', hold:'baton', t:'你接到棒子，用力往前跑……'},
-    {s:'你', v:'fall', t:'啊！'},
-    {s:'旁', v:'down', t:'你在彎道跌倒了。'},
-    {s:'你', v:'down', t:'好痛……可是，我不想放棄！'},
-    {s:'旁', v:'run', hold:'baton', t:'你站起來，繼續跑完。雖然沒有拿第一名，同學們都為你歡呼。'},
-    {s:'牛', m:'happy', sc:'finish', v:'cheer', t:'你跑完了！遇到挫折，你也能找到方法繼續前進。你在挫折中成長了！'},
+    {s:'你', v:'drop', t:'啊！棒子掉了！'},
+    {s:'旁', v:'drop', t:'後面的同學一個一個超過你，你們這一隊落後了。'},
+    {s:'你', v:'drop', t:'怎麼辦……大家都在看我……'},
+    {s:'牛', m:'determined', v:'drop', t:'深呼吸！掉棒了，就把它撿起來，繼續跑！'},
+    {s:'旁', v:'run', hold:'baton', t:'你撿起棒子，用盡全力往前跑，一個、兩個……追上了前面的同學！'},
+    {s:'旁', sc:'finish', v:'cheer', t:'你把棒子交給下一棒。雖然沒有拿第一名，隊友們都為你歡呼！'},
+    {s:'牛', m:'happy', sc:'finish', v:'cheer', t:'掉棒了也不放棄：深呼吸、撿起來、繼續跑。你在挫折中成長了！'},
     {badges:true},
   ]},
   {id:'recap', name:'回顧', sub:'你的選擇和結果', sc:'kitchen', get beats(){ return recapBeats(); }},
@@ -406,11 +453,12 @@ const CH = [
     {s:'牛', m:'thinking', guide:2, t:'中間的料是「論據」：說出值得推薦的理由。剛剛影片裡看到的結果，都可以當理由！'},
     {s:'牛', m:'thinking', guide:3, t:'下層麵包是「重申論點」：最後再說一次你的推薦。'},
     {s:'牛', m:'determined', rec:true, t:'請在平板上，把卡片拖到漢堡上。做好了，按「完成」！'},
-    {s:'牛', m:'happy', t:'謝謝你的推薦！多吃植物，你也能在挫折中成長！'},
+    {s:'牛', m:'thinking', poll:'post', t:'最後再問一次：只吃植物性的食物，也能讓我們有力氣、有勇氣嗎？'},
+    {s:'牛', m:'happy', t:'謝謝你的推薦！選擇植物，照顧自己，也溫柔對待動物和地球。你也能在挫折中成長！'},
   ]},
 ];
 
-/* 決定點：base 是「2 個選項」的學生會看到的 */
+/* 決定點：base 是「基礎」學生看到的 2 個選項 */
 const DEC = {
   d1:{q:'你的早餐要吃什麼？', base:['toast','skip'],
     opts:{
@@ -418,43 +466,43 @@ const DEC = {
       skip:{ic:'🏃', t:'不吃了，直接去學校'},
       donut:{ic:'🍩', t:'甜甜圈＋含糖飲料'},
     },
-    why:{q:'為什麼選這個？', opts:['好多種植物一起幫忙，力氣可以撐很久','因為最甜、最好吃','因為最快，不會遲到']},
+    why:{q:'為什麼選這個？', opts:['好多種植物一起幫忙，力氣比較持久','因為最甜、最好吃','因為最快，不會遲到']},
     res:{
       toast:[
         {s:'旁', hold:'toast', t:'你吃了全麥吐司夾花生醬、一根香蕉，還喝了一杯無糖豆漿。'},
-        {s:'你', sc:'track', v:'run', fx:{pow:85}, t:'肚子飽飽的，跑起來好有力氣！'},
-        {s:'牛', m:'happy', sc:'track', v:'run', badge:'b1', t:'全麥吐司是全穀、花生醬是堅果種子、香蕉是水果、豆漿來自黃豆。好多植物一起幫忙，力氣可以撐很久！'},
+        {s:'你', sc:'track', v:'run', fx:{pow:85}, t:'肚子飽飽的，跑起來好有精神！'},
+        {s:'牛', m:'happy', sc:'track', v:'run', badge:'b1', t:'全麥吐司來自小麥、花生醬來自花生、香蕉來自香蕉樹、豆漿來自黃豆——全部來自植物！好多種植物一起幫忙，給你滿滿的能量。'},
       ],
       donut:[
         {s:'旁', hold:'donut', t:'你吃了甜甜圈，喝了含糖飲料。'},
         {s:'你', sc:'track', v:'run', fx:{pow:70}, t:'衝啊！我好有精神！'},
-        {s:'旁', sc:'track', v:'slow', fx:{pow:30}, t:'可是跑到第二圈，你突然沒力了。'},
+        {s:'旁', sc:'track', v:'slow', fx:{pow:30}, t:'可是跑到第二圈，你覺得好累，跑不動了。'},
         {s:'你', sc:'track', v:'slow', t:'呼……呼……腳好重……'},
-        {s:'牛', m:'worried', sc:'track', v:'slow', t:'甜甜的食物很快給力氣，可是也很快就用完了。'},
+        {s:'牛', m:'worried', sc:'track', v:'slow', t:'甜甜的東西很好吃，可是只吃甜的，力氣比較撐不久。早餐可以多加幾種不同的植物喔！'},
       ],
       skip:[
         {s:'旁', t:'你什麼都沒吃，就直接跑去學校。'},
         {s:'旁', sc:'track', v:'run', fx:{pow:15}, t:'練跑沒多久……'},
-        {s:'你', sc:'track', v:'dizzy', t:'我……我頭好暈，手一直發抖，還冒冷汗……'},
-        {s:'牛', m:'worried', sc:'track', v:'dizzy', t:'沒吃早餐就運動，身體可能會「低血糖」。這時候要馬上停下來，告訴老師！'},
+        {s:'你', sc:'track', v:'dizzy', t:'我肚子好餓……頭有點暈，好不舒服……'},
+        {s:'牛', m:'worried', sc:'track', v:'dizzy', t:'身體不舒服的時候，要馬上停下來，告訴老師。照顧好自己，也是一種勇敢！'},
       ],
     },
     pause:{
-      toast:{q:'你的早餐裡，有哪些植物在幫你？', hint:'全麥吐司（全穀）、花生醬（堅果種子）、香蕉（水果）、豆漿（黃豆）'},
-      donut:{q:'為什麼吃了甜甜圈，跑到一半就沒力了？', hint:'甜甜的食物很快給力氣，也很快用完，撐不久'},
-      skip:{q:'如果運動時覺得頭暈、手發抖，要怎麼辦？', hint:'馬上停下來、告訴老師、到保健室'}}},
+      toast:{q:'你的早餐裡，有哪些食物來自植物？它們原本是什麼植物？', hint:'全麥吐司（小麥）、花生醬（花生）、香蕉（香蕉樹）、豆漿（黃豆）'},
+      donut:{q:'如果想讓早餐更有力氣，你可以加入哪些植物性的食物？', hint:'全麥吐司、豆漿、香蕉、花生醬、燕麥……'},
+      skip:{q:'運動時覺得不舒服，你會怎麼照顧自己？', hint:'馬上停下來、告訴老師、到保健室休息；每個人的身體反應不一樣，不舒服就要說出來'}}},
   d2:{q:'你不敢吃豆腐和青菜，可以怎麼做？', base:['bite','trash'],
     opts:{
       bite:{ic:'👅', t:'先吃一小口，試試看', good:true},
       trash:{ic:'🗑️', t:'偷偷倒掉'},
       burger:{ic:'🍔', t:'換個方式吃：把豆腐煎成排，夾進漢堡', good:true},
     },
-    why:{q:'為什麼選這個？', opts:['這樣可以勇敢面對挫折','換個方法，也是調適改變自己','這樣最快，不用吃']},
+    why:{q:'為什麼選這個？', opts:['先試試看，再決定喜不喜歡','換個方法，也是調適改變自己','這樣最快，不用吃']},
     res:{
       bite:[
         {s:'你', hold:'tofu', t:'好……我先吃一小口就好。'},
         {s:'你', hold:'tofu', v:'eat', fx:{cou:80}, badge:'b2', t:'咦？豆腐其實有一點香耶！'},
-        {s:'牛', m:'happy', hold:'tofu', t:'一小口，也是勇敢。就像仙人掌、落葉樹、椰子面對挫折時調適改變自己，你也找到自己的方法。'},
+        {s:'牛', m:'happy', hold:'tofu', t:'先試試看，再決定喜不喜歡，就是勇敢！就像仙人掌、落葉樹、椰子面對挫折時調適改變自己，你也找到自己的方法。'},
       ],
       burger:[
         {s:'你', t:'如果把豆腐煎成金黃色的豆腐排，夾進漢堡裡呢？'},
@@ -463,72 +511,96 @@ const DEC = {
       ],
       trash:[
         {s:'旁', tray:'empty', t:'你趁沒人注意，把豆腐和青菜倒掉了。'},
-        {s:'旁', tray:'empty', v:'slow', fx:{cou:20, pow:-20}, t:'下午上課，你的肚子咕嚕咕嚕叫，一點力氣也沒有。'},
-        {s:'你', tray:'empty', v:'slow', t:'我好像……逃避了。心裡怪怪的。'},
-        {s:'牛', m:'frown', tray:'empty', t:'逃避沒有讓挫折消失，食物也浪費了。'},
+        {s:'旁', tray:'empty', v:'slow', fx:{cou:20, pow:-20}, t:'下午上課，你的肚子咕嚕咕嚕叫，心裡也怪怪的。'},
+        {s:'你', tray:'empty', v:'slow', t:'我好像……只是把問題藏起來了。'},
+        {s:'牛', m:'frown', tray:'empty', t:'倒掉沒有讓問題消失，食物也浪費了。如果真的不喜歡，可以先問問它是什麼、換個方式吃，或請老師幫忙。'},
       ],
     },
     pause:{
-      bite:{q:'你用什麼方法面對不敢吃的豆腐？你也有不敢吃的食物嗎？', hint:'先吃一小口試試看；說說自己的經驗'},
-      burger:{q:'你換了什麼方法？還想得到別的方法嗎？', hint:'把豆腐煎成豆腐排夾進漢堡；換個方式吃也是調適改變自己'},
-      trash:{q:'把食物倒掉，挫折有消失嗎？還可以怎麼做？', hint:'沒有消失，還浪費了食物；可以先吃一小口，或換個方式吃'}}},
-  // 第三幕：漢堡一層一層選
-  b1:{q:'勇氣漢堡：麵包要用哪一種？', build:'grain', base:['wbun','donut2'],
-    opts:{ wbun:{ic:'bun', t:'全麥麵包', good:true, cat:'grain'}, donut2:{ic:'🍩', t:'糖霜甜甜圈'}, chips:{ic:'chips', t:'洋芋片'} }},
-  b2:{q:'勇氣漢堡：中間要夾什麼？', build:'bean', base:['patty','candy'],
-    opts:{ patty:{ic:'tofupatty', t:'豆腐排', good:true, cat:'bean'}, candy:{ic:'🍬', t:'糖果'}, fries:{ic:'🍟', t:'炸薯條'} }},
-  b3:{q:'勇氣漢堡：再加一層什麼？', build:'veg', base:['veg','choco'],
-    opts:{ veg:{ic:'🥬🍅', t:'生菜和番茄', good:true, cat:'veg'}, choco:{ic:'choco', t:'巧克力醬'}, marsh:{ic:'🍡', t:'棉花糖'} }},
-  b4:{q:'勇氣漢堡：淋上什麼醬？', build:'nut', base:['sesame','syrup'],
-    opts:{ sesame:{ic:'sesame', t:'芝麻醬', good:true, cat:'nut'}, syrup:{ic:'syrup', t:'糖漿'}, soda:{ic:'🥤', t:'含糖汽水'} }},
-  b5:{q:'勇氣漢堡：旁邊配什麼？', build:'fruit', base:['fruit','ice'],
-    opts:{ fruit:{ic:'🍌🍎', t:'一份水果', good:true, cat:'fruit'}, ice:{ic:'🍦', t:'冰淇淋'}, soda2:{ic:'🥤', t:'含糖汽水'} }},
+      bite:{q:'試吃之前，你心裡有什麼感覺？你怎麼讓自己願意試試看？', hint:'緊張、害怕；告訴自己只試一小口、深呼吸、先聞一聞'},
+      burger:{q:'換個方式吃，為什麼會讓人比較願意嘗試？你還想得到別的方法嗎？', hint:'熟悉的漢堡讓人安心；也可以問問這是什麼、看看怎麼煮的、和喜歡的食物一起吃'},
+      trash:{q:'如果這道菜你真的不喜歡，或吃了會不舒服，你可以怎麼處理？', hint:'先問它是什麼、試一小口、換個方式吃；吃了會不舒服就告訴老師，不用勉強'}}},
+  // 第三幕：漢堡一層一層選（判斷依據：是不是來自植物）
+  b1:{q:'勇氣漢堡：麵包要用哪一種？', build:'grain', base:['wbun','croissant'],
+    opts:{ wbun:{ic:'bun', t:'全麥麵包', good:true, cat:'grain', from:'小麥'},
+      croissant:{ic:'🥐', t:'奶油可頌', from:'奶油來自牛奶'}, cheesebun:{ic:'🧀', t:'起司麵包', from:'起司來自牛奶'} }},
+  b2:{q:'勇氣漢堡：中間要夾什麼？', build:'bean', base:['patty','chicken'],
+    opts:{ patty:{ic:'tofupatty', t:'豆腐排', good:true, cat:'bean', from:'黃豆'},
+      chicken:{ic:'🍗', t:'炸雞排', from:'來自雞'}, bacon:{ic:'🥓', t:'培根', from:'來自豬'} }},
+  b3:{q:'勇氣漢堡：再加一層什麼？', build:'veg', base:['veg','egg'],
+    opts:{ veg:{ic:'🥬🍅', t:'生菜和番茄', good:true, cat:'veg', from:'菜園'},
+      egg:{ic:'🍳', t:'荷包蛋', from:'來自雞'}, ham:{ic:'🍖', t:'火腿片', from:'來自豬'} }},
+  b4:{q:'勇氣漢堡：淋上什麼醬？', build:'nut', base:['sesame','mayo'],
+    opts:{ sesame:{ic:'sesame', t:'芝麻醬', good:true, cat:'nut', from:'芝麻'},
+      mayo:{ic:'🥚', t:'美乃滋', from:'是用蛋做的'}, butter:{ic:'🧈', t:'奶油醬', from:'奶油來自牛奶'} }},
+  b5:{q:'勇氣漢堡：旁邊配什麼？', build:'fruit', base:['fruit','milk'],
+    opts:{ fruit:{ic:'🍌🍎', t:'一份水果', good:true, cat:'fruit', from:'果樹'},
+      milk:{ic:'🥛', t:'牛奶', from:'來自牛'}, yogurt:{ic:'🍶', t:'優格', from:'是用牛奶做的'} }},
 };
-const BADGE = {b1:'🥪 早餐力氣', b2:'👅 勇敢一小口', b3:'🍔 勇氣漢堡'};
+const BADGE = {b1:'🥪 植物早餐', b2:'🌱 勇敢試一試', b3:'🍔 勇氣漢堡'};
 const optIds = (d, lv) => lv === 2 ? DEC[d].base : Object.keys(DEC[d].opts);
+
+/* 食物偵探任務：哪些來自植物？（p＝來自植物；基礎版只看前 4 個） */
+const SORT = [
+  {id:'soy', t:'豆漿', ic:'soy', p:true, from:'黃豆'},
+  {id:'milk', t:'牛奶', ic:'🥛', p:false, from:'牛'},
+  {id:'tofu', t:'豆腐', ic:'tofu', p:true, from:'黃豆'},
+  {id:'egg', t:'雞蛋', ic:'🥚', p:false, from:'雞'},
+  {id:'pb', t:'花生醬', ic:'🥜', p:true, from:'花生'},
+  {id:'cheese', t:'起司', ic:'🧀', p:false, from:'牛奶'},
+  {id:'toast', t:'全麥吐司', ic:'toast', p:true, from:'小麥'},
+  {id:'bacon', t:'培根', ic:'🥓', p:false, from:'豬'},
+];
+const sortIds = lv => (lv === 2 ? SORT.slice(0, 4) : SORT).map(x => x.id);
+
+/* 前後測 */
+const POLL = {q:'只吃植物性的食物，也能讓我們有力氣、有勇氣嗎？',
+  opts:[['up','👍','我覺得可以'],['mid','🤔','我不確定'],['down','👎','我覺得不行']]};
 
 /* 回顧影片：每個選擇的結果片段 */
 const RECAP = {
-  toast:{sc:'track', v:'run', hold:'', a:'吃了全麥吐司、花生醬、香蕉、豆漿', b:'跑步有力氣，力氣撐很久'},
-  donut:{sc:'track', v:'slow', a:'吃了甜甜圈和含糖飲料', b:'跑到第二圈就沒力了'},
-  skip:{sc:'track', v:'dizzy', a:'沒吃早餐就去運動', b:'頭暈、手發抖，可能是低血糖'},
-  bite:{sc:'lunch', hold:'tofu', v:'eat', a:'勇敢吃一小口豆腐', b:'發現豆腐其實有一點香'},
-  burger:{sc:'lunch', hold:'tofuburger', v:'eat', a:'把豆腐煎成豆腐排，夾進漢堡', b:'換個方法，就敢吃了'},
-  trash:{sc:'lunch', tray:'empty', v:'slow', a:'把豆腐和青菜倒掉', b:'下午沒力氣，食物也浪費了'},
+  toast:{sc:'track', v:'run', hold:'', a:'吃了全麥吐司、花生醬、香蕉、豆漿', b:'好多種植物一起幫忙，跑起來有精神'},
+  donut:{sc:'track', v:'slow', a:'只吃甜甜圈和含糖飲料', b:'跑到第二圈就累了'},
+  skip:{sc:'track', v:'dizzy', a:'沒吃早餐就去運動', b:'肚子餓、不舒服，要停下來告訴老師'},
+  bite:{sc:'lunch', hold:'tofu', v:'eat', a:'先試一小口豆腐', b:'發現豆腐其實有一點香'},
+  burger:{sc:'lunch', hold:'tofuburger', v:'eat', a:'把豆腐煎成豆腐排，夾進漢堡', b:'換個方法，就願意試試看'},
+  trash:{sc:'lunch', tray:'empty', v:'slow', a:'把豆腐和青菜倒掉', b:'問題沒有解決，食物也浪費了'},
 };
 function recapBeats(){
   const out = [{clip:'title', s:'牛', m:'happy', t:'來看一段回顧影片：大家做了哪些選擇？結果怎麼樣？'}];
   ['d1','d2'].forEach(d => {
     const list = (G && G.played && G.played[d]) || [], who = (G && G.pickers && G.pickers[d]) || [], last = G && G.chosen[d];
     const names = o => who.filter(p => p.pick===o).map(p => pName(p.k)).join('、');
-    // 有人選的排前面，倒帶看過的排後面
     const order = [...list.filter(o => names(o)), ...list.filter(o => !names(o))];
     order.forEach(o => { const r = RECAP[o], good = !!DEC[d].opts[o].good, nm = names(o);
       const label = nm ? `${nm} 選的` : (!who.length && o===last ? '最後的選擇' : '倒帶看過');
       out.push({clip:'res', d, o, mine:!!nm || (!who.length && o===last), label, good, s:'旁', t:`${label}：${r.a}。結果：${r.b}。`}); });
   });
-  out.push({clip:'burger', s:'旁', t:'大家做的勇氣漢堡：全穀、豆類、蔬菜、堅果種子、水果，我的餐盤裡的五類都有了。'});
-  out.push({clip:'race', s:'旁', t:'運動會上跌倒了，你站起來跑完，沒有放棄。'});
+  out.push({clip:'burger', s:'旁', t:'大家做的勇氣漢堡全部來自植物：小麥、黃豆、蔬菜、芝麻、水果，植物力量盤五類都亮了。'});
+  out.push({clip:'race', s:'旁', t:'運動會上掉棒了，你深呼吸、撿起棒子，繼續跑完。'});
   out.push({clip:'end', s:'牛', m:'determined', t:'這些結果，就是推薦勇氣漢堡的理由！等一下做推薦卡，要用上它們喔！'});
   return out;
 }
 
-/* 推薦卡的卡片：z 是應該放的那一層（T 論點、M 論據、B 重申論點）；ok＝適合的理由 */
+/* 推薦卡的卡片：z 是應該放的那一層（T 論點、M 論據、B 重申論點）
+   k：ok＝有依據的理由、feel＝合理但只是個人感受、abs＝太絕對、bad＝不相關或不適合 */
 const CARDS = {
-  T1:{z:'T', ok:true,  t:'我推薦大家吃「勇氣漢堡」！'},
-  T2:{z:'T', ok:false, t:'我推薦大家每天吃甜甜圈！'},
-  M1:{z:'M', ok:true,  t:'吃了全穀和豆漿的早餐，跑步有力氣；沒吃早餐會頭暈、手發抖。'},
-  M2:{z:'M', ok:true,  t:'豆腐排來自黃豆，可以幫助長肌肉、有力氣。'},
-  M3:{z:'M', ok:true,  t:'漢堡裡有全穀、豆類、蔬菜、堅果種子、水果，我的餐盤五類都有。'},
-  M4:{z:'M', ok:true,  t:'把豆腐煎成豆腐排，不敢吃的人也能勇敢試一口。'},
-  M5:{z:'M', ok:false, t:'因為漢堡的包裝很漂亮。'},
-  M6:{z:'M', ok:false, t:'因為甜甜的東西最好吃。'},
-  B1:{z:'B', ok:true,  t:'所以，一起吃勇氣漢堡，讓自己有力氣也有勇氣！'},
-  B2:{z:'B', ok:false, t:'所以，不想吃的食物就倒掉吧！'},
+  T1:{z:'T', k:'ok',  t:'我推薦大家吃「勇氣漢堡」！'},
+  T2:{z:'T', k:'bad', t:'我推薦大家每天只吃甜甜圈！'},
+  M1:{z:'M', k:'ok',  t:'勇氣漢堡的食材全部來自植物：小麥、黃豆、蔬菜、芝麻、水果。'},
+  M2:{z:'M', k:'ok',  t:'豆腐排來自黃豆，是植物性的蛋白質。'},
+  M3:{z:'M', k:'ok',  t:'選擇植物性的食物，對動物和地球比較溫柔。'},
+  M4:{z:'M', k:'ok',  t:'把豆腐煎成豆腐排，不敢吃的人也能換個方式試試看。'},
+  M5:{z:'M', k:'feel', t:'我覺得勇氣漢堡很好吃。'},
+  M6:{z:'M', k:'abs', t:'大家都一定要吃勇氣漢堡，不吃的人就是不勇敢。'},
+  M7:{z:'M', k:'bad', t:'因為漢堡的包裝很漂亮。'},
+  B1:{z:'B', k:'ok',  t:'所以，一起來吃勇氣漢堡，讓自己有力氣，也對地球更溫柔！'},
+  B2:{z:'B', k:'bad', t:'所以，不想吃的食物就倒掉吧！'},
 };
-const BANK = {2:['M2','T1','M5','B1','M1'], 3:['M3','T2','B1','M5','T1','M1','B2','M4','M6','M2']};
+const BANK = {2:['M2','T1','M7','B1','M1'], 3:['M3','T2','B1','M5','T1','M1','B2','M4','M6','M2','M7']};
 const MIDCAP = {2:2, 3:3};
 const ZNAME = {T:'論點', M:'論據', B:'重申論點'};
+const KTAG = {feel:'🤔 只是個人感受', abs:'⚠️ 說得太絕對', bad:'✖ 理由不適合'};
 
 /* =====================================================================
    牛小勇（原創角色）
@@ -663,6 +735,9 @@ function heldItem(hold){
 function hands(b){
   const v = b.v || '', hold = b.hold || '';
   if(v==='fall' || v==='down') return `<g>${arm(330, 560, 35, 'shake')}${arm(950, 570, -30, '')}</g>`;
+  // 掉棒：棒子掉在跑道上，雙手往前伸
+  if(v==='drop') return `<g><g transform="translate(720 455) rotate(-62)"><rect x="-22" y="-75" width="44" height="150" rx="16" fill="#E2483B"/><rect x="-22" y="-35" width="44" height="30" fill="#fff"/></g>
+    <ellipse cx="720" cy="500" rx="90" ry="12" fill="#000" opacity=".15"/></g>${arm(420, 560, 26, 'shake')}${arm(860, 560, -26, 'shake')}`;
   if(v==='run' || v==='slow' || v==='cheer'){
     const baton = hold==='baton' ? `<rect x="-22" y="-150" width="44" height="150" rx="16" fill="#E2483B"/><rect x="-22" y="-110" width="44" height="30" fill="#fff"/>` : '';
     if(v==='cheer') return `<g>${arm(250, 330, -14, 'pumpL')}${arm(1030, 330, 14, 'pumpR')}</g>`;
@@ -681,8 +756,37 @@ function sceneSVG(sc, b, withPlate){
   const bg = SC[sc] ? SC[sc](b) : SC.shop();
   return `<svg class="scene" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid slice">${bg}
     ${sc==='kitchen' ? `<g transform="translate(400 488)">${burgerLayers()}</g>` : ''}
-    ${sc==='kitchen' && withPlate ? myPlate() : ''}
+    ${sc==='kitchen' && withPlate ? plantPlate() : ''}
     ${hands(b)}</svg>`;
+}
+
+/* 植物力量盤：五類植物性食物，選對一層亮一格（自行設計） */
+const PPLATE = {
+  grain:{n:'全穀', c:'#F2B33D', ex:'小麥、糙米、燕麥'},
+  bean:{n:'豆類', c:'#E07A3B', ex:'黃豆、毛豆、黑豆'},
+  veg:{n:'蔬菜', c:'#5FB04C', ex:'生菜、番茄、菇類'},
+  nut:{n:'堅果種子', c:'#B07A4A', ex:'芝麻、花生、核桃'},
+  fruit:{n:'水果', c:'#EE8FB0', ex:'香蕉、蘋果、芭樂'},
+};
+function plantPlate(){
+  const cx = 1082, cy = 282, r = 110, F = "font-family=\"Huninn,'Noto Sans TC',sans-serif\"";
+  const pt = (a, rr) => [cx + rr*Math.sin(a*Math.PI/180), cy - rr*Math.cos(a*Math.PI/180)];
+  const on = k => G.plate.includes(k), newest = G.popNow;
+  const food = k => { const o = G.burger.find(x => x.cat===k); return o ? o.t : ''; };
+  const OFF = '#EFE7DA', OFFT = '#B9A88F', keys = Object.keys(PPLATE);
+  let secs = '';
+  keys.forEach((k, i) => { const p = PPLATE[k], a0 = i*72, a1 = a0 + 72, lit = on(k);
+    const [x0,y0] = pt(a0,r), [x1,y1] = pt(a1,r), [lx,ly] = pt(a0 + 36, 66);
+    secs += `<g${k===newest?' class="platepop"':''}><path d="M${cx} ${cy}L${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}z" fill="${lit?p.c:OFF}" stroke="#fff" stroke-width="5"/>
+      <text x="${lx.toFixed(1)}" y="${(ly+(lit?-3:7)).toFixed(1)}" text-anchor="middle" font-size="${p.n.length>2?17:21}" fill="${lit?'#fff':OFFT}" ${F} font-weight="700">${p.n}</text>
+      ${lit ? `<text x="${lx.toFixed(1)}" y="${(ly+17).toFixed(1)}" text-anchor="middle" font-size="13" fill="#fff" ${F}>${esc(food(k))}</text>` : ''}</g>`; });
+  const lines = keys.map((k,i) => { const lit = on(k);
+    return `<circle cx="922" cy="${436+i*29}" r="8" fill="${lit?PPLATE[k].c:OFF}"/><text x="938" y="${443+i*29}" font-size="18" fill="${lit?'#3B2A1A':OFFT}" ${F} font-weight="${lit?700:400}">${PPLATE[k].n}：${PPLATE[k].ex}</text>`; }).join('');
+  return `<g transform="translate(0 30)"><rect x="900" y="100" width="365" height="492" rx="22" fill="#fff" stroke="#BFD9A8" stroke-width="5"/>
+    <text x="1082" y="140" text-anchor="middle" font-size="30" fill="#3E8E4A" ${F} font-weight="700">🌱 植物力量盤</text>
+    <circle cx="${cx}" cy="${cy}" r="${r+10}" fill="#F3F8EE" stroke="#BFD9A8" stroke-width="3"/>${secs}
+    <circle cx="${cx}" cy="${cy}" r="22" fill="#fff"/><text x="${cx}" y="${cy+8}" text-anchor="middle" font-size="22">🌱</text>
+    <text x="1082" y="${cy+r+36}" text-anchor="middle" font-size="17" fill="#6B8F5A" ${F}>全部來自植物，種類越多越好</text>${lines}</g>`;
 }
 
 /* =====================================================================
@@ -775,7 +879,7 @@ const cfgObj = () => Object.fromEntries(partList().map(k => [k, {n:pName(k), m:p
    ===================================================================== */
 let G = null;   // 播放狀態
 const runId = () => Math.floor(Date.now()/1000) % 1000000;
-function newRun(){ return {ci:0, bi:0, queue:null, qi:0, pow:50, cou:30, badges:[], plate:[], chosen:{}, played:{}, ask:runId(), burger:[], tok:0}; }
+function newRun(){ const r = runId(); return {ci:0, bi:0, queue:null, qi:0, pow:50, cou:30, badges:[], plate:[], chosen:{}, played:{}, ask:r, run:r, burger:[], tok:0}; }
 function boardMain(){
   document.title = '牛小勇的勇氣漢堡｜大屏';
   G = newRun();
@@ -872,7 +976,7 @@ function watchPart(k){
   if(!DB || (G.watched||(G.watched={}))[k]) return; G.watched[k] = true;
   const {room, who} = PART(k);
   DB.watch(room, who, v => { G.parts[k] = v || {}; drawParts(); drawVotes();
-    const b = curBeat() || {}; if(b.rec || (G.view==='split' && curDec() && !G.queue)) render(false, true); else maybeAutoSplit(); });
+    const b = curBeat() || {}; if(b.rec || b.sort || b.poll || (G.view==='split' && curDec() && !G.queue)) render(false, true); else maybeAutoSplit(); });
 }
 function drawParts(){
   const list = partList(), d = curDec(), b = curBeat() || {};
@@ -881,6 +985,8 @@ function drawParts(){
     let pk = '';
     if(d && v.dec===d && v.ask===G.ask) pk = '✔ ' + ((DEC[d].opts[v.pick]||{}).t || '').slice(0,8);
     if(b.rec && v.recAsk===G.ask) pk = v.recDone ? '✔ 完成' : '拖拉中…';
+    if(b.sort && v.sortRun===G.run) pk = v.sortDone ? '✔ 分好了' : '分類中…';
+    if(b.poll && v['poll_'+b.poll+'Run']===G.run && v['poll_'+b.poll]) pk = '✔ ' + POLL.opts.find(o => o[0]===v['poll_'+b.poll])[1];
     return `<div class="p"><span class="nm" style="background:${PCOL[k]}">${esc(pName(k))}</span><span class="st ${on?'on':''}">${on?'🟢 已連線':'⏳ 未連線'}</span><span class="pick">${esc(pk)}</span></div>`; }).join('');
   const off = list.filter(k => !st(k));
   if($('#qrPanel')){ $('#qrPanel').hidden = !off.length || !DB; $('#qrs').innerHTML = off.map(k => `<div style="--pc:${PCOL[k]}">${qrSVG(k)}${esc(pName(k))}</div>`).join(''); }
@@ -978,8 +1084,8 @@ function choose(d, oid){
   const dec = DEC[d], o = dec.opts[oid];
   G.chosen[d] = oid; G.tok++;
   if(dec.build){
-    if(o.good){ if(!G.plate.includes(o.cat)) G.plate.push(o.cat); G.burger.push(o); G.queue = [{s:'你', t:`${o.t}！加進漢堡！`}]; G.queue.isDec = false; }
-    else { G.queue = [{s:'牛', m:'worried', t:`${o.t}好吃是好吃，可是沒辦法給你長久的力氣喔……再選一次吧！`}]; G.queue.retry = d; }
+    if(o.good){ if(!G.plate.includes(o.cat)) G.plate.push(o.cat); G.burger.push(o); G.queue = [{s:'你', t:`${o.t}來自${o.from}，是植物！加進漢堡！`}]; G.queue.isDec = false; }
+    else { G.queue = [{s:'牛', m:'thinking', t:`嗯……${o.t}${o.from.startsWith('來自') ? o.from : '，' + o.from}，它不是來自植物喔。我們的勇氣漢堡想全部用植物來做，再找找看？`}]; G.queue.retry = d; }
     G.qi = 0; render(false); publishBoard(); return;
   }
   (G.played[d] = G.played[d] || []); if(!G.played[d].includes(oid)) G.played[d].push(oid);
@@ -1018,6 +1124,8 @@ function render(newChapter, quiet){
   else if(b.pause) over += pauseCard(b.pause, b.hint);
   if(b.guide != null) over += recGuide(b.guide);
   if(b.rec) over += recWall();
+  if(b.sort) over += sortWall();
+  if(b.poll) over += pollView(b.poll);
   if(b.clip) over += filmOverlay(b);
   if(G.queue && G.queue.isDec && G.playingFor) over += `<div class="playfor">▶ ${esc(G.playingFor)} 的選擇</div>`;
   if(G.post) over += `<div class="post"><button class="bigbtn ghost" id="rw">${SPLIT.includes(G.queue.dec) && picksFor(G.queue.dec).length ? '◀ 回到大家的選擇' : '⏪ 倒帶，看看另一種選擇'}</button><button class="bigbtn" id="go">${G.returnTo ? '回到徽章 ▶' : '繼續 ▶'}</button></div>`;
@@ -1025,7 +1133,7 @@ function render(newChapter, quiet){
   const talking = b.s==='牛' && b.t;
   const spMood = talking ? (b.m || 'happy') : 'happy';
   const sprite = sp ? `<div class="sprite ${b.sprite==='in' ? 'in' : talking ? 'talk' : 'idle'}"><svg viewBox="-110 -110 220 330">${calf(spMood)}</svg></div>` : '';
-  const showLine = b.t && !(d && !G.queue) && !b.clip && !b.rec;
+  const showLine = b.t && !(d && !G.queue) && !b.clip && !b.rec && !b.sort && !b.poll;
   const who = WHO[b.s] || WHO['旁'];
   const line = showLine ? `<div class="sub${plateOn && sc==='kitchen' ? ' withplate' : ''}${sp ? ' withsprite' : ''}"><span class="who" style="background:${who[1]}">${who[0]}</span><div class="tx">${esc(b.t)}</div></div>` : '';
   const hideHud = ch.id==='recap' || ch.id==='rec';
@@ -1046,6 +1154,7 @@ function render(newChapter, quiet){
   if($('#hintBtn')) $('#hintBtn').onclick = () => { G.showHint = !G.showHint; render(false, true); };
   document.querySelectorAll('[data-replay]').forEach(el => el.onclick = () => replayFor(el.dataset.replay));
   if($('#filmBtn')) $('#filmBtn').onclick = () => { G.filmPause = !G.filmPause; render(false, G.filmPause); };
+  if($('#reveal')) $('#reveal').onclick = () => { G.revealed = !G.revealed; render(false, true); };
   if($('#recCheck')) $('#recCheck').onclick = () => { G.recCheck = !G.recCheck; render(false, true); };
   document.querySelectorAll('.rwgrid [data-zoom]').forEach(el => el.onclick = () => { G.recZoom = el.dataset.zoom; render(false, true); });
   if($('#rzClose')) $('#rzClose').onclick = () => { G.recZoom = null; render(false, true); };
@@ -1079,14 +1188,20 @@ function thumb(d, o){
   return `<svg viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid slice">${SC[sc](b)}${hands(b)}</svg>`;
 }
 function splitView(d){
-  const list = partList(), n = list.length, cols = n<=3 ? n : n===4 ? 2 : 3;
-  const ps = Object.fromEntries(picksFor(d).map(p => [p.k, p])), played = G.played[d] || [];
+  const list = partList(), ps = picksFor(d), played = G.played[d] || [];
+  // 同一個選項的人併成一塊，節省播放時間；還沒選的人另成一塊
+  const groups = [];
+  ps.forEach(p => { let g = groups.find(x => x.o===p.pick); if(!g){ g = {o:p.pick, who:[]}; groups.push(g); } g.who.push(p); });
+  const waiting = list.filter(k => !ps.some(p => p.k===k));
+  const n = groups.length + (waiting.length ? 1 : 0), cols = n<=3 ? Math.max(n,1) : n===4 ? 2 : 3;
+  const pane = g => { const op = DEC[d].opts[g.o], c = PCOL[g.who[0].k];
+    return `<div class="pane" style="--pc:${c}"><div class="th">${thumb(d, g.o)}
+        <button class="play" data-play="${g.o}" aria-label="播放這個選擇">▶</button>${played.includes(g.o) ? '<span class="seen">✔ 播過了</span>' : ''}
+        <span class="pns">${g.who.map(p => `<span class="pn" style="background:${PCOL[p.k]}">${esc(pName(p.k))}</span>`).join('')}</span></div>
+      <div class="info"><span class="ic">${icon(op.ic)}</span><span>${esc(op.t)}${g.who.filter(p => p.why).map(p => `<small>${esc(pName(p.k))}的理由：${esc(p.why)}</small>`).join('')}</span></div></div>`; };
+  const wait = waiting.length ? `<div class="pane empty" style="--pc:#B9A88F"><div class="th"><div class="wt">⏳ 還沒選</div></div><div class="info"><span>${waiting.map(k => esc(pName(k))).join('、')}</span></div></div>` : '';
   return `<div class="split"><div class="hd">👀 大家的選擇：${esc(DEC[d].q)}<button class="tbtn" id="backQ">◀ 回到題目</button></div>
-    <div class="sgrid" style="grid-template-columns:repeat(${cols},minmax(0,1fr));grid-template-rows:repeat(${Math.ceil(n/cols)},minmax(0,1fr))">${list.map(k => { const p = ps[k], op = p && DEC[d].opts[p.pick];
-      return `<div class="pane${p ? '' : ' empty'}" style="--pc:${PCOL[k]}"><div class="th">${p ? thumb(d, p.pick) : '<div class="wt">⏳ 還沒選</div>'}
-          ${p ? `<button class="play" data-play="${p.pick}" aria-label="播放${esc(pName(k))}的選擇">▶</button>${played.includes(p.pick) ? '<span class="seen">✔ 播過了</span>' : ''}` : ''}
-          <span class="pn">${esc(pName(k))}</span></div>
-        <div class="info">${p ? `<span class="ic">${icon(op.ic)}</span><span>${esc(op.t)}${p.why ? `<small>理由：${esc(p.why)}</small>` : ''}</span>` : '<span style="color:var(--muted)">等他在平板上選</span>'}</div></div>`; }).join('')}</div></div>`;
+    <div class="sgrid" style="grid-template-columns:repeat(${cols},minmax(0,1fr));grid-template-rows:repeat(${Math.ceil(n/cols)||1},minmax(0,1fr))">${groups.map(pane).join('')}${wait}</div></div>`;
 }
 function drawVotes(){
   const d = curDec(); if(!d || G.queue) return;
@@ -1113,8 +1228,8 @@ function filmOverlay(b){
   let ic = '', a = '', r = '', kind = '';
   if(b.clip==='res'){ const R = RECAP[b.o], op = DEC[b.d].opts[b.o]; ic = icon(op.ic); a = R.a; r = R.b;
     kind = `<div class="kind ${b.good?'mine':'tried'}">${esc(b.label)} ${b.good ? '👍' : '👎'}</div>`; }
-  if(b.clip==='burger'){ ic = '🍔'; a = '勇氣漢堡：全穀、豆類、蔬菜、堅果種子、水果'; r = '我的餐盤五類都亮了'; }
-  if(b.clip==='race'){ ic = '🏃'; a = '運動會跌倒了也不放棄'; r = '站起來跑完，在挫折中成長'; }
+  if(b.clip==='burger'){ ic = '🍔'; a = '勇氣漢堡全部來自植物：小麥、黃豆、蔬菜、芝麻、水果'; r = '植物力量盤五類都亮了'; }
+  if(b.clip==='race'){ ic = '🏃'; a = '大隊接力掉棒了也不放棄'; r = '深呼吸、撿起棒子，繼續跑完'; }
   return `<div class="film">${tag}${kind}<div class="cap" style="--pc:${b.clip==='res' ? (b.good ? '#2E8B57' : '#B0896A') : '#E0CBA6'}"><span class="ic">${ic}</span><span>${esc(a)} <span class="arrow">➜</span> ${esc(r)}</span></div></div>${btn}`;
 }
 /* 推薦卡：漢堡結構說明 */
@@ -1132,7 +1247,7 @@ function recOf(k){
 }
 function miniBurger(r){
   const mark = (c, z) => { if(!G.recCheck || !c) return ''; const o = CARDS[c];
-    return !o.ok ? '<span class="x">✖ 理由不適合</span>' : o.z !== z ? '<span class="x">放錯層？</span>' : ''; };
+    return (o.k !== 'ok' ? `<span class="x k-${o.k}">${KTAG[o.k]}</span>` : '') + (o.z !== z ? '<span class="x">放錯層？</span>' : ''); };
   const one = (c, z, cls) => c ? `<div class="${cls}">${esc(CARDS[c].t)}${mark(c, z)}</div>` : `<div class="${cls} e">${ZNAME[z]}</div>`;
   return `<div class="mb">${one(r.T,'T','t')}${r.M.length ? r.M.map(c => one(c,'M','m')).join('') : one('', 'M', 'm')}${one(r.B,'B','b')}</div>`;
 }
@@ -1142,6 +1257,7 @@ function recWall(){
   const zoom = G.recZoom && list.includes(G.recZoom) ? G.recZoom : null;
   return `<div class="recwall"><div class="hd">🍔 大家的勇氣漢堡推薦卡 <small style="font-size:.7em;color:var(--muted)">完成 ${done}/${n}</small>
       <button class="tbtn" id="recCheck">${G.recCheck ? '🙈 收起標記' : '💡 標出要再想想的卡片'}</button></div>
+    ${G.recCheck ? '<div class="klegend">🤔 只是個人感受：不是錯，但說服力不夠　⚠️ 說得太絕對　✖ 理由不適合　放錯層？：再想想是論點、論據還是重申論點</div>' : ''}
     ${DB ? '' : '<div class="warn">沒有連上雲端：請學生用平板以外的方式分享。</div>'}
     <div class="rwgrid ${n<=2 ? 'few' : n<=4 ? 'mid' : ''}" style="grid-template-columns:repeat(${cols},minmax(0,1fr))">${list.map(k => { const r = recOf(k);
       return `<div class="rb" style="--pc:${PCOL[k]}" data-zoom="${k}"><div class="nm"><i>${esc(pName(k))}</i>${r.done ? '<span class="ok">✔ 完成</span>' : ''}</div>${miniBurger(r)}</div>`; }).join('')}</div>
@@ -1154,9 +1270,43 @@ function publishBoard(){
   clearTimeout(pubT);
   pubT = setTimeout(() => {
     const d = curDec(), b = curBeat() || {}, waiting = d && !G.queue;
-    DB.update(BOARD_NODE.room, BOARD_NODE.who, {dec: waiting ? d : (b.rec ? 'rec' : ''), ask: G.ask, ch: CH[G.ci].name, parts: cfgObj(), at: Date.now(),
+    DB.update(BOARD_NODE.room, BOARD_NODE.who, {dec: waiting ? d : (b.rec ? 'rec' : b.sort ? 'sort' : b.poll ? 'poll:' + b.poll : ''), ask: G.ask, run: G.run, revealed: !!G.revealed, ch: CH[G.ci].name, parts: cfgObj(), at: Date.now(),
       tried: waiting && d[0]==='b' && G.chosen[d] && !DEC[d].opts[G.chosen[d]].good ? G.chosen[d] : ''});
   }, 80);
+}
+
+/* 食物偵探任務：大家的分類結果 */
+function sortAnswers(){
+  return partList().map(k => { const v = (G.parts||{})[k] || {}; return v.sortRun===G.run && v.sort ? {k, a:v.sort, done:!!v.sortDone} : null; }).filter(Boolean);
+}
+function sortWall(){
+  const ans = sortAnswers(), n = partList().length, done = ans.filter(x => x.done).length;
+  const cards = SORT.map(it => { const pl = ans.filter(x => x.a[it.id]==='p'), an = ans.filter(x => x.a[it.id]==='a');
+    const ok = G.revealed ? (it.p ? 'pl' : 'an') : '';
+    return `<div class="sc ${ok}"><div class="si">${icon(it.ic)}</div><div class="sn">${esc(it.t)}</div>
+      <div class="sv"><span class="vp">🌱 植物 <b>${pl.length}</b></span><span class="va">🐾 動物 <b>${an.length}</b></span></div>
+      <div class="sw">${pl.map(x => `<i style="background:${PCOL[x.k]}" title="植物">${esc(pName(x.k))}🌱</i>`).join('')}${an.map(x => `<i style="background:${PCOL[x.k]}" title="動物">${esc(pName(x.k))}🐾</i>`).join('')}</div>
+      ${G.revealed ? `<div class="sa">${it.p ? '🌱' : '🐾'} 來自${esc(it.from)}</div>` : ''}</div>`; }).join('');
+  return `<div class="sortwall"><div class="hd">🔍 食物偵探：哪些來自植物？哪些來自動物？<small>完成 ${done}/${n}</small>
+      <button class="tbtn" id="reveal">${G.revealed ? '🙈 收起答案' : '🔍 揭曉答案'}</button></div>
+    ${DB ? '' : '<div class="warn">沒有連上雲端：請學生舉手回答，老師按「揭曉答案」。</div>'}
+    <div class="sgrid4">${cards}</div></div>`;
+}
+/* 前後測 */
+function pollCount(which){
+  const c = {up:[], mid:[], down:[]};
+  partList().forEach(k => { const v = (G.parts||{})[k] || {}; const a = v['poll_'+which]; if(a && v['poll_'+which+'Run']===G.run && c[a]) c[a].push(k); });
+  return c;
+}
+function pollView(which){
+  const now = pollCount(which), pre = which==='post' ? pollCount('pre') : null, n = partList().length;
+  const col = ([id, em, lab]) => `<div class="pc"><div class="pe">${em}</div><div class="pl">${lab}</div>
+      ${pre ? `<div class="pp">課前 <b>${pre[id].length}</b> 人</div>` : ''}<div class="pn2">${which==='post' ? '現在 ' : ''}<b>${now[id].length}</b> 人</div>
+      <div class="sw">${now[id].map(k => `<i style="background:${PCOL[k]}">${esc(pName(k))}</i>`).join('')}</div></div>`;
+  const total = Object.values(now).reduce((a, x) => a + x.length, 0);
+  return `<div class="pollv"><div class="hd">${which==='pre' ? '🗳️ 課前想一想' : '🗳️ 課後再想一次'}<small>已回答 ${total}/${n}</small></div>
+    <div class="pq">${esc(POLL.q)}</div><div class="pcs">${POLL.opts.map(col).join('')}</div>
+    ${which==='post' ? '<div class="pf">💬 今天哪一個活動，讓你的想法改變了（或更確定了）？為什麼？</div>' : '<div class="pf">先記住你的答案，下課前我們再問一次！</div>'}</div>`;
 }
 
 function burgerLayers(){
@@ -1173,43 +1323,10 @@ function burgerLayers(){
   if(has('fruit')) out += `<g${pop('fruit')}><text x="-260" y="-6" font-size="70">🍌</text><text x="-200" y="-6" font-size="60">🍎</text></g>`;
   return out;
 }
-/* 我的餐盤（參考國民健康署「我的餐盤」六大類與口訣，自行繪製） */
-const MYPLATE = {
-  grain:{n:'全穀雜糧', c:'#F2B33D', a:[0,105], say:'飯跟蔬菜一樣多'},
-  bean:{n:'豆魚蛋肉', c:'#E5674F', a:[105,180], say:'豆魚蛋肉一掌心'},
-  veg:{n:'蔬菜', c:'#5FB04C', a:[180,285], say:'菜比水果多一點'},
-  fruit:{n:'水果', c:'#EE8FB0', a:[285,360], say:'每餐水果拳頭大'},
-  milk:{n:'乳品', c:'#7FB6E0', say:'每天早晚一杯奶'},
-  nut:{n:'堅果種子', c:'#B07A4A', say:'堅果種子一茶匙'},
-};
-function myPlate(){
-  const cx = 1080, cy = 282, r = 108, F = "font-family=\"Huninn,'Noto Sans TC',sans-serif\"";
-  const pt = (a, rr) => [cx + rr*Math.sin(a*Math.PI/180), cy - rr*Math.cos(a*Math.PI/180)];
-  const on = k => G.plate.includes(k), newest = G.popNow;
-  const food = k => { const o = G.burger.find(x => x.cat===k); return o ? o.t : ''; };
-  const OFF = '#EFE7DA', OFFT = '#B9A88F';
-  let secs = '';
-  ['grain','bean','veg','fruit'].forEach(k => { const p = MYPLATE[k], [a0,a1] = p.a, lit = on(k);
-    const [x0,y0] = pt(a0,r), [x1,y1] = pt(a1,r), [lx,ly] = pt((a0+a1)/2, k==='bean'||k==='fruit' ? 66 : 58);
-    const fs = p.n.length > 2 ? 18 : 22;
-    secs += `<g${k===newest?' class="platepop"':''}><path d="M${cx} ${cy}L${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}z" fill="${lit?p.c:OFF}" stroke="#fff" stroke-width="5"/>
-      <text x="${lx.toFixed(1)}" y="${(ly+(lit?-3:7)).toFixed(1)}" text-anchor="middle" font-size="${fs}" fill="${lit?'#fff':OFFT}" ${F} font-weight="700">${p.n}</text>
-      ${lit ? `<text x="${lx.toFixed(1)}" y="${(ly+17).toFixed(1)}" text-anchor="middle" font-size="13" fill="#fff" ${F}>${esc(food(k))}</text>` : ''}</g>`; });
-  const nutOn = on('nut');
-  const extra = `<g><path d="M1208 302h40l-5 50h-30z" fill="${MYPLATE.milk.c}" opacity=".6" stroke="#fff" stroke-width="3"/><text x="1228" y="374" text-anchor="middle" font-size="17" fill="#6E8FA8" ${F}>乳品</text></g>
-    <g${newest==='nut'?' class="platepop"':''}><path d="M917 330a28 18 0 0 0 56 0z" fill="${nutOn?MYPLATE.nut.c:OFF}" stroke="#fff" stroke-width="3"/><text x="945" y="370" text-anchor="middle" font-size="16" fill="${nutOn?'#7A4E28':OFFT}" ${F} font-weight="${nutOn?700:400}">堅果種子</text>
-    ${nutOn ? `<text x="945" y="320" text-anchor="middle" font-size="13" fill="#7A4E28" ${F}>${esc(food('nut'))}</text>` : ''}</g>`;
-  const says = ['milk','fruit','veg','grain','bean','nut'].map((k,i) => { const lit = k==='milk' ? false : on(k);
-    return `<circle cx="938" cy="${420+i*27}" r="8" fill="${lit?MYPLATE[k].c:OFF}"/><text x="954" y="${427+i*27}" font-size="19" fill="${lit?'#3B2A1A':OFFT}" ${F} font-weight="${lit?700:400}">${MYPLATE[k].say}</text>`; }).join('');
-  return `<g transform="translate(0 30)"><rect x="900" y="100" width="365" height="492" rx="22" fill="#fff" stroke="#E0CBA6" stroke-width="5"/>
-    <text x="1082" y="142" text-anchor="middle" font-size="30" fill="#D9622B" ${F} font-weight="700">🍽️ 我的餐盤</text>
-    <circle cx="${cx}" cy="${cy}" r="${r+10}" fill="#F7F2EA" stroke="#E0CBA6" stroke-width="3"/>${secs}${extra}
-    <text x="1082" y="580" text-anchor="middle" font-size="12" fill="#B9A88F" ${F}>參考：衛生福利部國民健康署「我的餐盤」</text>${says}</g>`;
-}
 /* =====================================================================
    平板
    ===================================================================== */
-let ME = null, BS = {}, MY = {}, MR = null;
+let ME = null, BS = {}, MY = {}, MR = null, MS = null, MP = null;
 function tabletMain(k){
   ME = k;
   const {room, who} = PART(k), col = PCOL[k];
@@ -1225,6 +1342,8 @@ function tabletMain(k){
     const d = BS.dec;
     if(!d){ $('#root').innerHTML = waitBox('請看大屏', BS.ch ? '現在播放：' + esc(BS.ch) : '等老師開始播放'); return; }
     if(d==='rec'){ drawRec(head, c); return; }
+    if(d==='sort'){ drawSort(head, c); return; }
+    if(d.startsWith('poll:')){ drawPoll(head, c, d.slice(5)); return; }
     const dec = DEC[d], lv = c.lv, ids = optIds(d, lv), mine = MY.dec===d && MY.ask===BS.ask ? MY : {};
     const tts = !!c.tts, showWhy = lv===3 && dec.why && mine.pick;
     $('#root').innerHTML = `<div class="tab">${head}
@@ -1235,6 +1354,31 @@ function tabletMain(k){
       ${mine.pick && (!showWhy || mine.why) ? '<div class="sent">✔ 送出了！看大屏，等老師揭曉</div>' : ''}</div>`;
     document.querySelectorAll('.topt[data-o]').forEach(b => b.onclick = () => { MY = {dec:d, ask:BS.ask, pick:b.dataset.o, why:''}; send(); draw(); });
     document.querySelectorAll('.topt[data-w]').forEach(b => b.onclick = () => { MY.why = b.dataset.w; send(); draw(); });
+  };
+  /* ---------- 食物偵探任務：植物？動物？ ---------- */
+  const sendSort = () => { if(DB && MS) DB.update(room, who, {online:true, sort:MS.a, sortRun:MS.run, sortDone:!!MS.done, at:Date.now()}); };
+  const drawSort = (head, c) => {
+    if(!MS || MS.run !== BS.run) MS = {run:BS.run, a:{}, done:false};
+    const ids = sortIds(c.lv), tts = !!c.tts, rv = !!BS.revealed;
+    $('#root').innerHTML = `<div class="tab">${head}
+      <div class="tq">🔍 這些食物來自植物，還是來自動物？${tts ? spk('這些食物來自植物，還是來自動物？') : ''}</div>
+      <div class="slist">${ids.map(id => { const it = SORT.find(x => x.id===id), a = MS.a[id];
+        const mark = rv && a ? ((a==='p') === it.p ? ' ✔' : ' ✗') : '';
+        return `<div class="srow"><span class="si">${icon(it.ic)}</span><span>${esc(it.t)}${tts ? spk(it.t) : ''}${rv ? `<small style="display:block;font-size:17px;color:var(--muted)">來自${esc(it.from)}${mark}</small>` : ''}</span>
+          <button class="p ${a==='p'?'on':''}" data-s="${id}" data-v="p">🌱 植物</button><button class="a ${a==='a'?'on':''}" data-s="${id}" data-v="a">🐾 動物</button></div>`; }).join('')}</div>
+      ${MS.done ? '<div class="sent">✔ 分好了！看大屏，等老師揭曉</div>' : ''}</div>`;
+    document.querySelectorAll('[data-s]').forEach(b => b.onclick = () => { MS.a[b.dataset.s] = b.dataset.v; MS.done = ids.every(id => MS.a[id]); sendSort(); draw(); });
+  };
+  /* ---------- 前後測 ---------- */
+  const drawPoll = (head, c, w) => {
+    if(!MP || MP.run !== BS.run) MP = {run:BS.run};
+    const tts = !!c.tts, mine = MP[w];
+    $('#root').innerHTML = `<div class="tab">${head}
+      <div class="tq">${esc(POLL.q)}${tts ? spk(POLL.q) : ''}</div>
+      <div class="tpoll">${POLL.opts.map(([id, em, lab]) => `<div role="button" class="topt ${mine===id?'sel':''}" data-p="${id}"><span class="em">${em}</span><span class="t">${lab}</span>${tts ? spk(lab) : ''}</div>`).join('')}</div>
+      ${mine ? '<div class="sent">✔ 送出了！看大屏</div>' : ''}</div>`;
+    document.querySelectorAll('[data-p]').forEach(b => b.onclick = () => { MP[w] = b.dataset.p;
+      if(DB) DB.update(room, who, {online:true, ['poll_'+w]:MP[w], ['poll_'+w+'Run']:MP.run, at:Date.now()}); draw(); });
   };
   /* ---------- 推薦卡：把卡片拖到漢堡上 ---------- */
   let selCard = null;
@@ -1294,12 +1438,13 @@ function tabletMain(k){
   if(!DB) return;
   DB.connected(ok => { const n = $('#net'); if(n){ n.className = 'net' + (ok?' on':''); n.textContent = ok ? '🟢 已連上大屏' : '⚪ 連線中…'; }
     if(ok){ DB.offlineOnExit(room, who); DB.update(room, who, {online:true, at:Date.now()}); } });
-  window.onHello = () => { DB.update(room, who, {online:true, dec:MY.dec||'', ask:MY.ask||0, pick:MY.pick||'', why:MY.why||''}); if(MR) sendRec(); };
+  window.onHello = () => { DB.update(room, who, {online:true, dec:MY.dec||'', ask:MY.ask||0, pick:MY.pick||'', why:MY.why||''}); if(MR) sendRec(); if(MS) sendSort();
+    if(MP) ['pre','post'].forEach(w => { if(MP[w]) DB.update(room, who, {['poll_'+w]:MP[w], ['poll_'+w+'Run']:MP.run}); }); };
   DB.update(room, who, {online:true, at:Date.now()});
   let lastKey = '';
   DB.watch(BOARD_NODE.room, BOARD_NODE.who, v => { BS = v || {};
     // 大屏只是更新時間、內容沒變就不要重畫（避免打斷學生點選、拖曳）
-    const key = JSON.stringify([BS.dec, BS.ask, BS.tried, BS.ch, BS.parts]);
+    const key = JSON.stringify([BS.dec, BS.ask, BS.tried, BS.ch, BS.parts, BS.run, BS.revealed]);
     if(key === lastKey) return; lastKey = key;
     if(document.querySelector('.rcard.ghost')) return;
     draw(); });
