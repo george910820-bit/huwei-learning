@@ -360,6 +360,11 @@
   .tpoll{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
   .tpoll .topt{flex-direction:column;justify-content:center;text-align:center;font-size:24px;padding:18px 10px}
   .tpoll .topt .em{font-size:56px;line-height:1}
+
+  .pchg{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:center;font-family:var(--title);font-size:clamp(14px,1.3vw,20px)}
+  .pchg span{background:#fff;border:2px solid var(--line);border-radius:999px;padding:2px 12px 2px 4px;display:inline-flex;align-items:center;gap:6px}
+  .pchg span.chg{border-color:#E07A3B;background:#FFF3E6;font-weight:700}
+  .pchg i{font-style:normal;color:#fff;border-radius:999px;padding:0 8px}
   .cheerdot{animation:cheer .6s ease-in-out infinite;transform-box:fill-box}
 
 </style>
@@ -431,18 +436,18 @@ const CH = [
     {s:'牛', m:'happy', t:'右邊是「植物力量盤」：全穀、豆類、蔬菜、堅果種子、水果，全部都來自植物。'},
     {s:'牛', m:'determined', t:'我們的勇氣漢堡想全部用植物來做！選到來自植物的食材，漢堡就多一層，力量盤也會亮起一格。'},
     {dec:'b1'},{dec:'b2'},{dec:'b3'},{dec:'b4'},{dec:'b5'},
-    {s:'你', t:'哇！一個全部來自植物的勇氣漢堡！', badge:'b3', fx:{pow:100}},
+    {s:'你', t:'哇！一個全部來自植物的勇氣漢堡！我自己做到了！', badge:'b3', fx:{pow:100, dcou:15}},
     {pause:'這個漢堡全部來自植物，裡面有哪幾種不同的植物？', hint:'小麥（全麥麵包）、黃豆（豆腐排）、生菜和番茄、芝麻（芝麻醬）、水果'},
   ]},
   {id:'end', name:'結局', sub:'大隊接力', sc:'race', beats:[
     {s:'旁', t:'運動會當天，大隊接力開始了！'},
     {s:'旁', v:'run', hold:'baton', t:'你接到棒子，用力往前跑……'},
-    {s:'你', v:'drop', t:'啊！棒子掉了！'},
+    {s:'你', v:'drop', fx:{dcou:-20}, t:'啊！棒子掉了！'},
     {s:'旁', v:'drop', t:'後面的同學一個一個超過你，你們這一隊落後了。'},
     {s:'你', v:'drop', t:'怎麼辦……大家都在看我……'},
     {s:'牛', m:'determined', v:'drop', t:'深呼吸！掉棒了，就把它撿起來，繼續跑！'},
-    {s:'旁', v:'run', hold:'baton', t:'你撿起棒子，用盡全力往前跑，一個、兩個……追上了前面的同學！'},
-    {s:'旁', sc:'finish', v:'cheer', t:'你把棒子交給下一棒。雖然沒有拿第一名，隊友們都為你歡呼！'},
+    {s:'旁', v:'run', hold:'baton', fx:{dcou:40}, t:'你撿起棒子，用盡全力往前跑，一個、兩個……追上了前面的同學！'},
+    {s:'旁', sc:'finish', v:'cheer', fx:{cou:100}, t:'你把棒子交給下一棒。雖然沒有拿第一名，隊友們都為你歡呼！'},
     {s:'牛', m:'happy', sc:'finish', v:'cheer', t:'掉棒了也不放棄：深呼吸、撿起來、繼續跑。你在挫折中成長了！'},
     {badges:true},
   ]},
@@ -501,8 +506,9 @@ const DEC = {
     res:{
       bite:[
         {s:'你', hold:'tofu', t:'好……我先吃一小口就好。'},
-        {s:'你', hold:'tofu', v:'eat', fx:{cou:80}, badge:'b2', t:'咦？豆腐其實有一點香耶！'},
-        {s:'牛', m:'happy', hold:'tofu', t:'先試試看，再決定喜不喜歡，就是勇敢！就像仙人掌、落葉樹、椰子面對挫折時調適改變自己，你也找到自己的方法。'},
+        {s:'你', hold:'tofu', v:'eat', fx:{cou:80}, badge:'b2', t:'咦？豆腐的味道，跟我想的不太一樣！'},
+        {s:'牛', m:'happy', hold:'tofu', t:'心裡害怕，還是願意試一小口，這就是勇敢！就像上一課〈最勇敢的女孩〉：就算心裡害怕，還是願意往前走。'},
+        {s:'牛', m:'thinking', hold:'tofu', t:'喜不喜歡，試過了再決定。勇敢不是一定要喜歡，而是願意先認識它。'},
       ],
       burger:[
         {s:'你', t:'如果把豆腐煎成金黃色的豆腐排，夾進漢堡裡呢？'},
@@ -517,7 +523,7 @@ const DEC = {
       ],
     },
     pause:{
-      bite:{q:'試吃之前，你心裡有什麼感覺？你怎麼讓自己願意試試看？', hint:'緊張、害怕；告訴自己只試一小口、深呼吸、先聞一聞'},
+      bite:{q:'試吃之前，你心裡有什麼感覺？就算害怕，是什麼讓你願意試試看？', hint:'緊張、害怕；告訴自己只試一小口、深呼吸、先聞一聞。就像〈最勇敢的女孩〉，害怕的時候還是願意往前一步'},
       burger:{q:'換個方式吃，為什麼會讓人比較願意嘗試？你還想得到別的方法嗎？', hint:'熟悉的漢堡讓人安心；也可以問問這是什麼、看看怎麼煮的、和喜歡的食物一起吃'},
       trash:{q:'如果這道菜你真的不喜歡，或吃了會不舒服，你可以怎麼處理？', hint:'先問它是什麼、試一小口、換個方式吃；吃了會不舒服就告訴老師，不用勉強'}}},
   // 第三幕：漢堡一層一層選（判斷依據：是不是來自植物）
@@ -562,7 +568,7 @@ const RECAP = {
   toast:{sc:'track', v:'run', hold:'', a:'吃了全麥吐司、花生醬、香蕉、豆漿', b:'好多種植物一起幫忙，跑起來有精神'},
   donut:{sc:'track', v:'slow', a:'只吃甜甜圈和含糖飲料', b:'跑到第二圈就累了'},
   skip:{sc:'track', v:'dizzy', a:'沒吃早餐就去運動', b:'肚子餓、不舒服，要停下來告訴老師'},
-  bite:{sc:'lunch', hold:'tofu', v:'eat', a:'先試一小口豆腐', b:'發現豆腐其實有一點香'},
+  bite:{sc:'lunch', hold:'tofu', v:'eat', a:'心裡害怕，還是先試一小口豆腐', b:'發現味道跟想的不一樣，試過再決定喜不喜歡'},
   burger:{sc:'lunch', hold:'tofuburger', v:'eat', a:'把豆腐煎成豆腐排，夾進漢堡', b:'換個方法，就願意試試看'},
   trash:{sc:'lunch', tray:'empty', v:'slow', a:'把豆腐和青菜倒掉', b:'問題沒有解決，食物也浪費了'},
 };
@@ -769,7 +775,7 @@ const PPLATE = {
   fruit:{n:'水果', c:'#EE8FB0', ex:'香蕉、蘋果、芭樂'},
 };
 function plantPlate(){
-  const cx = 1082, cy = 282, r = 110, F = "font-family=\"Huninn,'Noto Sans TC',sans-serif\"";
+  const cx = 1082, cy = 270, r = 104, F = "font-family=\"Huninn,'Noto Sans TC',sans-serif\"";
   const pt = (a, rr) => [cx + rr*Math.sin(a*Math.PI/180), cy - rr*Math.cos(a*Math.PI/180)];
   const on = k => G.plate.includes(k), newest = G.popNow;
   const food = k => { const o = G.burger.find(x => x.cat===k); return o ? o.t : ''; };
@@ -781,12 +787,12 @@ function plantPlate(){
       <text x="${lx.toFixed(1)}" y="${(ly+(lit?-3:7)).toFixed(1)}" text-anchor="middle" font-size="${p.n.length>2?17:21}" fill="${lit?'#fff':OFFT}" ${F} font-weight="700">${p.n}</text>
       ${lit ? `<text x="${lx.toFixed(1)}" y="${(ly+17).toFixed(1)}" text-anchor="middle" font-size="13" fill="#fff" ${F}>${esc(food(k))}</text>` : ''}</g>`; });
   const lines = keys.map((k,i) => { const lit = on(k);
-    return `<circle cx="922" cy="${436+i*29}" r="8" fill="${lit?PPLATE[k].c:OFF}"/><text x="938" y="${443+i*29}" font-size="18" fill="${lit?'#3B2A1A':OFFT}" ${F} font-weight="${lit?700:400}">${PPLATE[k].n}：${PPLATE[k].ex}</text>`; }).join('');
+    return `<circle cx="922" cy="${448+i*28}" r="8" fill="${lit?PPLATE[k].c:OFF}"/><text x="938" y="${455+i*28}" font-size="18" fill="${lit?'#3B2A1A':OFFT}" ${F} font-weight="${lit?700:400}">${PPLATE[k].n}：${PPLATE[k].ex}</text>`; }).join('');
   return `<g transform="translate(0 30)"><rect x="900" y="100" width="365" height="492" rx="22" fill="#fff" stroke="#BFD9A8" stroke-width="5"/>
     <text x="1082" y="140" text-anchor="middle" font-size="30" fill="#3E8E4A" ${F} font-weight="700">🌱 植物力量盤</text>
     <circle cx="${cx}" cy="${cy}" r="${r+10}" fill="#F3F8EE" stroke="#BFD9A8" stroke-width="3"/>${secs}
     <circle cx="${cx}" cy="${cy}" r="22" fill="#fff"/><text x="${cx}" y="${cy+8}" text-anchor="middle" font-size="22">🌱</text>
-    <text x="1082" y="${cy+r+36}" text-anchor="middle" font-size="17" fill="#6B8F5A" ${F}>全部來自植物，種類越多越好</text>${lines}</g>`;
+    <text x="1082" y="${cy+r+40}" text-anchor="middle" font-size="17" fill="#6B8F5A" ${F}>全部來自植物，種類越多越好</text>${lines}</g>`;
 }
 
 /* =====================================================================
@@ -880,6 +886,20 @@ const cfgObj = () => Object.fromEntries(partList().map(k => [k, {n:pName(k), m:p
 let G = null;   // 播放狀態
 const runId = () => Math.floor(Date.now()/1000) % 1000000;
 function newRun(){ const r = runId(); return {ci:0, bi:0, queue:null, qi:0, pow:50, cou:30, badges:[], plate:[], chosen:{}, played:{}, ask:r, run:r, burger:[], tok:0}; }
+/* 上課進度存在這台電腦：兩節課之間關掉網頁，也能接著上（含課前小調查的答案） */
+const PKEY = 'niuCourage.prog';
+const progSig = () => JSON.stringify([S.kind, partList().map(pName)]);
+function saveProg(){
+  if(!G || !G.started) return;
+  const g = {}; ['ci','chosen','played','pickers','badges','run','preSnap'].forEach(k => { if(G[k]!==undefined) g[k] = G[k]; });
+  try{ localStorage.setItem(PKEY, JSON.stringify({at:Date.now(), sig:progSig(), g})); }catch(e){}
+}
+function loadProg(){
+  try{ const o = JSON.parse(localStorage.getItem(PKEY) || 'null');
+    if(!o || o.sig!==progSig() || Date.now()-o.at > 14*864e5) return null;
+    if(!(o.g.ci>0 || Object.keys(o.g.preSnap||{}).length)) return null;
+    return o; }catch(e){ return null; }
+}
 function boardMain(){
   document.title = '牛小勇的勇氣漢堡｜大屏';
   G = newRun();
@@ -958,18 +978,21 @@ function setupScreen(first){
   document.body.appendChild(m);
 }
 function afterSetup(){ partList().forEach(watchPart); drawParts(); publishBoard(); }
-function restart(){ if(window.speechSynthesis) speechSynthesis.cancel(); G = Object.assign(newRun(), {parts:G.parts, watched:G.watched}); render(true); publishBoard(); }
+function restart(){ if(window.speechSynthesis) speechSynthesis.cancel(); G = Object.assign(newRun(), {parts:G.parts, watched:G.watched, started:true}); render(true); publishBoard(); }
 /* ---------- QR code 畫面 ---------- */
 function qrScreen(first){
   const old = $('.setup'); if(old) old.remove();
   const m = document.createElement('div'); m.className = 'setup'; m.id = 'qrScreen';
+  const prog = first ? loadProg() : null;
   m.innerHTML = `<div class="box" style="width:min(1300px,100%)"><h2>📱 請用平板掃描自己的 QR code</h2>
     <div class="lead">掃好的會顯示「🟢 已連線」。大家都連上了，就可以開始！</div>
     <div class="qrgrid">${partList().map(k => `<div class="q" style="--pc:${PCOL[k]}">${qrSVG(k)}<div style="color:${PCOL[k]}">${esc(pName(k))}</div>${pMem(k) ? `<div style="font-size:16px;color:var(--muted)">${esc(pMem(k))}</div>` : ''}<div class="st" data-st="${k}"></div></div>`).join('')}</div>
-    <div class="go"><button class="bigbtn ghost" id="back">◀ 修改名單</button><button class="bigbtn" id="play">${first ? '開始播放 ▶' : '關閉'}</button></div></div>`;
+    <div class="go"><button class="bigbtn ghost" id="back">◀ 修改名單</button>${prog ? `<button class="bigbtn" id="resume">▶ 接著上次（${esc(CH[prog.g.ci].name)}）</button>` : ''}<button class="bigbtn${prog ? ' ghost' : ''}" id="play">${first ? (prog ? '從頭開始' : '開始播放 ▶') : '關閉'}</button></div>
+    ${prog ? `<div class="lead" style="margin-top:8px">上次上到「${esc(CH[prog.g.ci].name)}」，課前小調查和大家的選擇都還留著。</div>` : ''}</div>`;
   document.body.appendChild(m);
   $('#back',m).onclick = () => { m.remove(); setupScreen(first); };
-  $('#play',m).onclick = () => { m.remove(); if(first) render(true); };
+  $('#play',m).onclick = () => { m.remove(); if(first){ G.started = true; render(true); } };
+  if($('#resume',m)) $('#resume',m).onclick = () => { m.remove(); Object.assign(G, JSON.parse(JSON.stringify(prog.g)), {started:true}); G.ask = runId() + 1; jump(prog.g.ci, 0); publishBoard(); };
   drawParts();
 }
 function watchPart(k){
@@ -1017,18 +1040,27 @@ function curScene(){
 }
 function applyFx(b){
   if(!b) return;
-  if(b.fx){ if(b.fx.pow!=null) G.pow = b.fx.pow < 0 ? Math.max(0, G.pow + b.fx.pow) : b.fx.pow; if(b.fx.cou!=null) G.cou = b.fx.cou; }
+  if(b.fx){ if(b.fx.pow!=null) G.pow = b.fx.pow < 0 ? Math.max(0, G.pow + b.fx.pow) : b.fx.pow; if(b.fx.cou!=null) G.cou = b.fx.cou; if(b.fx.dcou) G.cou = Math.max(0, Math.min(100, G.cou + b.fx.dcou)); }
   if(b.badge && !G.badges.includes(b.badge)) G.badges.push(b.badge);
 }
 /* 進到某一幕之前的力氣、勇氣（依目前的選擇重算） */
 function baseMeters(ci){
   let pow = 50, cou = 30;
-  const ap = b => { if(b && b.fx){ if(b.fx.pow!=null) pow = b.fx.pow < 0 ? Math.max(0, pow + b.fx.pow) : b.fx.pow; if(b.fx.cou!=null) cou = b.fx.cou; } };
+  const ap = b => { if(b && b.fx){ if(b.fx.pow!=null) pow = b.fx.pow < 0 ? Math.max(0, pow + b.fx.pow) : b.fx.pow; if(b.fx.cou!=null) cou = b.fx.cou; if(b.fx.dcou) cou = Math.max(0, Math.min(100, cou + b.fx.dcou)); } };
   for(let i=0;i<ci;i++) CH[i].beats.forEach(b => {
     if(b.dec && DEC[b.dec].res){ const c = G.chosen[b.dec]; if(c) DEC[b.dec].res[c].forEach(ap); }
     else ap(b);
   });
   return [pow, cou];
+}
+/* 目前這一句的力氣、勇氣（往回時重算，避免重複加減） */
+function recalcMeters(){
+  let [pow, cou] = baseMeters(G.ci);
+  const ap = b => { if(b && b.fx){ if(b.fx.pow!=null) pow = b.fx.pow < 0 ? Math.max(0, pow + b.fx.pow) : b.fx.pow; if(b.fx.cou!=null) cou = b.fx.cou; if(b.fx.dcou) cou = Math.max(0, Math.min(100, cou + b.fx.dcou)); } };
+  const beats = CH[G.ci].beats;
+  for(let i=0;i<=G.bi && i<beats.length;i++){ const b = beats[i]; if(b.dec){ const c = G.chosen[b.dec]; if(DEC[b.dec].res && c && !(G.queue && i===G.bi)) DEC[b.dec].res[c].forEach(ap); } else ap(b); }
+  if(G.queue) for(let i=0;i<=G.qi && i<G.queue.length;i++) ap(G.queue[i]);
+  G.pow = pow; G.cou = cou;
 }
 function resetAct3(){ G.burger = []; G.plate = []; G.popDone = null; ['b1','b2','b3','b4','b5'].forEach(k => delete G.chosen[k]); }
 function jump(ci, bi){
@@ -1059,8 +1091,8 @@ function step(dir){
   if(dir<0){
     if(G.post){ G.post = false; if(G.queue.pause){ G.pauseShow = G.queue.pause; } render(false); return; }
     if(G.pauseShow){ G.pauseShow = null; G.queue.pausePending = true; render(false); return; }
-    if(G.queue){ if(G.qi>0){ G.qi--; render(false); } else { const d = G.queue.dec; G.queue = null; G.playingFor = ''; G.view = d && SPLIT.includes(d) && picksFor(d).length ? 'split' : 'ask'; [G.pow, G.cou] = baseMeters(G.ci); render(false); } return; }
-    if(G.bi>0){ G.bi--; render(false); } else if(G.ci>0){ G.ci--; G.bi = CH[G.ci].beats.length-1; render(true); }
+    if(G.queue){ if(G.qi>0){ G.qi--; recalcMeters(); render(false); } else { const d = G.queue.dec; G.queue = null; G.playingFor = ''; G.view = d && SPLIT.includes(d) && picksFor(d).length ? 'split' : 'ask'; [G.pow, G.cou] = baseMeters(G.ci); render(false); } return; }
+    if(G.bi>0){ G.bi--; recalcMeters(); render(false); } else if(G.ci>0){ G.ci--; G.bi = CH[G.ci].beats.length-1; recalcMeters(); render(true); }
     return;
   }
   const b = curBeat();
@@ -1105,6 +1137,7 @@ function rewind(){
 const WHO = {'旁':['旁白','#5B6470'], '你':['你','#E07A3B'], '牛':['🐮 牛小勇','#B97D4B']};
 function spriteOn(){ return G.ci > 0 || G.bi >= CH[0].beats.findIndex(b => b.sprite==='in'); }
 function render(newChapter, quiet){
+  saveProg();
   const ch = CH[G.ci], b = curBeat() || {};
   document.querySelectorAll('.ch').forEach(x => x.classList.toggle('on', +x.dataset.c === G.ci));
   const d = curDec();
@@ -1293,10 +1326,23 @@ function sortWall(){
     <div class="sgrid4">${cards}</div></div>`;
 }
 /* 前後測 */
+function pollAns(which){
+  const out = which==='pre' ? Object.assign({}, G.preSnap || {}) : {};
+  partList().forEach(k => { const v = (G.parts||{})[k] || {}; const a = v['poll_'+which]; if(a && v['poll_'+which+'Run']===G.run) out[k] = a; });
+  if(which==='pre') G.preSnap = out;
+  return out;
+}
 function pollCount(which){
-  const c = {up:[], mid:[], down:[]};
-  partList().forEach(k => { const v = (G.parts||{})[k] || {}; const a = v['poll_'+which]; if(a && v['poll_'+which+'Run']===G.run && c[a]) c[a].push(k); });
+  const c = {up:[], mid:[], down:[]}, a = pollAns(which);
+  partList().forEach(k => { if(a[k] && c[a[k]]) c[a[k]].push(k); });
   return c;
+}
+function pollChange(){
+  const pre = pollAns('pre'), post = pollAns('post'), em = id => (POLL.opts.find(o => o[0]===id) || [,'…'])[1];
+  const ks = partList().filter(k => pre[k] || post[k]);
+  if(!ks.length) return '';
+  return `<div class="pchg"><b>每個人的想法：</b>${ks.map(k => { const ch = pre[k] && post[k] && pre[k]!==post[k];
+    return `<span class="${ch ? 'chg' : ''}"><i style="background:${PCOL[k]}">${esc(pName(k))}</i>課前 ${em(pre[k])} → 課後 ${post[k] ? em(post[k]) : '…'}${ch ? ' 改變了' : ''}</span>`; }).join('')}</div>`;
 }
 function pollView(which){
   const now = pollCount(which), pre = which==='post' ? pollCount('pre') : null, n = partList().length;
@@ -1306,6 +1352,7 @@ function pollView(which){
   const total = Object.values(now).reduce((a, x) => a + x.length, 0);
   return `<div class="pollv"><div class="hd">${which==='pre' ? '🗳️ 課前想一想' : '🗳️ 課後再想一次'}<small>已回答 ${total}/${n}</small></div>
     <div class="pq">${esc(POLL.q)}</div><div class="pcs">${POLL.opts.map(col).join('')}</div>
+    ${which==='post' ? pollChange() : ''}
     ${which==='post' ? '<div class="pf">💬 今天哪一個活動，讓你的想法改變了（或更確定了）？為什麼？</div>' : '<div class="pf">先記住你的答案，下課前我們再問一次！</div>'}</div>`;
 }
 
