@@ -365,6 +365,36 @@
   .pchg span{background:#fff;border:2px solid var(--line);border-radius:999px;padding:2px 12px 2px 4px;display:inline-flex;align-items:center;gap:6px}
   .pchg span.chg{border-color:#E07A3B;background:#FFF3E6;font-weight:700}
   .pchg i{font-style:normal;color:#fff;border-radius:999px;padding:0 8px}
+
+  /* 資源班：圖片、口語；普通班：挑戰版 */
+  .topts.pic{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+  .topts.pic .topt{flex-direction:column;justify-content:center;text-align:center;padding:16px 10px;gap:8px}
+  .topts.pic .topt .ic{font-size:96px;line-height:1}.topts.pic .topt .ic svg{width:120px;height:auto}
+  .topts.pic .topt .t{font-size:22px}
+  .vbox{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;background:#FFF6DA;border:3px dashed #D9B24A;border-radius:18px;padding:12px;margin:6px 0;font-family:var(--title)}
+  .vbtn{font-family:var(--title);font-size:22px;padding:10px 18px;border-radius:14px;border:3px solid #2F7FB5;background:#2F7FB5;color:#fff;cursor:pointer}
+  .vbtn.ghost{background:#fff;color:#2F7FB5}.vbtn.big{font-size:30px;padding:16px 30px;border-radius:999px}
+  .vlisten{font-size:26px;color:#C0392B;width:100%;text-align:center;animation:cheer 1s ease-in-out infinite}
+  .vheard{font-family:var(--title);font-size:22px;color:#3B2A1A;width:100%;text-align:center}
+  .vq{font-size:24px;width:100%;text-align:center}
+  .vtype,.own{display:flex;gap:8px;width:100%;margin-top:6px}
+  .vtype input,.own input{flex:1;font-size:22px;padding:10px 14px;border-radius:14px;border:3px solid var(--line);font-family:inherit;min-width:0}
+  .tpred{display:flex;gap:12px}.tpred .topt{flex:1;flex-direction:column;justify-content:center;text-align:center;font-size:22px;padding:12px}
+  .tpred .em{font-size:44px;line-height:1}
+  .srow small.lab{display:block;font-size:17px;color:#2F6FA8}
+  .srow.pic{font-size:28px}.srow.pic .si{font-size:64px}.srow.pic .si svg{width:80px}
+  .zone.R{background:#6E9E5A;color:#fff;border-radius:14px}
+  .rcard.own{border-color:#2F7FB5;background:#EAF4FB}
+  .mb .r{background:#6E9E5A;color:#fff;border-radius:8px}
+  .bgl .obj{background:#6E9E5A;color:#fff;border-radius:14px}
+  .sc .slab{font-size:clamp(11px,1vw,15px);color:#2F6FA8;text-align:center;line-height:1.25}
+  .sgrid4.n4{grid-template-rows:minmax(0,1fr)}
+  .predrow{margin-top:10px;font-family:var(--title);font-size:clamp(15px,1.4vw,22px);display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;justify-content:center}
+  .predrow span{background:#fff;border:2px solid var(--line);border-radius:999px;padding:2px 10px 2px 4px;display:inline-flex;gap:6px;align-items:center}
+  .predrow span.ok{border-color:#3E8E4A}.predrow span.no{border-color:#E07A3B}
+  .predrow i{font-style:normal;color:#fff;border-radius:999px;padding:0 8px}
+  .predrow .pq2{width:100%;text-align:center;color:#B5561C}
+  .prow.res{grid-template-columns:28px minmax(110px,1fr) auto auto auto}
   .cheerdot{animation:cheer .6s ease-in-out infinite;transform-box:fill-box}
 
 </style>
@@ -556,8 +586,22 @@ const SORT = [
   {id:'cheese', t:'起司', ic:'🧀', p:false, from:'牛奶'},
   {id:'toast', t:'全麥吐司', ic:'toast', p:true, from:'小麥'},
   {id:'bacon', t:'培根', ic:'🥓', p:false, from:'豬'},
+  // 挑戰版：包裝食品，外表看不出來，要看成分表
+  {id:'cracker', t:'蘇打餅乾', ic:'🍘', p:true, lab:'麵粉、植物油、鹽', from:'成分全部來自植物'},
+  {id:'cookie', t:'奶油酥餅', ic:'🍪', p:false, lab:'麵粉、奶油、糖、雞蛋', from:'奶油（牛奶）和雞蛋，來自動物'},
+  {id:'soysauce', t:'醬油', ic:'🍶', p:true, lab:'黃豆、小麥、鹽、水', from:'黃豆和小麥，都來自植物'},
+  {id:'mayo', t:'美乃滋', ic:'🥫', p:false, lab:'植物油、蛋黃、醋、糖', from:'有蛋黃，來自動物'},
 ];
-const sortIds = lv => (lv === 2 ? SORT.slice(0, 4) : SORT).map(x => x.id);
+const sortIds = lv => lv === 2 ? ['soy','milk','tofu','egg'] : lv === 4 ? ['soy','milk','pb','cheese','cracker','cookie','soysauce','mayo'] : ['soy','milk','tofu','egg','pb','cheese','toast','bacon'];
+/* 挑戰版：選完先預測量表會怎麼變 */
+const PRED = {d1:{m:'pow', n:'力氣', q:'選這個之後，你覺得「力氣」會？'}, d2:{m:'cou', n:'勇氣', q:'選這個之後，你覺得「勇氣」會？'}};
+const PDIR = [['up','⬆','變多'],['same','➡','差不多'],['down','⬇','變少']];
+/* 口語回答：把學生說的話對到選項（關鍵詞） */
+const KW = {toast:['吐司','花生','香蕉','豆漿'], skip:['不吃','不要吃','直接','沒吃'], donut:['甜甜圈','飲料','含糖'],
+  bite:['一小口','試試','吃一口','試吃'], trash:['倒掉','丟掉','倒'], burger:['漢堡','煎','換個方式','換方式'],
+  wbun:['全麥'], croissant:['可頌'], cheesebun:['起司'], patty:['豆腐'], chicken:['雞'], bacon:['培根'],
+  veg:['生菜','番茄','蔬菜','青菜'], egg:['荷包蛋','蛋'], ham:['火腿'], sesame:['芝麻'], mayo:['美乃滋'], butter:['奶油醬','奶油'],
+  fruit:['水果'], milk:['牛奶'], yogurt:['優格']};
 
 /* 前後測 */
 const POLL = {q:'只吃植物性的食物，也能讓我們有力氣、有勇氣嗎？',
@@ -602,11 +646,17 @@ const CARDS = {
   M7:{z:'M', k:'bad', t:'因為漢堡的包裝很漂亮。'},
   B1:{z:'B', k:'ok',  t:'所以，一起來吃勇氣漢堡，讓自己有力氣，也對地球更溫柔！'},
   B2:{z:'B', k:'bad', t:'所以，不想吃的食物就倒掉吧！'},
+  // 挑戰版：回應反對意見
+  R1:{z:'R', k:'ok',  t:'不喜歡豆腐也沒關係，可以換成豆漿或毛豆，一樣來自黃豆。'},
+  R2:{z:'R', k:'ok',  t:'可以先試一小口，或換個方式吃，例如煎成豆腐排夾進漢堡。'},
+  R3:{z:'R', k:'abs', t:'不喜歡也一定要吃，不吃就是不勇敢！'},
+  W:{z:'M', k:'own', t:''},
 };
-const BANK = {2:['M2','T1','M7','B1','M1'], 3:['M3','T2','B1','M5','T1','M1','B2','M4','M6','M2','M7']};
-const MIDCAP = {2:2, 3:3};
-const ZNAME = {T:'論點', M:'論據', B:'重申論點'};
-const KTAG = {feel:'🤔 只是個人感受', abs:'⚠️ 說得太絕對', bad:'✖ 理由不適合'};
+const OBJ = '有同學說：「可是我不喜歡吃豆腐。」你會怎麼回應？';
+const BANK = {2:['M2','T1','M7','B1','M1'], 3:['M3','T2','B1','M5','T1','M1','B2','M4','M6','M2','M7'], 4:['M3','R2','T2','B1','M5','T1','R3','M1','B2','M4','M6','R1','M2','M7']};
+const MIDCAP = {2:2, 3:3, 4:3};
+const ZNAME = {T:'論點', M:'論據', R:'回應反對意見', B:'重申論點'};
+const KTAG = {feel:'🤔 只是個人感受', abs:'⚠️ 說得太絕對', bad:'✖ 理由不適合', own:'✏️ 自己寫的：一起討論'};
 
 /* =====================================================================
    牛小勇（原創角色）
@@ -870,7 +920,7 @@ const spk = t => `<button class="spk" data-say="${esc(t)}">🔊</button>`;
 const KEY = 'niuCourage.v3';
 const defName = (kind, i) => kind==='grp' ? `第${i+1}組` : `學生${i+1}`;
 // 能力（lv）一開始不預設：0＝還沒選、2＝基礎、3＝進階
-let S = {kind:'ind', n:2, narr:'game', ps:Array.from({length:6},()=>({n:'', m:'', lv:0, tts:true}))};
+let S = {cls:'', kind:'ind', n:2, narr:'game', ps:Array.from({length:6},()=>({n:'', m:'', lv:0, ans:'txt', tts:true}))};
 try{ const raw = localStorage.getItem(KEY); if(raw){ const o = JSON.parse(raw); S = Object.assign(S, o); } }catch(e){}
 const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} };
 const PCOL = {P1:'#E07A3B', P2:'#2F7FB5', P3:'#3E8E4A', P4:'#8E4FB0', P5:'#C2185B', P6:'#B07A00'};
@@ -878,7 +928,9 @@ const partList = () => Array.from({length:S.n},(_,i)=>'P'+(i+1));
 const pCfg = k => S.ps[+k.slice(1)-1];
 const pName = k => (pCfg(k)||{}).n || defName(S.kind, +k.slice(1)-1);
 const pMem = k => S.kind==='grp' ? ((pCfg(k)||{}).m || '') : '';
-const cfgObj = () => Object.fromEntries(partList().map(k => [k, {n:pName(k), m:pMem(k), lv:pCfg(k).lv || 3, tts:!!pCfg(k).tts}]));
+const GEN = () => S.cls==='gen';
+const pLv = k => GEN() ? 4 : (pCfg(k).lv || 3);
+const cfgObj = () => Object.fromEntries(partList().map(k => [k, {n:pName(k), m:pMem(k), lv:pLv(k), ans:GEN() ? 'txt' : (pCfg(k).ans || 'txt'), tts:!!pCfg(k).tts}]));
 
 /* =====================================================================
    大屏
@@ -888,7 +940,7 @@ const runId = () => Math.floor(Date.now()/1000) % 1000000;
 function newRun(){ const r = runId(); return {ci:0, bi:0, queue:null, qi:0, pow:50, cou:30, badges:[], plate:[], chosen:{}, played:{}, ask:r, run:r, burger:[], tok:0}; }
 /* 上課進度存在這台電腦：兩節課之間關掉網頁，也能接著上（含課前小調查的答案） */
 const PKEY = 'niuCourage.prog';
-const progSig = () => JSON.stringify([S.kind, partList().map(pName)]);
+const progSig = () => JSON.stringify([S.cls, S.kind, partList().map(pName)]);
 function saveProg(){
   if(!G || !G.started) return;
   const g = {}; ['ci','chosen','played','pickers','badges','run','preSnap'].forEach(k => { if(G[k]!==undefined) g[k] = G[k]; });
@@ -947,27 +999,34 @@ function setupScreen(first){
   let warn = false;
   const draw = () => {
     const grp = S.kind==='grp';
-    m.innerHTML = `<div class="box"><h2>${first ? '🐮 開始前，先設定參加的人' : '⚙️ 設定'}</h2>
-      <div class="lead">資源班、普通班都可以用：選好人數或組數、填名字、選能力，再按「產生 QR code」。</div>
+    const gen = GEN(), res = S.cls==='res';
+    const seg = (attr, i, opts, cur) => `<div class="seg" ${attr}="${i}">${opts.map(([v, t]) => `<button data-v="${v}" class="${cur===v?'on':''}">${t}</button>`).join('')}</div>`;
+    m.innerHTML = `<div class="box"><h2>${first ? '🐮 開始前，先設定這節課' : '⚙️ 設定'}</h2>
+      <div class="row">這節課是<div class="seg" data-k="cls"><button data-v="res" class="${res?'on':''}">🧩 資源班</button><button data-v="gen" class="${gen?'on':''}">🏫 普通班</button></div></div>
+      ${!S.cls ? `<div class="lead">${warn ? '<b style="color:#C0392B">請先選擇資源班或普通班。</b><br>' : ''}資源班：每位學生可以選程度與回答方式（文字、圖片、口語）。<br>普通班：全部使用「挑戰版」，多了看成分表、先預測再看結果、自己寫理由、回應反對意見。</div>` : `
+      ${gen ? '<div class="lead">普通班全部使用<b>挑戰版</b>：3 個選項＋理由（可自己打字）、先預測量表再看結果、偵探任務要看成分表、推薦卡多一層「回應反對意見」並可自己寫一張論據卡。</div>' : ''}
       <div class="row">參加方式<div class="seg" data-k="kind"><button data-v="ind" class="${!grp?'on':''}">👤 個人</button><button data-v="grp" class="${grp?'on':''}">👥 小組</button></div></div>
       <div class="row">${grp ? '組數' : '人數'}<div class="seg" data-k="n">${[1,2,3,4,5,6].map(n=>`<button data-v="${n}" class="${S.n===n?'on':''}">${n}</button>`).join('')}</div></div>
-      <div class="row" style="font-size:18px">能力說明：<span style="color:var(--muted);flex:1">基礎＝2 個選項；進階＝3 個選項＋說理由</span>
-        <span>全部設為 <span class="seg" data-all="1"><button data-v="2">基礎</button><button data-v="3">進階</button></span></span></div>
-      ${partList().map((k,i) => { const p = S.ps[i], miss = warn && !p.lv; return `<div class="prow${grp ? ' grp' : ''}${miss ? ' miss' : ''}"><span class="dot" style="background:${PCOL[k]}"></span>
+      ${res ? `<div class="row" style="font-size:18px">程度：<span style="color:var(--muted);flex:1">二選一；或三選一＋說理由。回答方式：文字、圖片（大圖卡）、口語（說出來，平板自動轉成文字）</span>
+        <span>全部設為 <span class="seg" data-all="1"><button data-v="2">二選一</button><button data-v="3">三選一＋原因</button></span></span></div>` : ''}
+      ${partList().map((k,i) => { const p = S.ps[i], miss = warn && res && !p.lv; return `<div class="prow${grp ? ' grp' : ''}${res ? ' res' : ''}${miss ? ' miss' : ''}"><span class="dot" style="background:${PCOL[k]}"></span>
         <div class="nmcol"><input data-i="${i}" maxlength="10" value="${esc(p.n)}" placeholder="${grp ? '組名：' : '名字：'}${defName(S.kind,i)}" aria-label="${grp?'組名':'名字'}">
           ${grp ? `<input data-mi="${i}" maxlength="40" value="${esc(p.m||'')}" placeholder="組員名字（可不填，例如：小明、小華）" aria-label="組員" class="mem">` : ''}</div>
-        <div><span class="lab">能力${miss ? '<b style="color:#C0392B">（請選）</b>' : ''}</span><div class="seg" data-lv="${i}"><button data-v="2" class="${p.lv===2?'on':''}">基礎</button><button data-v="3" class="${p.lv===3?'on':''}">進階</button></div></div>
-        <div><span class="lab">平板朗讀</span><div class="seg" data-tts="${i}"><button data-v="1" class="${p.tts?'on':''}">🔊 開</button><button data-v="0" class="${!p.tts?'on':''}">關</button></div></div></div>`; }).join('')}
-      ${warn && partList().some((k,i) => !S.ps[i].lv) ? '<div class="warn" style="text-align:center">請幫每一位（每一組）選「基礎」或「進階」</div>' : ''}
+        ${res ? `<div><span class="lab">程度${miss ? '<b style="color:#C0392B">（請選）</b>' : ''}</span>${seg('data-lv', i, [[2,'二選一'],[3,'三選一＋原因']], p.lv)}</div>
+        <div><span class="lab">回答方式</span>${seg('data-ans', i, [['txt','文字'],['pic','圖片'],['voice','🎤 口語']], p.ans || 'txt')}</div>` : `<div><span class="lab">程度</span><div class="seg"><button class="on" disabled>挑戰版</button></div></div>`}
+        <div><span class="lab">平板朗讀</span>${seg('data-tts', i, [['1','🔊 開'],['0','關']], p.tts ? '1' : '0')}</div></div>`; }).join('')}
+      ${warn && res && partList().some((k,i) => !S.ps[i].lv) ? '<div class="warn" style="text-align:center">請幫每一位（每一組）選程度</div>' : ''}`}
       <div class="go">${first ? '' : '<button class="bigbtn ghost" id="restart">↺ 從頭開始</button>'}
         <button class="bigbtn" id="toQR">產生 QR code ▶</button>${first ? '' : '<button class="bigbtn ghost" id="close">完成</button>'}</div></div>`;
     m.querySelectorAll('[data-k] button').forEach(b => b.onclick = () => { readNames(); const k = b.parentElement.dataset.k;
-      if(k==='kind') S.kind = b.dataset.v; else S.n = +b.dataset.v;
+      if(k==='cls'){ if(S.cls!==b.dataset.v && b.dataset.v==='gen' && !S.cls) S.kind = 'grp'; S.cls = b.dataset.v; warn = false; }
+      else if(k==='kind') S.kind = b.dataset.v; else S.n = +b.dataset.v;
       save(); draw(); });
     m.querySelectorAll('[data-all] button').forEach(b => b.onclick = () => { readNames(); S.ps.slice(0, S.n).forEach(p => p.lv = +b.dataset.v); save(); draw(); });
     m.querySelectorAll('[data-lv] button').forEach(b => b.onclick = () => { readNames(); S.ps[+b.parentElement.dataset.lv].lv = +b.dataset.v; save(); draw(); });
     m.querySelectorAll('[data-tts] button').forEach(b => b.onclick = () => { readNames(); S.ps[+b.parentElement.dataset.tts].tts = b.dataset.v==='1'; save(); draw(); });
-    const ready = () => { readNames(); save(); if(partList().some((k,i) => !S.ps[i].lv)){ warn = true; draw(); return false; } return true; };
+    m.querySelectorAll('[data-ans] button').forEach(b => b.onclick = () => { readNames(); S.ps[+b.parentElement.dataset.ans].ans = b.dataset.v; save(); draw(); });
+    const ready = () => { readNames(); save(); if(!S.cls || (S.cls==='res' && partList().some((k,i) => !S.ps[i].lv))){ warn = true; draw(); return false; } return true; };
     $('#toQR',m).onclick = () => { if(!ready()) return; m.remove(); afterSetup(); qrScreen(first); };
     if($('#close',m)) $('#close',m).onclick = () => { if(!ready()) return; m.remove(); afterSetup(); render(false, true); };
     if($('#restart',m)) $('#restart',m).onclick = () => { if(!ready()) return; m.remove(); afterSetup(); restart(); };
@@ -1019,11 +1078,29 @@ function drawParts(){
 /* ---------- 播放 ---------- */
 const SPLIT = ['d1','d2'];          // 這兩個決定點會切成每人一塊的畫面
 function picksFor(d){
-  return partList().map(k => { const v = (G.parts||{})[k] || {}; return v.dec===d && v.ask===G.ask && v.pick ? {k, pick:v.pick, why:v.why||''} : null; }).filter(Boolean);
+  return partList().map(k => { const v = (G.parts||{})[k] || {}; return v.dec===d && v.ask===G.ask && v.pick ? {k, pick:v.pick, why:v.why||'', pred:v.pred||'', say:v.say||''} : null; }).filter(Boolean);
 }
 function allPicked(d){
   const ps = picksFor(d); if(!ps.length || ps.length < partList().length) return false;
-  return ps.every(p => (pCfg(p.k).lv||3)===2 || !DEC[d].why || p.why);
+  return ps.every(p => { const lv = pLv(p.k); return lv===2 || ((!DEC[d].why || p.why) && (lv<4 || !PRED[d] || p.pred)); });
+}
+/* 挑戰版：這個選擇實際讓量表怎麼變 */
+function actualDir(d, o){
+  const P = PRED[d]; if(!P) return '';
+  const ci = CH.findIndex(c => c.beats.some(x => x.dec===d)), [pow, cou] = baseMeters(ci);
+  let v = P.m==='pow' ? pow : cou; const v0 = v;
+  DEC[d].res[o].forEach(b => { const f = b.fx; if(!f) return;
+    if(P.m==='pow' && f.pow!=null) v = f.pow < 0 ? Math.max(0, v + f.pow) : f.pow;
+    if(P.m==='cou'){ if(f.cou!=null) v = f.cou; if(f.dcou) v = Math.max(0, Math.min(100, v + f.dcou)); } });
+  return v - v0 > 5 ? 'up' : v0 - v > 5 ? 'down' : 'same';
+}
+const pdir = id => PDIR.find(x => x[0]===id) || ['', '…', ''];
+function predRow(){
+  const d = G.queue && G.queue.dec, o = d && G.chosen[d]; if(!d || !PRED[d]) return '';
+  const ps = ((G.pickers||{})[d] || []).filter(p => p.pick===o && p.pred); if(!ps.length) return '';
+  const act = actualDir(d, o);
+  return `<div class="predrow">🔮 預測對照（實際：${PRED[d].n}${pdir(act)[1]} ${pdir(act)[2]}）：${ps.map(p => `<span class="${p.pred===act?'ok':'no'}"><i style="background:${PCOL[p.k]}">${esc(pName(p.k))}</i>${pdir(p.pred)[1]} ${p.pred===act ? '✔' : '✗'}</span>`).join('')}
+    <div class="pq2">哪裡跟你預測的不一樣？為什麼？</div></div>`;
 }
 function maybeAutoSplit(){
   const d = curDec(); if(!d || !SPLIT.includes(d) || G.queue || G.view==='split') return;
@@ -1203,7 +1280,7 @@ function render(newChapter, quiet){
   publishBoard();
 }
 function pauseCard(q, hint){
-  return `<div class="pause"><div class="card"><div class="lab">⏸ 老師提問</div><div class="q">${esc(q)}</div>
+  return `<div class="pause"><div class="card"><div class="lab">⏸ 老師提問</div><div class="q">${esc(q)}</div>${predRow()}
     ${G.showHint ? `<div class="hint">參考答案：${esc(hint)}</div>` : ''}
     <button class="hintbtn" id="hintBtn">${G.showHint ? '🙈 收起參考答案' : '💡 顯示參考答案'}</button></div></div>`;
 }
@@ -1231,7 +1308,7 @@ function splitView(d){
     return `<div class="pane" style="--pc:${c}"><div class="th">${thumb(d, g.o)}
         <button class="play" data-play="${g.o}" aria-label="播放這個選擇">▶</button>${played.includes(g.o) ? '<span class="seen">✔ 播過了</span>' : ''}
         <span class="pns">${g.who.map(p => `<span class="pn" style="background:${PCOL[p.k]}">${esc(pName(p.k))}</span>`).join('')}</span></div>
-      <div class="info"><span class="ic">${icon(op.ic)}</span><span>${esc(op.t)}${g.who.filter(p => p.why).map(p => `<small>${esc(pName(p.k))}的理由：${esc(p.why)}</small>`).join('')}</span></div></div>`; };
+      <div class="info"><span class="ic">${icon(op.ic)}</span><span>${esc(op.t)}${g.who.filter(p => p.say).map(p => `<small>🎤 ${esc(pName(p.k))}說：「${esc(p.say)}」</small>`).join('')}${g.who.filter(p => p.why).map(p => `<small>${esc(pName(p.k))}的理由：${esc(p.why)}</small>`).join('')}${g.who.filter(p => p.pred && PRED[d]).map(p => `<small>🔮 ${esc(pName(p.k))}預測${PRED[d].n}：${pdir(p.pred)[1]} ${pdir(p.pred)[2]}</small>`).join('')}</span></div></div>`; };
   const wait = waiting.length ? `<div class="pane empty" style="--pc:#B9A88F"><div class="th"><div class="wt">⏳ 還沒選</div></div><div class="info"><span>${waiting.map(k => esc(pName(k))).join('、')}</span></div></div>` : '';
   return `<div class="split"><div class="hd">👀 大家的選擇：${esc(DEC[d].q)}<button class="tbtn" id="backQ">◀ 回到題目</button></div>
     <div class="sgrid" style="grid-template-columns:repeat(${cols},minmax(0,1fr));grid-template-rows:repeat(${Math.ceil(n/cols)||1},minmax(0,1fr))">${groups.map(pane).join('')}${wait}</div></div>`;
@@ -1270,19 +1347,21 @@ function recGuide(i){
   return `<div class="recguide"><div class="h">🍔 推薦卡就像一個漢堡</div><div class="bgl ${i?'focus':''}">
     <div class="L top ${i===1?'on':''}"><b>上層麵包｜論點</b><span>我推薦什麼？</span></div>
     <div class="L mid ${i===2?'on':''}"><b>中間的料｜論據</b><span>為什麼值得推薦？說出理由和證據</span></div>
+    ${GEN() ? `<div class="L obj ${i===2?'on':''}"><b>挑戰｜回應反對意見</b><span>${esc(OBJ)}</span></div>` : ''}
     <div class="L bot ${i===3?'on':''}"><b>下層麵包｜重申論點</b><span>最後再說一次我的推薦</span></div></div></div>`;
 }
 /* 推薦卡：每個人／每組的漢堡 */
 function recOf(k){
   const v = (G.parts||{})[k] || {};
-  if(v.recAsk !== G.ask || !v.rec) return {T:'', M:[], B:'', done:false};
-  return {T:v.rec.T || '', M:Object.values(v.rec.M || {}).filter(Boolean), B:v.rec.B || '', done:!!v.recDone};
+  if(v.recAsk !== G.ask || !v.rec) return {T:'', M:[], R:'', B:'', w:'', done:false, lv:pLv(k)};
+  return {T:v.rec.T || '', M:Object.values(v.rec.M || {}).filter(Boolean), R:v.rec.R || '', B:v.rec.B || '', w:v.rec.w || '', done:!!v.recDone, lv:pLv(k)};
 }
 function miniBurger(r){
   const mark = (c, z) => { if(!G.recCheck || !c) return ''; const o = CARDS[c];
-    return (o.k !== 'ok' ? `<span class="x k-${o.k}">${KTAG[o.k]}</span>` : '') + (o.z !== z ? '<span class="x">放錯層？</span>' : ''); };
-  const one = (c, z, cls) => c ? `<div class="${cls}">${esc(CARDS[c].t)}${mark(c, z)}</div>` : `<div class="${cls} e">${ZNAME[z]}</div>`;
-  return `<div class="mb">${one(r.T,'T','t')}${r.M.length ? r.M.map(c => one(c,'M','m')).join('') : one('', 'M', 'm')}${one(r.B,'B','b')}</div>`;
+    return (o.k !== 'ok' ? `<span class="x k-${o.k}">${KTAG[o.k]}</span>` : '') + (o.z !== z && !(c==='W' && z==='R') ? '<span class="x">放錯層？</span>' : ''); };
+  const txt = c => c==='W' ? '✏️ ' + (r.w || '') : CARDS[c].t;
+  const one = (c, z, cls) => c ? `<div class="${cls}">${esc(txt(c))}${mark(c, z)}</div>` : `<div class="${cls} e">${ZNAME[z]}</div>`;
+  return `<div class="mb">${one(r.T,'T','t')}${r.M.length ? r.M.map(c => one(c,'M','m')).join('') : one('', 'M', 'm')}${r.lv===4 ? one(r.R,'R','r') : ''}${one(r.B,'B','b')}</div>`;
 }
 function recWall(){
   const list = partList(), n = list.length, cols = n<=3 ? n : n===4 ? 2 : 3;
@@ -1290,7 +1369,7 @@ function recWall(){
   const zoom = G.recZoom && list.includes(G.recZoom) ? G.recZoom : null;
   return `<div class="recwall"><div class="hd">🍔 大家的勇氣漢堡推薦卡 <small style="font-size:.7em;color:var(--muted)">完成 ${done}/${n}</small>
       <button class="tbtn" id="recCheck">${G.recCheck ? '🙈 收起標記' : '💡 標出要再想想的卡片'}</button></div>
-    ${G.recCheck ? '<div class="klegend">🤔 只是個人感受：不是錯，但說服力不夠　⚠️ 說得太絕對　✖ 理由不適合　放錯層？：再想想是論點、論據還是重申論點</div>' : ''}
+    ${G.recCheck ? `<div class="klegend">🤔 只是個人感受：不是錯，但說服力不夠　⚠️ 說得太絕對　✖ 理由不適合　放錯層？：再想想是論點、論據還是重申論點${GEN() ? '　✏️ 自己寫的：一起討論有沒有依據' : ''}</div>` : ''}
     ${DB ? '' : '<div class="warn">沒有連上雲端：請學生用平板以外的方式分享。</div>'}
     <div class="rwgrid ${n<=2 ? 'few' : n<=4 ? 'mid' : ''}" style="grid-template-columns:repeat(${cols},minmax(0,1fr))">${list.map(k => { const r = recOf(k);
       return `<div class="rb" style="--pc:${PCOL[k]}" data-zoom="${k}"><div class="nm"><i>${esc(pName(k))}</i>${r.done ? '<span class="ok">✔ 完成</span>' : ''}</div>${miniBurger(r)}</div>`; }).join('')}</div>
@@ -1314,16 +1393,17 @@ function sortAnswers(){
 }
 function sortWall(){
   const ans = sortAnswers(), n = partList().length, done = ans.filter(x => x.done).length;
-  const cards = SORT.map(it => { const pl = ans.filter(x => x.a[it.id]==='p'), an = ans.filter(x => x.a[it.id]==='a');
+  const lvs = partList().map(pLv), ids = lvs.includes(4) ? sortIds(4) : lvs.includes(3) ? sortIds(3) : sortIds(2);
+  const cards = SORT.filter(it => ids.includes(it.id)).map(it => { const pl = ans.filter(x => x.a[it.id]==='p'), an = ans.filter(x => x.a[it.id]==='a');
     const ok = G.revealed ? (it.p ? 'pl' : 'an') : '';
-    return `<div class="sc ${ok}"><div class="si">${icon(it.ic)}</div><div class="sn">${esc(it.t)}</div>
+    return `<div class="sc ${ok}"><div class="si">${icon(it.ic)}</div><div class="sn">${esc(it.t)}</div>${it.lab ? `<div class="slab">📋 ${esc(it.lab)}</div>` : ''}
       <div class="sv"><span class="vp">🌱 植物 <b>${pl.length}</b></span><span class="va">🐾 動物 <b>${an.length}</b></span></div>
       <div class="sw">${pl.map(x => `<i style="background:${PCOL[x.k]}" title="植物">${esc(pName(x.k))}🌱</i>`).join('')}${an.map(x => `<i style="background:${PCOL[x.k]}" title="動物">${esc(pName(x.k))}🐾</i>`).join('')}</div>
       ${G.revealed ? `<div class="sa">${it.p ? '🌱' : '🐾'} 來自${esc(it.from)}</div>` : ''}</div>`; }).join('');
-  return `<div class="sortwall"><div class="hd">🔍 食物偵探：哪些來自植物？哪些來自動物？<small>完成 ${done}/${n}</small>
+  return `<div class="sortwall"><div class="hd">🔍 食物偵探：哪些來自植物？哪些來自動物？${ids.includes('cracker') ? '（包裝食品要看📋成分表）' : ''}<small>完成 ${done}/${n}</small>
       <button class="tbtn" id="reveal">${G.revealed ? '🙈 收起答案' : '🔍 揭曉答案'}</button></div>
     ${DB ? '' : '<div class="warn">沒有連上雲端：請學生舉手回答，老師按「揭曉答案」。</div>'}
-    <div class="sgrid4">${cards}</div></div>`;
+    <div class="sgrid4${ids.length<=4 ? ' n4' : ''}">${cards}</div></div>`;
 }
 /* 前後測 */
 function pollAns(which){
@@ -1373,13 +1453,39 @@ function burgerLayers(){
 /* =====================================================================
    平板
    ===================================================================== */
-let ME = null, BS = {}, MY = {}, MR = null, MS = null, MP = null;
+let ME = null, BS = {}, MY = {}, MR = null, MS = null, MP = null, VS = {};
+/* ---------- 口語回答：語音轉文字 ---------- */
+const SRC = window.SpeechRecognition || window.webkitSpeechRecognition;
+let REC = null;
+function listen(onFinal, onHear){
+  if(!SRC) return false;
+  try{ if(REC) REC.abort(); }catch(e){}
+  const r = new SRC(); REC = r; r.lang = 'zh-TW'; r.interimResults = true; r.continuous = false;
+  let txt = '';
+  r.onresult = e => { txt = Array.from(e.results).map(x => x[0].transcript).join(''); onHear(txt); };
+  r.onerror = e => { txt = txt || ''; r._err = e.error; };
+  r.onend = () => { if(REC===r) REC = null; onFinal(txt.trim(), r._err); };
+  try{ r.start(); }catch(e){ return false; }
+  return true;
+}
+/* 把說的話對到選項：關鍵詞、和選項文字相同的字、第幾個 */
+function matchOpt(text, ids, d){
+  const t = (text || '').replace(/[，。！？、\s]/g, ''); if(!t) return null;
+  const ORD = [['第一','一號','第1'],['第二','二號','第2'],['第三','三號','第3']];
+  const sc = ids.map((id, i) => { const o = DEC[d].opts[id]; let n = 0;
+    (KW[id] || []).forEach(w => { if(t.includes(w)) n += 3; });
+    const ot = o.t.replace(/[，。！？、：\s]/g, '');
+    for(let j=0;j<ot.length-1;j++) if(t.includes(ot.slice(j, j+2))) n += 1;
+    if(ORD[i] && ORD[i].some(w => t.includes(w))) n += 5;
+    return [id, n]; }).sort((a, b) => b[1] - a[1]);
+  return sc[0][1] > 0 && (sc.length < 2 || sc[0][1] > sc[1][1]) ? sc[0][0] : null;
+}
 function tabletMain(k){
   ME = k;
   const {room, who} = PART(k), col = PCOL[k];
   const cfg = () => (BS.parts || {})[k];
-  const send = () => { if(DB) DB.update(room, who, {online:true, dec:MY.dec||'', ask:MY.ask||0, pick:MY.pick||'', why:MY.why||'', at:Date.now()}); };
-  const sendRec = () => { if(DB && MR) DB.update(room, who, {online:true, rec:{T:MR.T||'', M:MR.M.length ? MR.M : '', B:MR.B||''}, recAsk:MR.ask, recDone:!!MR.done, at:Date.now()}); };
+  const send = () => { if(DB) DB.update(room, who, {online:true, dec:MY.dec||'', ask:MY.ask||0, pick:MY.pick||'', why:MY.why||'', pred:MY.pred||'', say:MY.say||'', at:Date.now()}); };
+  const sendRec = () => { if(DB && MR) DB.update(room, who, {online:true, rec:{T:MR.T||'', M:MR.M.length ? MR.M : '', R:MR.R||'', B:MR.B||'', w:MR.w||''}, recAsk:MR.ask, recDone:!!MR.done, at:Date.now()}); };
   const draw = () => {
     const c = cfg();
     document.title = '牛小勇的勇氣漢堡｜' + (c ? c.n : '平板' + k.slice(1));
@@ -1391,16 +1497,55 @@ function tabletMain(k){
     if(d==='rec'){ drawRec(head, c); return; }
     if(d==='sort'){ drawSort(head, c); return; }
     if(d.startsWith('poll:')){ drawPoll(head, c, d.slice(5)); return; }
-    const dec = DEC[d], lv = c.lv, ids = optIds(d, lv), mine = MY.dec===d && MY.ask===BS.ask ? MY : {};
-    const tts = !!c.tts, showWhy = lv===3 && dec.why && mine.pick;
+    const dec = DEC[d], lv = c.lv, ans = c.ans || 'txt', ids = optIds(d, lv).filter(o => o !== BS.tried), mine = MY.dec===d && MY.ask===BS.ask ? MY : {};
+    const tts = !!c.tts, showWhy = lv>=3 && dec.why && mine.pick, showPred = lv===4 && PRED[d] && mine.pick && mine.why;
+    const done = mine.pick && (!showWhy || mine.why) && (!PRED[d] || lv<4 || mine.pred);
+    const vkey = d + BS.ask; if(VS.key !== vkey) VS = {key:vkey};
+    const voice = ans==='voice', pic = ans==='pic' || voice;
+    // 口語：說出選擇／說出理由
+    const vbox = (what) => { const st = VS[what] || {};
+      const heard = st.text ? `<div class="vheard">你說：「${esc(st.text)}」</div>` : '';
+      let body = '';
+      if(st.phase==='listen') body = `<div class="vlisten">🎤 正在聽……${st.hear ? '「' + esc(st.hear) + '」' : ''}</div><button class="vbtn ghost" data-vstop="${what}">說完了</button>`;
+      else if(what==='pick' && st.phase==='confirm') body = `${heard}<div class="vq">是「${esc(dec.opts[st.match].t)}」嗎？</div><button class="vbtn" data-vok="pick">✔ 對，送出</button><button class="vbtn ghost" data-vgo="pick">🎤 再說一次</button>`;
+      else if(st.phase==='nomatch') body = `${heard}<div class="vq">我沒有聽出是哪一個，請再說一次，或直接點選。</div><button class="vbtn" data-vgo="${what}">🎤 再說一次</button>`;
+      else body = `<button class="vbtn big" data-vgo="${what}">🎤 ${what==='pick' ? '用說的回答' : '用說的說理由'}</button>`;
+      const typed = !SRC && st.phase!=='confirm' ? `<div class="vtype"><input id="vin_${what}" placeholder="按鍵盤上的 🎤 說話，說完按送出"><button class="vbtn" data-vtype="${what}">送出</button></div>` : '';
+      return `<div class="vbox">${SRC ? body : (st.phase==='confirm' ? body : (st.phase==='nomatch' ? `${heard}<div class="vq">我沒有聽出是哪一個，請再說一次，或直接點選。</div>` : '') + typed)}</div>`; };
     $('#root').innerHTML = `<div class="tab">${head}
       <div class="tq">${esc(dec.q)}${tts ? spk(dec.q) : ''}</div>
-      <div class="topts">${ids.filter(o => o !== BS.tried).map(o => `<div role="button" class="topt ${mine.pick===o?'sel':''}" data-o="${o}"><span class="ic">${icon(dec.opts[o].ic)}</span><span class="t">${esc(dec.opts[o].t)}</span>${tts ? spk(dec.opts[o].t) : ''}</div>`).join('')}</div>
+      ${voice && !mine.pick ? vbox('pick') : ''}
+      <div class="topts${pic ? ' pic' : ''}">${ids.map(o => `<div role="button" class="topt ${mine.pick===o?'sel':''}" data-o="${o}"><span class="ic">${icon(dec.opts[o].ic)}</span><span class="t">${esc(dec.opts[o].t)}</span>${tts ? spk(dec.opts[o].t) : ''}</div>`).join('')}</div>
+      ${mine.say ? `<div class="vheard">🎤 你說：「${esc(mine.say)}」</div>` : ''}
       ${showWhy ? `<div class="tq" style="font-size:26px;margin-top:6px">🤔 ${esc(dec.why.q)}${tts ? spk(dec.why.q) : ''}</div>
-        <div class="topts">${dec.why.opts.map(w => `<div role="button" class="topt ${mine.why===w?'sel':''}" data-w="${esc(w)}" style="font-size:24px;padding:12px 16px"><span class="t">${esc(w)}</span>${tts ? spk(w) : ''}</div>`).join('')}</div>` : ''}
-      ${mine.pick && (!showWhy || mine.why) ? '<div class="sent">✔ 送出了！看大屏，等老師揭曉</div>' : ''}</div>`;
-    document.querySelectorAll('.topt[data-o]').forEach(b => b.onclick = () => { MY = {dec:d, ask:BS.ask, pick:b.dataset.o, why:''}; send(); draw(); });
+        ${voice && !mine.why ? vbox('why') : ''}
+        <div class="topts">${dec.why.opts.map(w => `<div role="button" class="topt ${mine.why===w?'sel':''}" data-w="${esc(w)}" style="font-size:24px;padding:12px 16px"><span class="t">${esc(w)}</span>${tts ? spk(w) : ''}</div>`).join('')}
+        ${mine.why && !dec.why.opts.includes(mine.why) ? `<div class="topt sel" style="font-size:24px;padding:12px 16px"><span class="t">${voice ? '🎤' : '✏️'} ${esc(mine.why)}</span></div>` : ''}</div>
+        ${lv===4 ? `<div class="own"><input id="ownWhy" maxlength="40" placeholder="✏️ 我有別的理由（自己打字）" value="${mine.why && !dec.why.opts.includes(mine.why) ? esc(mine.why) : ''}"><button class="vbtn" id="ownOk">用這個理由</button></div>` : ''}` : ''}
+      ${showPred ? `<div class="tq" style="font-size:26px;margin-top:6px">🔮 ${esc(PRED[d].q)}${tts ? spk(PRED[d].q) : ''}</div>
+        <div class="tpred">${PDIR.map(([id, em, lab]) => `<div role="button" class="topt ${mine.pred===id?'sel':''}" data-pr="${id}"><span class="em">${em}</span><span class="t">${lab}</span></div>`).join('')}</div>` : ''}
+      ${done ? '<div class="sent">✔ 送出了！看大屏，等老師揭曉</div>' : ''}</div>`;
+    // 下一步在畫面下方時，自動捲過去
+    const nextEl = showPred && !mine.pred ? '.tpred' : showWhy && !mine.why ? '.tq + .vbox, .topts + .tq' : null;
+    if(nextEl && mine.pick){ const el = document.querySelector(nextEl); if(el && el.getBoundingClientRect().bottom > innerHeight - 40) el.scrollIntoView({behavior:'smooth', block:'center'}); }
+    const pickIt = (o, say) => { MY = {dec:d, ask:BS.ask, pick:o, why:'', pred:'', say:say||''}; send(); draw(); };
+    document.querySelectorAll('.topt[data-o]').forEach(b => b.onclick = () => pickIt(b.dataset.o));
     document.querySelectorAll('.topt[data-w]').forEach(b => b.onclick = () => { MY.why = b.dataset.w; send(); draw(); });
+    document.querySelectorAll('.topt[data-pr]').forEach(b => b.onclick = () => { MY.pred = b.dataset.pr; send(); draw(); });
+    if($('#ownOk')) $('#ownOk').onclick = () => { const v = $('#ownWhy').value.trim(); if(!v) return; MY.why = v; send(); draw(); };
+    const got = (what, text) => {
+      if(!text){ VS[what] = {phase:'nomatch', text:''}; draw(); return; }
+      if(what==='why'){ MY.why = text; VS.why = {}; send(); draw(); return; }
+      const mt = matchOpt(text, ids, d);
+      VS.pick = mt ? {phase:'confirm', text, match:mt} : {phase:'nomatch', text}; draw();
+    };
+    document.querySelectorAll('[data-vgo]').forEach(b => b.onclick = () => { const what = b.dataset.vgo;
+      VS[what] = {phase:'listen', hear:''}; draw();
+      const ok = listen(t => { if(VS.key===vkey) got(what, t); }, h => { if(VS[what] && VS[what].phase==='listen'){ VS[what].hear = h; const el = document.querySelector('.vlisten'); if(el) el.textContent = '🎤 正在聽……「' + h + '」'; } });
+      if(!ok){ VS[what] = {phase:'nomatch', text:''}; draw(); } });
+    document.querySelectorAll('[data-vstop]').forEach(b => b.onclick = () => { try{ if(REC) REC.stop(); }catch(e){} });
+    document.querySelectorAll('[data-vok]').forEach(b => b.onclick = () => { const st = VS.pick; VS.pick = {}; pickIt(st.match, st.text); });
+    document.querySelectorAll('[data-vtype]').forEach(b => b.onclick = () => { const what = b.dataset.vtype, inp = $('#vin_' + what); got(what, inp ? inp.value.trim() : ''); });
   };
   /* ---------- 食物偵探任務：植物？動物？ ---------- */
   const sendSort = () => { if(DB && MS) DB.update(room, who, {online:true, sort:MS.a, sortRun:MS.run, sortDone:!!MS.done, at:Date.now()}); };
@@ -1408,10 +1553,10 @@ function tabletMain(k){
     if(!MS || MS.run !== BS.run) MS = {run:BS.run, a:{}, done:false};
     const ids = sortIds(c.lv), tts = !!c.tts, rv = !!BS.revealed;
     $('#root').innerHTML = `<div class="tab">${head}
-      <div class="tq">🔍 這些食物來自植物，還是來自動物？${tts ? spk('這些食物來自植物，還是來自動物？') : ''}</div>
+      <div class="tq">🔍 這些食物來自植物，還是來自動物？${tts ? spk('這些食物來自植物，還是來自動物？') : ''}${c.lv===4 ? '<small style="display:block;font-size:20px;color:var(--muted)">包裝食品從外表看不出來，請看📋成分表再判斷</small>' : ''}</div>
       <div class="slist">${ids.map(id => { const it = SORT.find(x => x.id===id), a = MS.a[id];
         const mark = rv && a ? ((a==='p') === it.p ? ' ✔' : ' ✗') : '';
-        return `<div class="srow"><span class="si">${icon(it.ic)}</span><span>${esc(it.t)}${tts ? spk(it.t) : ''}${rv ? `<small style="display:block;font-size:17px;color:var(--muted)">來自${esc(it.from)}${mark}</small>` : ''}</span>
+        return `<div class="srow${c.ans==='pic' || c.ans==='voice' ? ' pic' : ''}"><span class="si">${icon(it.ic)}</span><span>${esc(it.t)}${tts ? spk(it.t) : ''}${it.lab ? `<small class="lab">📋 成分：${esc(it.lab)}</small>` : ''}${rv ? `<small style="display:block;font-size:17px;color:var(--muted)">來自${esc(it.from)}${mark}</small>` : ''}</span>
           <button class="p ${a==='p'?'on':''}" data-s="${id}" data-v="p">🌱 植物</button><button class="a ${a==='a'?'on':''}" data-s="${id}" data-v="a">🐾 動物</button></div>`; }).join('')}</div>
       ${MS.done ? '<div class="sent">✔ 分好了！看大屏，等老師揭曉</div>' : ''}</div>`;
     document.querySelectorAll('[data-s]').forEach(b => b.onclick = () => { MS.a[b.dataset.s] = b.dataset.v; MS.done = ids.every(id => MS.a[id]); sendSort(); draw(); });
@@ -1430,31 +1575,36 @@ function tabletMain(k){
   /* ---------- 推薦卡：把卡片拖到漢堡上 ---------- */
   let selCard = null;
   const drawRec = (head, c) => {
-    if(!MR || MR.ask !== BS.ask) MR = {ask:BS.ask, T:'', M:[], B:'', done:false};
+    if(!MR || MR.ask !== BS.ask) MR = {ask:BS.ask, T:'', M:[], R:'', B:'', w:'', done:false};
     const lv = c.lv, cap = MIDCAP[lv] || 3, tts = !!c.tts;
-    const used = [MR.T, MR.B, ...MR.M].filter(Boolean);
-    const bank = (BANK[lv] || BANK[3]).filter(id => !used.includes(id));
-    const card = (id, where) => `<div class="rcard ${selCard===id?'sel':''}" data-card="${id}" data-from="${where}"><span class="t">${esc(CARDS[id].t)}</span>${tts ? spk(CARDS[id].t) : ''}</div>`;
+    const full = () => MR.T && MR.M.length && MR.B && (lv<4 || MR.R);
+    const used = [MR.T, MR.B, MR.R, ...MR.M].filter(Boolean);
+    const bank = [...(BANK[lv] || BANK[3]), ...(lv===4 && MR.w ? ['W'] : [])].filter(id => !used.includes(id));
+    const ctext = id => id==='W' ? '✏️ ' + MR.w : CARDS[id].t;
+    const card = (id, where) => `<div class="rcard ${selCard===id?'sel':''}${id==='W'?' own':''}" data-card="${id}" data-from="${where}"><span class="t">${esc(ctext(id))}</span>${tts ? spk(ctext(id)) : ''}</div>`;
     const zone = (z, lab, tip) => { const items = z==='M' ? MR.M : (MR[z] ? [MR[z]] : []);
       return `<div class="zone ${z}" data-zone="${z}"><div class="zl">${lab}<small>${tip}</small></div>
         ${items.map(id => card(id, z)).join('')}${(z==='M' ? items.length < cap : !items.length) ? `<div class="ph">把卡片拖到這裡${z==='M' ? `（最多 ${cap} 張）` : ''}</div>` : ''}</div>`; };
     $('#root').innerHTML = `<div class="tab" style="max-width:1300px">${head}
       <div class="tq">🍔 勇氣漢堡推薦卡：把卡片拖到漢堡上${tts ? spk('勇氣漢堡推薦卡：把卡片拖到漢堡上') : ''}</div>
       ${MR.done ? `<div class="sent">✔ 完成了！看大屏，一起討論</div>` : ''}
-      <div class="rect"><div class="rburger">${zone('T','上層麵包｜論點','我推薦什麼？')}${zone('M','中間的料｜論據','為什麼值得推薦？')}${zone('B','下層麵包｜重申論點','再說一次推薦')}</div>
-        <div class="bank"><h4>🃏 卡片（點一下或拖曳）</h4>${bank.map(id => card(id, 'bank')).join('') || '<div style="color:var(--muted)">卡片都用完了</div>'}</div></div>
-      <div class="rdone">${MR.done ? '<button class="bigbtn ghost" id="redo">✏️ 再修改</button>' : `<button class="bigbtn" id="done" ${MR.T && MR.M.length && MR.B ? '' : 'disabled style="opacity:.45"'}>完成 ✔</button>`}</div></div>`;
-    if($('#done')) $('#done').onclick = () => { if(!(MR.T && MR.M.length && MR.B)) return; MR.done = true; sendRec(); draw(); };
+      <div class="rect"><div class="rburger">${zone('T','上層麵包｜論點','我推薦什麼？')}${zone('M','中間的料｜論據','為什麼值得推薦？')}${lv===4 ? zone('R','挑戰｜回應反對意見', OBJ) : ''}${zone('B','下層麵包｜重申論點','再說一次推薦')}</div>
+        <div class="bank"><h4>🃏 卡片（點一下或拖曳）</h4>${bank.map(id => card(id, 'bank')).join('') || '<div style="color:var(--muted)">卡片都用完了</div>'}
+          ${lv===4 && !MR.done ? `<div class="own"><input id="ownCard" maxlength="40" placeholder="✏️ 自己寫一張論據卡" value="${esc(MR.wd != null ? MR.wd : MR.w)}"><button class="vbtn" id="ownCardOk">${MR.w ? '改好了' : '做成卡片'}</button></div>` : ''}</div></div>
+      <div class="rdone">${MR.done ? '<button class="bigbtn ghost" id="redo">✏️ 再修改</button>' : `<button class="bigbtn" id="done" ${full() ? '' : 'disabled style="opacity:.45"'}>完成 ✔</button>`}</div></div>`;
+    if($('#ownCard')) $('#ownCard').oninput = e => { MR.wd = e.target.value; };
+    if($('#ownCardOk')) $('#ownCardOk').onclick = () => { const v = $('#ownCard').value.trim(); MR.w = v; MR.wd = null; if(!v){ if(MR.R==='W') MR.R = ''; MR.M = MR.M.filter(x => x!=='W'); } sendRec(); draw(); };
+    if($('#done')) $('#done').onclick = () => { if(!full()) return; MR.done = true; sendRec(); draw(); };
     if($('#redo')) $('#redo').onclick = () => { MR.done = false; sendRec(); draw(); };
     const place = (id, z) => {
       if(MR.done) return;
       // 先從原本的位置拿掉
-      if(MR.T===id) MR.T = ''; if(MR.B===id) MR.B = ''; MR.M = MR.M.filter(x => x!==id);
-      if(z==='T' || z==='B') MR[z] = id;
+      if(MR.T===id) MR.T = ''; if(MR.B===id) MR.B = ''; if(MR.R===id) MR.R = ''; MR.M = MR.M.filter(x => x!==id);
+      if(z==='T' || z==='B' || z==='R') MR[z] = id;
       else if(z==='M'){ if(MR.M.length >= cap) MR.M.pop(); MR.M.push(id); }
       selCard = null; sendRec(); draw();
     };
-    const unplace = id => { if(MR.done) return; if(MR.T===id) MR.T = ''; if(MR.B===id) MR.B = ''; MR.M = MR.M.filter(x => x!==id); selCard = null; sendRec(); draw(); };
+    const unplace = id => { if(MR.done) return; if(MR.T===id) MR.T = ''; if(MR.B===id) MR.B = ''; if(MR.R===id) MR.R = ''; MR.M = MR.M.filter(x => x!==id); selCard = null; sendRec(); draw(); };
     // 點選：先點卡片、再點漢堡的某一層；點已放上的卡片會拿回來
     document.querySelectorAll('.zone').forEach(zn => zn.addEventListener('click', e => { if(e.target.closest('.rcard')) return; if(selCard) place(selCard, zn.dataset.zone); }));
     // 拖曳（手指或滑鼠）
@@ -1485,7 +1635,7 @@ function tabletMain(k){
   if(!DB) return;
   DB.connected(ok => { const n = $('#net'); if(n){ n.className = 'net' + (ok?' on':''); n.textContent = ok ? '🟢 已連上大屏' : '⚪ 連線中…'; }
     if(ok){ DB.offlineOnExit(room, who); DB.update(room, who, {online:true, at:Date.now()}); } });
-  window.onHello = () => { DB.update(room, who, {online:true, dec:MY.dec||'', ask:MY.ask||0, pick:MY.pick||'', why:MY.why||''}); if(MR) sendRec(); if(MS) sendSort();
+  window.onHello = () => { DB.update(room, who, {online:true, dec:MY.dec||'', ask:MY.ask||0, pick:MY.pick||'', why:MY.why||'', pred:MY.pred||'', say:MY.say||''}); if(MR) sendRec(); if(MS) sendSort();
     if(MP) ['pre','post'].forEach(w => { if(MP[w]) DB.update(room, who, {['poll_'+w]:MP[w], ['poll_'+w+'Run']:MP.run}); }); };
   DB.update(room, who, {online:true, at:Date.now()});
   let lastKey = '';
