@@ -395,6 +395,20 @@
   .predrow i{font-style:normal;color:#fff;border-radius:999px;padding:0 8px}
   .predrow .pq2{width:100%;text-align:center;color:#B5561C}
   .prow.res{grid-template-columns:28px minmax(110px,1fr) auto auto auto}
+
+  /* 結局：別隊跑者從旁邊超過、隊友接棒 */
+  .pass{animation:passby 2.4s cubic-bezier(.3,.1,.5,1) both}
+  .pass1{animation-delay:.7s}.pass2{animation-delay:1.4s}
+  @keyframes passby{0%{transform:translate(var(--x0),770px) scale(1.7);opacity:0}6%{opacity:1}100%{transform:translate(var(--x1),334px) scale(.3);opacity:1}}
+  .runbob{animation:runbob .32s ease-in-out infinite alternate}
+  @keyframes runbob{to{transform:translateY(-10px)}}
+  .legs .lgA{animation:leg .32s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 0}
+  .legs .lgB{animation:leg .32s ease-in-out infinite alternate-reverse;transform-box:fill-box;transform-origin:50% 0}
+  @keyframes leg{from{transform:rotate(14deg)}to{transform:rotate(-14deg)}}
+  .comein{animation:comein 2.2s ease-out both}
+  @keyframes comein{from{transform:translate(640px,330px) scale(.35)}to{transform:translate(600px,640px) scale(1.25)}}
+  .reach{animation:reach 1s ease-in-out infinite alternate}
+  @keyframes reach{to{transform:translate(-20px,-20px)}}
   .cheerdot{animation:cheer .6s ease-in-out infinite;transform-box:fill-box}
 
 </style>
@@ -470,15 +484,15 @@ const CH = [
     {pause:'這個漢堡全部來自植物，裡面有哪幾種不同的植物？', hint:'小麥（全麥麵包）、黃豆（豆腐排）、生菜和番茄、芝麻（芝麻醬）、水果'},
   ]},
   {id:'end', name:'結局', sub:'大隊接力', sc:'race', beats:[
-    {s:'旁', t:'運動會當天，大隊接力開始了！'},
-    {s:'旁', v:'run', hold:'baton', t:'你接到棒子，用力往前跑……'},
-    {s:'你', v:'drop', fx:{dcou:-20}, t:'啊！棒子掉了！'},
-    {s:'旁', v:'drop', t:'後面的同學一個一個超過你，你們這一隊落後了。'},
-    {s:'你', v:'drop', t:'怎麼辦……大家都在看我……'},
-    {s:'牛', m:'determined', v:'drop', t:'深呼吸！掉棒了，就把它撿起來，繼續跑！'},
-    {s:'旁', v:'run', hold:'baton', fx:{dcou:40}, t:'你撿起棒子，用盡全力往前跑，一個、兩個……追上了前面的同學！'},
-    {s:'旁', sc:'finish', v:'cheer', fx:{cou:100}, t:'你把棒子交給下一棒。雖然沒有拿第一名，隊友們都為你歡呼！'},
-    {s:'牛', m:'happy', sc:'finish', v:'cheer', t:'掉棒了也不放棄：深呼吸、撿起來、繼續跑。你在挫折中成長了！'},
+    {s:'旁', v:'wait', t:'運動會當天，大隊接力開始了！你是最後一棒，站在接力區等著。'},
+    {s:'旁', v:'handoff', t:'你回頭一看，前一棒的同學朝你跑過來，你伸出手準備接棒……'},
+    {s:'你', v:'drop', fx:{dcou:-20}, t:'啊！棒子沒接好，掉在地上了！'},
+    {s:'旁', v:'drop', pass:'go', t:'其他隊的最後一棒，一個一個從你旁邊跑過去，你們這一隊落後了。'},
+    {s:'你', v:'drop', pass:'far', t:'怎麼辦……大家都在看我……'},
+    {s:'牛', m:'determined', v:'drop', pass:'far', t:'深呼吸！掉棒了，就把它撿起來，繼續跑！'},
+    {s:'旁', v:'run', hold:'baton', pass:'far', fx:{dcou:40}, t:'你撿起棒子，用盡全力，一步一步衝向終點！'},
+    {s:'旁', sc:'finish', v:'cheer', fx:{cou:100}, t:'你衝過終點線！雖然沒有拿第一名，隊友們都跑過來為你歡呼！'},
+    {s:'牛', m:'happy', sc:'finish', v:'cheer', t:'掉棒了也不放棄：深呼吸、撿起來、奮力跑到終點。你在挫折中成長了！'},
     {badges:true},
   ]},
   {id:'recap', name:'回顧', sub:'你的選擇和結果', sc:'kitchen', get beats(){ return recapBeats(); }},
@@ -627,7 +641,7 @@ function recapBeats(){
       out.push({clip:'res', d, o, mine:!!nm || (!who.length && o===last), label, good, s:'旁', t:`${label}：${r.a}。結果：${r.b}。`}); });
   });
   out.push({clip:'burger', s:'旁', t:'大家做的勇氣漢堡全部來自植物：小麥、黃豆、蔬菜、芝麻、水果，植物力量盤五類都亮了。'});
-  out.push({clip:'race', s:'旁', t:'運動會上掉棒了，你深呼吸、撿起棒子，繼續跑完。'});
+  out.push({clip:'race', s:'旁', t:'你是最後一棒，接棒時棒子掉了。你深呼吸、撿起棒子，奮力跑到終點。'});
   out.push({clip:'end', s:'牛', m:'determined', t:'這些結果，就是推薦勇氣漢堡的理由！等一下做推薦卡，要用上它們喔！'});
   return out;
 }
@@ -735,6 +749,31 @@ function trackFP(o){
     <polygon points="${top[0]},300 ${top[1]},300 ${bot[1]},720 ${bot[0]},720" fill="#D9573C"/>${dashes}${lines}
     ${Array.from({length:10},(_,k)=>`<path d="M${k*140} 300l40 0l-20 26z" fill="${['#E2483B','#2F7FB5','#F4CF4A','#3E8E4A'][k%4]}"/>`).join('')}`;
 }
+/* 跑者：back＝背影（往前跑走）、front＝正面（朝你跑來） */
+function runner(shirt, back, baton){
+  const hair = '#3B2A1A', skin = '#F2C9A0';
+  return `<g class="legs"><rect x="-26" y="-70" width="20" height="70" rx="9" fill="${skin}" class="lgA"/><rect x="6" y="-70" width="20" height="70" rx="9" fill="${skin}" class="lgB"/>
+    <rect x="-30" y="-6" width="26" height="12" rx="6" fill="#333"/><rect x="4" y="-6" width="26" height="12" rx="6" fill="#333"/></g>
+    <rect x="-32" y="-98" width="64" height="34" rx="10" fill="#2B3A55"/>
+    <rect x="-36" y="-168" width="72" height="78" rx="22" fill="${shirt}"/>
+    <rect x="-54" y="-160" width="20" height="62" rx="10" fill="${skin}" transform="rotate(${back ? 18 : -30} -44 -160)"/>
+    <rect x="34" y="-160" width="20" height="62" rx="10" fill="${skin}" transform="rotate(${back ? -18 : -150} 44 -160)"/>
+    ${baton ? '<rect x="64" y="-250" width="18" height="60" rx="7" fill="#E2483B" transform="rotate(20 73 -220)"/>' : ''}
+    <circle cx="0" cy="-196" r="30" fill="${back ? hair : skin}"/>${back ? '' : `<path d="M-30 -204Q0 -240 30 -204Q30 -226 0 -230Q-30 -226 -30 -204Z" fill="${hair}"/><circle cx="-10" cy="-196" r="3.5" fill="#333"/><circle cx="10" cy="-196" r="3.5" fill="#333"/><path d="M-9 -182Q0 -176 9 -182" stroke="#333" stroke-width="3" fill="none"/>`}
+    ${back ? `<rect x="-14" y="-150" width="28" height="30" rx="4" fill="#fff"/><text x="0" y="-128" text-anchor="middle" font-size="20" fill="#333" ${FONT}>${shirt==='#3E8E4A'?3:shirt==='#2F7FB5'?2:4}</text>` : ''}`;
+}
+/* 別隊的最後一棒：go＝從你旁邊一個一個跑過去；far＝已經跑到前面 */
+const RIVALS = [['#2F7FB5', 155, 529], ['#3E8E4A', 1125, 751], ['#8E4FB0', 478, 603]];
+function rivals(mode){
+  if(!mode) return '';
+  return RIVALS.map(([c, x0, x1], i) => mode==='go'
+    ? `<g class="pass pass${i}" style="--x0:${x0}px;--x1:${x1}px"><g class="runbob">${runner(c, true)}</g></g>`
+    : `<g transform="translate(${x1 + (i-1)*6} ${336 - i*4}) scale(${0.3 - i*0.03})"><g class="runbob">${runner(c, true)}</g></g>`).join('');
+}
+/* 接力區：前一棒的同學朝你跑過來（你回頭看） */
+function teammate(){
+  return `<g class="comein"><g class="runbob">${runner('#E07A3B', false, true)}</g></g>`;
+}
 const SC = {
   shop:()=>`<rect width="1280" height="720" fill="#BFE3F2"/><rect y="600" width="1280" height="120" fill="#C8B79C"/>
     <rect x="140" y="110" width="1000" height="490" fill="#F3D9B1"/><rect x="120" y="92" width="1040" height="30" rx="8" fill="#7A4F26"/>
@@ -765,7 +804,7 @@ const SC = {
     <rect y="500" width="1280" height="220" fill="#A8653B"/><rect y="490" width="1280" height="20" fill="#7A4424"/>
     <ellipse cx="400" cy="500" rx="150" ry="22" fill="#fff" stroke="#D8CBB5" stroke-width="6"/>`,
   track:()=>trackFP(),
-  race:()=>trackFP() + `<rect x="420" y="120" width="10" height="185" fill="#fff"/><rect x="850" y="120" width="10" height="185" fill="#fff"/><rect x="420" y="112" width="440" height="58" rx="8" fill="#fff"/><text x="640" y="153" text-anchor="middle" font-size="34" fill="#D9573C" ${FONT}>大隊接力</text>`,
+  race:(b)=>trackFP() + rivals((b||{}).pass) + ((b||{}).v==='handoff' ? teammate() : '') + `<rect x="420" y="120" width="10" height="185" fill="#fff"/><rect x="850" y="120" width="10" height="185" fill="#fff"/><rect x="420" y="112" width="440" height="58" rx="8" fill="#fff"/><text x="640" y="153" text-anchor="middle" font-size="34" fill="#D9573C" ${FONT}>大隊接力</text>`,
   finish:()=>trackFP({cheer:true}) + `<rect x="380" y="90" width="14" height="300" fill="#fff"/><rect x="886" y="90" width="14" height="300" fill="#fff"/><rect x="380" y="80" width="520" height="66" rx="10" fill="#E2483B"/><text x="640" y="127" text-anchor="middle" font-size="40" fill="#fff" ${FONT}>終點 🎉</text>
     <path d="M60 560h1160" stroke="#fff" stroke-width="18" stroke-dasharray="36 36"/><path d="M60 578h1160" stroke="#3B2A1A" stroke-width="14" stroke-dasharray="36 36" stroke-dashoffset="36"/>
     ${Array.from({length:34},(_,k)=>`<rect x="${(k*43)%1280}" y="${30+((k*71)%220)}" width="14" height="20" rx="3" fill="${['#E2483B','#2F7FB5','#F4CF4A','#3E8E4A'][k%4]}" transform="rotate(${k*23} ${(k*43)%1280} ${30+((k*71)%220)})"/>`).join('')}`,
@@ -792,6 +831,8 @@ function hands(b){
   const v = b.v || '', hold = b.hold || '';
   if(v==='fall' || v==='down') return `<g>${arm(330, 560, 35, 'shake')}${arm(950, 570, -30, '')}</g>`;
   // 掉棒：棒子掉在跑道上，雙手往前伸
+  if(v==='handoff') return `<g>${arm(1000, 520, -40, 'reach')}</g>`;
+  if(v==='wait') return `<g>${arm(330, 600, 20, '')}${arm(950, 600, -20, '')}</g>`;
   if(v==='drop') return `<g><g transform="translate(720 455) rotate(-62)"><rect x="-22" y="-75" width="44" height="150" rx="16" fill="#E2483B"/><rect x="-22" y="-35" width="44" height="30" fill="#fff"/></g>
     <ellipse cx="720" cy="500" rx="90" ry="12" fill="#000" opacity=".15"/></g>${arm(420, 560, 26, 'shake')}${arm(860, 560, -26, 'shake')}`;
   if(v==='run' || v==='slow' || v==='cheer'){
@@ -1339,7 +1380,7 @@ function filmOverlay(b){
   if(b.clip==='res'){ const R = RECAP[b.o], op = DEC[b.d].opts[b.o]; ic = icon(op.ic); a = R.a; r = R.b;
     kind = `<div class="kind ${b.good?'mine':'tried'}">${esc(b.label)} ${b.good ? '👍' : '👎'}</div>`; }
   if(b.clip==='burger'){ ic = '🍔'; a = '勇氣漢堡全部來自植物：小麥、黃豆、蔬菜、芝麻、水果'; r = '植物力量盤五類都亮了'; }
-  if(b.clip==='race'){ ic = '🏃'; a = '大隊接力掉棒了也不放棄'; r = '深呼吸、撿起棒子，繼續跑完'; }
+  if(b.clip==='race'){ ic = '🏃'; a = '最後一棒接棒時掉棒了'; r = '深呼吸、撿起棒子，奮力跑到終點'; }
   return `<div class="film">${tag}${kind}<div class="cap" style="--pc:${b.clip==='res' ? (b.good ? '#2E8B57' : '#B0896A') : '#E0CBA6'}"><span class="ic">${ic}</span><span>${esc(a)} <span class="arrow">➜</span> ${esc(r)}</span></div></div>${btn}`;
 }
 /* 推薦卡：漢堡結構說明 */
