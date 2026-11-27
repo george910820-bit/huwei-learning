@@ -6,10 +6,35 @@
   "status": "使用中",
   "updated": "2026-11-20",
   "worksheets": [
-    {"unit": "U6", "title": "U6 加一加：看圖列式（和在5以內）", "file": "worksheets/U6加一加_看圖列式和在5以內.docx", "updated": "2026-11-20"},
-    {"unit": "U6", "title": "U6 加一加：看圖列式褪除（和在1-5）", "file": "worksheets/U6加一加_看圖列式褪除和在1-5.docx", "updated": "2026-11-26"},
-    {"unit": "U6", "title": "U6 加一加：看圖列式褪除（和在6-10）", "file": "worksheets/U6加一加_看圖列式褪除和在6-10.docx", "updated": "2026-11-26"},
-    {"unit": "U6", "title": "U6 加一加：看式子畫圈（和在6-10）", "file": "worksheets/U6加一加_看式子畫圈和在6-10.docx", "updated": "2026-11-26"},
-    {"unit": "U6", "title": "U6 加一加：填空列式（和在6-10）", "file": "worksheets/U6加一加_填空列式和在6-10.docx", "updated": "2026-11-25"}
+    {
+      "unit": "U6",
+      "title": "U6 加一加【低組】：看圖列式（和在5以內）",
+      "file": "worksheets/U6加一加_低組_看圖列式和在5以內.docx",
+      "updated": "2026-11-20"
+    },
+    {
+      "unit": "U6",
+      "title": "U6 加一加【高組】：看圖列式褪除（和在1-5）",
+      "file": "worksheets/U6加一加_高組_看圖列式褪除和在1-5.docx",
+      "updated": "2026-11-26"
+    },
+    {
+      "unit": "U6",
+      "title": "U6 加一加【高組】：看圖列式褪除（和在6-10）",
+      "file": "worksheets/U6加一加_高組_看圖列式褪除和在6-10.docx",
+      "updated": "2026-11-26"
+    },
+    {
+      "unit": "U6",
+      "title": "U6 加一加【高組】：看式子畫圈（和在6-10）",
+      "file": "worksheets/U6加一加_高組_看式子畫圈和在6-10.docx",
+      "updated": "2026-11-26"
+    },
+    {
+      "unit": "U6",
+      "title": "U6 加一加【高組】：填空列式（和在6-10）",
+      "file": "worksheets/U6加一加_高組_填空列式和在6-10.docx",
+      "updated": "2026-11-25"
+    }
   ]
 }
