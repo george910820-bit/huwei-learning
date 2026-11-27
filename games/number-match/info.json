@@ -10,13 +10,15 @@
       "unit": "U1",
       "title": "U1 數字配對【低組】：量配字（書寫）",
       "file": "worksheets/U1數字配對_低組_量配字書寫.docx",
-      "updated": "2026-11-17"
+      "updated": "2026-11-17",
+      "group": "低組"
     },
     {
       "unit": "U2",
       "title": "U2 數字配對【低組】：量配字、字配量",
       "file": "worksheets/U2數字配對_低組_量配字字配量.docx",
-      "updated": "2026-11-17"
+      "updated": "2026-11-17",
+      "group": "低組"
     }
   ]
 }

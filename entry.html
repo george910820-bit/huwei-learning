@@ -37,6 +37,11 @@ h1{margin:0;font-family:"Caprasimo","Noto Sans TC",serif;font-weight:400;font-si
 .ws a:hover{border-color:var(--sage)}
 .ws a .ic{flex:none;width:48px;height:40px;border-radius:10px;background:var(--sage);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:800}
 .ws a small{display:block;font-weight:600;color:var(--soft);font-size:13px}
+.grp{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
+.grp button{flex:1 1 120px;min-height:56px;border-radius:18px;border:2px solid var(--sage);background:var(--paper);color:var(--sage-dk);font:inherit;font-weight:800;font-size:19px;cursor:pointer}
+.grp button[aria-expanded="true"]{background:var(--sage);color:#fff}
+.grp button:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.grp button small{font-weight:600;font-size:14px;opacity:.85;margin-left:4px}
 .ws .none{color:var(--soft);font-size:15px;background:var(--sage-bg);border-radius:18px;padding:14px 16px;margin-top:10px}
 .qrcard{text-align:center}
 .qrbox{display:block;width:100%;max-width:320px;margin:0 auto;padding:14px;background:#fff;border:2px solid var(--line);border-radius:22px;cursor:zoom-in}
@@ -2391,11 +2396,29 @@ var qrcode = function() {
     document.title=name+"｜入口";
     var ws=Array.isArray(info.worksheets)?info.worksheets:[];
     var tags=[info.subject,info.grade].filter(Boolean).map(function(t){return '<span class="tag">'+esc(t)+'</span>'}).join("");
-    var wsHtml=ws.length?ws.map(function(w){
+    var link=function(w,strip){
       var href="games/"+encodeURIComponent(id)+"/"+String(w.file||"").split("/").map(encodeURIComponent).join("/");
       var ext=(String(w.file).split(".").pop()||"").toUpperCase().slice(0,4);
-      return '<a href="'+href+'" download><span class="ic">'+esc(ext||"檔")+'</span><span>'+esc(w.title||w.file)+(w.updated?'<small>更新 '+esc(w.updated)+'</small>':'')+'</span></a>';
-    }).join(""):'<div class="none">這個遊戲目前還沒有學習單。</div>';
+      var t=String(w.title||w.file); if(strip) t=t.replace(/【.組】/,"");
+      return '<a href="'+href+'" download><span class="ic">'+esc(ext||"檔")+'</span><span>'+esc(t)+(w.updated?'<small>更新 '+esc(w.updated)+'</small>':'')+'</span></a>';
+    };
+    /* 高低組：info.json 的 worksheets[].group（舊資料沒有就看標題的【低組】【高組】） */
+    var grpOf=function(w){ if(w.group) return String(w.group); var m=String(w.title||"").match(/【(.組)】/); return m?m[1]:""; };
+    var ORDER=["低組","中組","高組"], groups=[];
+    ws.forEach(function(w){ var g=grpOf(w); if(g&&groups.indexOf(g)<0) groups.push(g); });
+    groups.sort(function(a,b){ return (ORDER.indexOf(a)+1||99)-(ORDER.indexOf(b)+1||99) });
+    var wsHtml;
+    if(!ws.length) wsHtml='<div class="none">這個遊戲目前還沒有學習單。</div>';
+    else if(!groups.length) wsHtml=ws.map(function(w){return link(w)}).join("");
+    else {
+      var other=ws.filter(function(w){return !grpOf(w)});
+      wsHtml='<div class="grp">'+groups.map(function(g,i){
+          var n=ws.filter(function(w){return grpOf(w)===g}).length;
+          return '<button type="button" aria-expanded="false" aria-controls="wsg'+i+'" data-i="'+i+'">'+esc(g)+'<small>'+n+' 份</small></button>';
+        }).join("")+'</div>'+
+        groups.map(function(g,i){ return '<div id="wsg'+i+'" hidden>'+ws.filter(function(w){return grpOf(w)===g}).map(function(w){return link(w,true)}).join("")+'</div>'; }).join("")+
+        other.map(function(w){return link(w)}).join("");
+    }
     var svg=qrSvg(gameUrl);
     $("#main").innerHTML=
       '<section class="title">'+(tags?'<div class="tags">'+tags+'</div>':'')+'<h1>'+esc(name)+'</h1>'+(info.desc?'<p class="desc">'+esc(info.desc)+'</p>':'')+'</section>'+
@@ -2412,6 +2435,12 @@ var qrcode = function() {
           '<button class="small" id="zoom" type="button">放大給全班掃</button>'+
         '</section>'+
       '</div>';
+    var gb=document.querySelectorAll(".grp button");
+    Array.prototype.forEach.call(gb,function(b){ b.onclick=function(){
+      var on=b.getAttribute("aria-expanded")!=="true";
+      Array.prototype.forEach.call(gb,function(x){ x.setAttribute("aria-expanded","false"); $("#wsg"+x.dataset.i).hidden=true; });
+      if(on){ b.setAttribute("aria-expanded","true"); $("#wsg"+b.dataset.i).hidden=false; }
+    }});
     $("#bigqr").innerHTML=svg;
     var open=function(){$("#big").classList.add("on");$("#close").focus()};
     $("#qr").onclick=open; $("#zoom").onclick=open;
