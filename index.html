@@ -141,7 +141,7 @@ const NUM=["","一","二","三","四","五","六","七","八","九","十","十�
 function card(g){
   return `<article class="card s-${g.subject}${g.status==="已完成"?" done":""}">
     <div class="band"><div class="tags"><span>${g.subject}</span>${g.grade?`<span>${esc(g.grade)}</span>`:""}<span class="st">${g.status}</span></div><h2>${g.lesson?`<span class="lno">L${g.lesson}</span>`:""}${esc(g.name)}</h2></div>
-    <div class="body">${g.desc?`<p>${esc(g.desc)}</p>`:""}${g.worksheets.length?`<div class="ws"><b>學習單下載</b>${g.worksheets.map(w=>`<a href="games/${encodeURIComponent(g.id)}/${w.file.split("/").map(encodeURIComponent).join("/")}" download>📄 ${esc(w.title||w.file)}</a>`).join("")}</div>`:""}<div class="foot">${g.updated?`<time>更新 ${esc(g.updated)}</time>`:"<span></span>"}<a class="play" href="games/${encodeURIComponent(g.id)}/">${g.subject==="特需"?"打開教材":g.id.startsWith("sentence-")?"打開教材包":"開始玩"}</a></div></div>
+    <div class="body">${g.desc?`<p>${esc(g.desc)}</p>`:""}${g.worksheets.length?`<div class="ws"><b>學習單下載</b>${g.worksheets.map(w=>`<a href="games/${encodeURIComponent(g.id)}/${w.file.split("/").map(encodeURIComponent).join("/")}" download>📄 ${esc(w.title||w.file)}</a>`).join("")}</div>`:""}<div class="foot">${g.updated?`<time>更新 ${esc(g.updated)}</time>`:"<span></span>"}<a class="play" href="${g.subject==="數學"?`entry.html?g=${encodeURIComponent(g.id)}`:`games/${encodeURIComponent(g.id)}/`}">${g.subject==="特需"?"打開教材":g.id.startsWith("sentence-")?"打開教材包":"開始玩"}</a></div></div>
   </article>`;
 }
 /* 分組：國語課本教材包依「版本 → 年級學期 → 課次」；其他依科目 */
